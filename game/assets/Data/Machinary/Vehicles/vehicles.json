@@ -6,7 +6,7 @@
                 "turningPoint": 25,
                 "hitch": 15,
                 "anims": {
-                    "normal": "./Data/Machinary/Vehicles/Tractors/CaseIH/tractor_0.bmp"
+                    "normal": "Data/Machinary/Vehicles/Tractors/CaseIH/tractor_0.bmp"
                 },
                 "price": 148000,
                 "fuel": 190,
@@ -17,7 +17,7 @@
                 "turningPoint": 25,
                 "hitch": 22,
                 "anims": {
-                    "normal": "./Data/Machinary/Vehicles/Tractors/CaseIH/tractor_1.bmp"
+                    "normal": "Data/Machinary/Vehicles/Tractors/CaseIH/tractor_1.bmp"
                 },
                 "price": 226000,
                 "fuel": 380,
@@ -28,7 +28,7 @@
                 "turningPoint": 25,
                 "hitch": 22,
                 "anims": {
-                    "normal": "./Data/Machinary/Vehicles/Tractors/CaseIH/tractor_2.bmp"
+                    "normal": "Data/Machinary/Vehicles/Tractors/CaseIH/tractor_2.bmp"
                 },
                 "price": 423500,
                 "fuel": 681,
@@ -41,7 +41,7 @@
                 "turningPoint": 25,
                 "hitch": 15,
                 "anims": {
-                    "normal": "./Data/Machinary/Vehicles/Tractors/NewHolland/tractor_0.bmp"
+                    "normal": "Data/Machinary/Vehicles/Tractors/NewHolland/tractor_0.bmp"
                 },
                 "price": 135000,
                 "fuel": 290,
@@ -52,7 +52,7 @@
                 "turningPoint": 25,
                 "hitch": 22,
                 "anims": {
-                    "normal": "./Data/Machinary/Vehicles/Tractors/NewHolland/tractor_1.bmp"
+                    "normal": "Data/Machinary/Vehicles/Tractors/NewHolland/tractor_1.bmp"
                 },
                 "price": 295000,
                 "fuel": 630,
@@ -63,7 +63,7 @@
                 "turningPoint": 25,
                 "hitch": 22,
                 "anims": {
-                    "normal": "./Data/Machinary/Vehicles/Tractors/NewHolland/tractor_2.bmp"
+                    "normal": "Data/Machinary/Vehicles/Tractors/NewHolland/tractor_2.bmp"
                 },
                 "price": 390000,
                 "fuel": 1514,
@@ -76,7 +76,7 @@
                 "turningPoint": 25,
                 "hitch": 15,
                 "anims": {
-                    "normal": "./Data/Machinary/Vehicles/Tractors/JohnDeer/tractor_0.bmp"
+                    "normal": "Data/Machinary/Vehicles/Tractors/JohnDeer/tractor_0.bmp"
                 },
                 "price": 164000,
                 "fuel": 430,
@@ -87,7 +87,7 @@
                 "turningPoint": 25,
                 "hitch": 22,
                 "anims": {
-                    "normal": "./Data/Machinary/Vehicles/Tractors/JohnDeer/tractor_1.bmp"
+                    "normal": "Data/Machinary/Vehicles/Tractors/JohnDeer/tractor_1.bmp"
                 },
                 "price": 310000,
                 "fuel": 800,
@@ -98,7 +98,7 @@
                 "turningPoint": 25,
                 "hitch": 22,
                 "anims": {
-                    "normal": "./Data/Machinary/Vehicles/Tractors/JohnDeer/tractor_2.bmp"
+                    "normal": "Data/Machinary/Vehicles/Tractors/JohnDeer/tractor_2.bmp"
                 },
                 "price": 402000,
                 "fuel": 950,
@@ -115,8 +115,8 @@
                 "storage": 7.4,
                 "pipeOffset": 9,
                 "anims": {
-                    "pipeIn": "./Data/Machinary/Vehicles/Harvesters/CaseIH/header_0.bmp",
-                    "pipeOut": "./Data/Machinary/Vehicles/Harvesters/CaseIH/header_0_auger.bmp"
+                    "pipeIn": "Data/Machinary/Vehicles/Harvesters/CaseIH/header_0.bmp",
+                    "pipeOut": "Data/Machinary/Vehicles/Harvesters/CaseIH/header_0_auger.bmp"
                 },
                 "price": 84000,
                 "fuel": 700,
@@ -129,8 +129,8 @@
                 "storage": 11.1,
                 "pipeOffset": 7,
                 "anims": {
-                    "pipeIn": "./Data/Machinary/Vehicles/Harvesters/CaseIH/header_1.bmp",
-                    "pipeOut": "./Data/Machinary/Vehicles/Harvesters/CaseIH/header_1_auger.bmp"
+                    "pipeIn": "Data/Machinary/Vehicles/Harvesters/CaseIH/header_1.bmp",
+                    "pipeOut": "Data/Machinary/Vehicles/Harvesters/CaseIH/header_1_auger.bmp"
                 },
                 "price": 365000,
                 "fuel": 1000,
@@ -145,8 +145,8 @@
                 "storage": 11.5,
                 "pipeOffset": 7,
                 "anims": {
-                    "pipeIn": "./Data/Machinary/Vehicles/Harvesters/NewHolland/header_0.bmp",
-                    "pipeOut": "./Data/Machinary/Vehicles/Harvesters/NewHolland/header_0_auger.bmp"
+                    "pipeIn": "Data/Machinary/Vehicles/Harvesters/NewHolland/header_0.bmp",
+                    "pipeOut": "Data/Machinary/Vehicles/Harvesters/NewHolland/header_0_auger.bmp"
                 },
                 "price": 240000,
                 "fuel": 1200,
@@ -159,8 +159,8 @@
                 "storage": 14.5,
                 "pipeOffset": 8,
                 "anims": {
-                    "pipeIn": "./Data/Machinary/Vehicles/Harvesters/NewHolland/header_1.bmp",
-                    "pipeOut": "./Data/Machinary/Vehicles/Harvesters/NewHolland/header_1_auger.bmp"
+                    "pipeIn": "Data/Machinary/Vehicles/Harvesters/NewHolland/header_1.bmp",
+                    "pipeOut": "Data/Machinary/Vehicles/Harvesters/NewHolland/header_1_auger.bmp"
                 },
                 "price": 410000,
                 "fuel": 1300,
@@ -175,8 +175,8 @@
                 "storage": 10.5,
                 "pipeOffset": 7,
                 "anims": {
-                    "pipeIn": "./Data/Machinary/Vehicles/Harvesters/JohnDeer/header_0.bmp",
-                    "pipeOut": "./Data/Machinary/Vehicles/Harvesters/JohnDeer/header_0_auger.bmp"
+                    "pipeIn": "Data/Machinary/Vehicles/Harvesters/JohnDeer/header_0.bmp",
+                    "pipeOut": "Data/Machinary/Vehicles/Harvesters/JohnDeer/header_0_auger.bmp"
                 },
                 "price": 270000,
                 "fuel": 1200,
@@ -189,8 +189,8 @@
                 "storage": 10.6,
                 "pipeOffset": 7,
                 "anims": {
-                    "pipeIn": "./Data/Machinary/Vehicles/Harvesters/JohnDeer/header_1.bmp",
-                    "pipeOut": "./Data/Machinary/Vehicles/Harvesters/JohnDeer/header_1_auger.bmp"
+                    "pipeIn": "Data/Machinary/Vehicles/Harvesters/JohnDeer/header_1.bmp",
+                    "pipeOut": "Data/Machinary/Vehicles/Harvesters/JohnDeer/header_1_auger.bmp"
                 },
                 "price": 347000,
                 "fuel": 1300,
