@@ -1,0 +1,190 @@
+{
+    "Cultivators": {
+        "Case IH": {
+            "490": {
+                "size": 24,
+                "sizePx": 26,
+                "hp": 120,
+                "turningPoint": 8,
+                "hitch": 12,
+                "anims": {
+                    "folded": null,
+                    "unfolded": "./Data/Machinary/Tools/Cultivators/CaseIH/tool_0.bmp",
+                    "default": "unfolded"
+                },
+                "price": 15000,
+                "xp": 0
+            }
+        },
+        "Landoll": {
+            "Verticle Tillage": {
+                "size": 32,
+                "sizePx": 34,
+                "hp": 320,
+                "turningPoint": 12,
+                "hitch": 16,
+                "anims": {
+                    "folded": null,
+                    "unfolded": "./Data/Machinary/Tools/Cultivators/Landoll/tool_0.bmp",
+                    "default": "unfolded"
+                },
+                "price": 140000,
+                "xp": 8
+            }
+        }
+    },
+    "Seeders": {
+        "John Sheerer": {
+            "Combine 14ft": {
+                "size": 14,
+                "sizePx": 13,
+                "storage": 1.6,
+                "hp": 75,
+                "turningPoint": 5,
+                "hitch": 6,
+                "anims": {
+                    "folded": null,
+                    "unfolded": "./Data/Machinary/Tools/Seeders/JohnSheerer/tool_0.bmp",
+                    "default": "unfolded"
+                },
+                "cart": null,
+                "price": 20000,
+                "xp": 0
+            }
+        },
+        "Morris": {
+            "C2 Contour": {
+                "size": 30,
+                "sizePx": 32,
+                "storage": 6.5,
+                "hp": 300,
+                "turningPoint": 11,
+                "hitch": 15,
+                "anims": {
+                    "folded": null,
+                    "unfolded": "./Data/Machinary/Tools/Seeders/Morris/tool_0.bmp",
+                    "default": "unfolded"
+                },
+                "cart": {
+                    "hitch": 15,
+                    "turningPoint": 40,
+                    "anims": {
+                        "open": null,
+                        "closed": "./Data/Machinary/Tools/Seeders/Morris/tool_0_grainCart.bmp",
+                        "default": "closed"
+                    }
+                },
+                "price": 290000,
+                "xp": 14
+            }
+        }
+    },
+    "Spreaders": {
+        "Marshall": {
+            "Multispread 825T": {
+                "size": 30,
+                "sizePx": 31,
+                "storage": 2.5,
+                "hp": 130,
+                "turningPoint": 15,
+                "hitch": 15,
+                "anims": {
+                    "empty": "./Data/Machinary/Tools/Spreaders/Marshall/tool_0_open.bmp",
+                    "full": "./Data/Machinary/Tools/Spreaders/Marshall/tool_0.bmp",
+                    "on": "./Data/Machinary/Tools/Spreaders/Marshall/tool_0_on.bmp",
+                    "default": "empty"
+                },
+                "price": 37500,
+                "xp": 3
+            },
+            "Multispread 810T": {
+                "size": 45,
+                "sizePx": 47,
+                "storage": 10,
+                "hp": 200,
+                "turningPoint": 17,
+                "hitch": 23,
+                "anims": {
+                    "empty": "./Data/Machinary/Tools/Spreaders/Marshall/tool_1_open.bmp",
+                    "full": "./Data/Machinary/Tools/Spreaders/Marshall/tool_1.bmp",
+                    "on": "./Data/Machinary/Tools/Spreaders/Marshall/tool_1_on.bmp",
+                    "default": "empty"
+                },
+                "price": 59000,
+                "xp": 10
+            }
+        }
+    },
+    "Sprayers": {
+        "Hardi": {
+            "Ranger": {
+                "size": 40,
+                "sizePx": 47,
+                "storage": 2.5,
+                "hp": 100,
+                "turningPoint": 21,
+                "hitch": 22,
+                "anims": {
+                    "folded": "./Data/Machinary/Tools/Sprayers/Hardi/tool_0.bmp",
+                    "unfolded": "./Data/Machinary/Tools/Sprayers/Hardi/tool_0_open.bmp",
+                    "on": "./Data/Machinary/Tools/Sprayers/Hardi/tool_0_on.bmp",
+                    "default": "folded"
+                },
+                "price": 30000,
+                "xp": 4
+            },
+            "Master": {
+                "size": 60,
+                "sizePx": 63,
+                "storage": 1.8,
+                "hp": 150,
+                "turningPoint": null,
+                "hitch": "half",
+                "anims": {
+                    "folded": "./Data/Machinary/Tools/Sprayers/Hardi/tool_1.bmp",
+                    "unfolded": "./Data/Machinary/Tools/Sprayers/Hardi/tool_1_open.bmp",
+                    "on": "./Data/Machinary/Tools/Sprayers/Hardi/tool_1_on.bmp",
+                    "default": "folded"
+                },
+                "price": 66000,
+                "xp": 12
+            }
+        }
+    },
+    "Trailers": {
+        "Marshall": {
+            "QM-12": {
+                "size": null,
+                "sizePx": null,
+                "storage": 12,
+                "hp": 200,
+                "turningPoint": 26,
+                "hitch": 8,
+                "anims": {
+                    "empty": "./Data/Machinary/Tools/Trailers/Marshall/tool_0_open.bmp",
+                    "full": "./Data/Machinary/Tools/Trailers/Marshall/tool_0.bmp",
+                    "default": "empty"
+                },
+                "price": 24500,
+                "xp": 0
+            }
+        },
+        "Rolland": {
+            "Rollspeed 7840": {
+                "size": null,
+                "sizePx": null,
+                "storage": 40,
+                "hp": 330,
+                "turningPoint": 30,
+                "hitch": 11,
+                "anims": {
+                    "empty": "./Data/Machinary/Tools/Trailers/Rolland/tool_0_open.bmp",
+                    "full": "./Data/Machinary/Tools/Trailers/Rolland/tool_0.bmp",
+                    "default": "empty"
+                },
+                "price": 68000,
+                "xp": 6
+            }
+        }
+    }
+}

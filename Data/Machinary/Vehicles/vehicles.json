@@ -1,0 +1,201 @@
+{
+    "Tractors": {
+        "Case IH": {
+            "Maxxum 150": {
+                "hp": 150,
+                "turningPoint": 25,
+                "hitch": 15,
+                "anims": {
+                    "normal": "./Data/Machinary/Vehicles/Tractors/CaseIH/tractor_0.bmp"
+                },
+                "price": 148000,
+                "fuel": 190,
+                "xp": 1
+            },
+            "Puma 210": {
+                "hp": 210,
+                "turningPoint": 25,
+                "hitch": 22,
+                "anims": {
+                    "normal": "./Data/Machinary/Vehicles/Tractors/CaseIH/tractor_1.bmp"
+                },
+                "price": 226000,
+                "fuel": 380,
+                "xp": 5
+            },
+            "Magnum 380": {
+                "hp": 380,
+                "turningPoint": 25,
+                "hitch": 22,
+                "anims": {
+                    "normal": "./Data/Machinary/Vehicles/Tractors/CaseIH/tractor_2.bmp"
+                },
+                "price": 423500,
+                "fuel": 681,
+                "xp": 11
+            }
+        },
+        "New Holland": {
+            "T6 145": {
+                "hp": 145,
+                "turningPoint": 25,
+                "hitch": 15,
+                "anims": {
+                    "normal": "./Data/Machinary/Vehicles/Tractors/NewHolland/tractor_0.bmp"
+                },
+                "price": 135000,
+                "fuel": 290,
+                "xp": 0
+            },
+            "T7 245": {
+                "hp": 245,
+                "turningPoint": 25,
+                "hitch": 22,
+                "anims": {
+                    "normal": "./Data/Machinary/Vehicles/Tractors/NewHolland/tractor_1.bmp"
+                },
+                "price": 295000,
+                "fuel": 630,
+                "xp": 6
+            },
+            "T8 350": {
+                "hp": 350,
+                "turningPoint": 25,
+                "hitch": 22,
+                "anims": {
+                    "normal": "./Data/Machinary/Vehicles/Tractors/NewHolland/tractor_2.bmp"
+                },
+                "price": 390000,
+                "fuel": 1514,
+                "xp": 9
+            }
+        },
+        "John Deer": {
+            "6R 185": {
+                "hp": 185,
+                "turningPoint": 25,
+                "hitch": 15,
+                "anims": {
+                    "normal": "./Data/Machinary/Vehicles/Tractors/JohnDeer/tractor_0.bmp"
+                },
+                "price": 164000,
+                "fuel": 430,
+                "xp": 4
+            },
+            "7R 290": {
+                "hp": 290,
+                "turningPoint": 25,
+                "hitch": 22,
+                "anims": {
+                    "normal": "./Data/Machinary/Vehicles/Tractors/JohnDeer/tractor_1.bmp"
+                },
+                "price": 310000,
+                "fuel": 800,
+                "xp": 7
+            },
+            "8R 370": {
+                "hp": 370,
+                "turningPoint": 25,
+                "hitch": 22,
+                "anims": {
+                    "normal": "./Data/Machinary/Vehicles/Tractors/JohnDeer/tractor_2.bmp"
+                },
+                "price": 402000,
+                "fuel": 950,
+                "xp": 10
+            }
+        }
+    },
+    "Harvesters": {
+        "Case IH": {
+            "2388": {
+                "size": 30,
+                "sizePx": 32,
+                "hp": 320,
+                "storage": 7.4,
+                "pipeOffset": 9,
+                "anims": {
+                    "pipeIn": "./Data/Machinary/Vehicles/Harvesters/CaseIH/header_0.bmp",
+                    "pipeOut": "./Data/Machinary/Vehicles/Harvesters/CaseIH/header_0_auger.bmp"
+                },
+                "price": 84000,
+                "fuel": 700,
+                "xp": 0
+            },
+            "7250": {
+                "hp": 470,
+                "size": 40,
+                "sizePx": 40,
+                "storage": 11.1,
+                "pipeOffset": 7,
+                "anims": {
+                    "pipeIn": "./Data/Machinary/Vehicles/Harvesters/CaseIH/header_1.bmp",
+                    "pipeOut": "./Data/Machinary/Vehicles/Harvesters/CaseIH/header_1_auger.bmp"
+                },
+                "price": 365000,
+                "fuel": 1000,
+                "xp": 12
+            }
+        },
+        "New Holland": {
+            "CR 7.90": {
+                "hp": 450,
+                "size": 30,
+                "sizePx": 32,
+                "storage": 11.5,
+                "pipeOffset": 7,
+                "anims": {
+                    "pipeIn": "./Data/Machinary/Vehicles/Harvesters/NewHolland/header_0.bmp",
+                    "pipeOut": "./Data/Machinary/Vehicles/Harvesters/NewHolland/header_0_auger.bmp"
+                },
+                "price": 240000,
+                "fuel": 1200,
+                "xp": 8
+            },
+            "CR 10.90": {
+                "hp": 700,
+                "size": 45,
+                "sizePx": 48,
+                "storage": 14.5,
+                "pipeOffset": 8,
+                "anims": {
+                    "pipeIn": "./Data/Machinary/Vehicles/Harvesters/NewHolland/header_1.bmp",
+                    "pipeOut": "./Data/Machinary/Vehicles/Harvesters/NewHolland/header_1_auger.bmp"
+                },
+                "price": 410000,
+                "fuel": 1300,
+                "xp": 15
+            }
+        },
+        "John Deer": {
+            "9870 STS": {
+                "hp": 440,
+                "size": 35,
+                "sizePx": 36,
+                "storage": 10.5,
+                "pipeOffset": 7,
+                "anims": {
+                    "pipeIn": "./Data/Machinary/Vehicles/Harvesters/JohnDeer/header_0.bmp",
+                    "pipeOut": "./Data/Machinary/Vehicles/Harvesters/JohnDeer/header_0_auger.bmp"
+                },
+                "price": 270000,
+                "fuel": 1200,
+                "xp": 5
+            },
+            "S770": {
+                "hp": 390,
+                "size": 40,
+                "sizePx": 40,
+                "storage": 10.6,
+                "pipeOffset": 7,
+                "anims": {
+                    "pipeIn": "./Data/Machinary/Vehicles/Harvesters/JohnDeer/header_1.bmp",
+                    "pipeOut": "./Data/Machinary/Vehicles/Harvesters/JohnDeer/header_1_auger.bmp"
+                },
+                "price": 347000,
+                "fuel": 1300,
+                "xp": 10
+            }
+        }
+    }
+}
