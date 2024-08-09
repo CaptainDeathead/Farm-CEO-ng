@@ -13,4 +13,4 @@ class FarmCEO:
     def __init__(self, screen: pg.Surface, clock: pg.time.Clock) -> None:
         self.screen: pg.Surface = screen
         self.clock: pg.time.Clock = clock
-        self.map: pg.Surface = pg.image.load()
+        self.map: pg.Surface = self.RESOURCE_MANAGER.load_image("map.png")

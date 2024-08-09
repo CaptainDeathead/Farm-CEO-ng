@@ -16,7 +16,8 @@ class ResourceManager:
     """
 
     PATH: str = os.path.abspath('.')
-    DATA_PATH: str = f"{PATH}/Data"
+    ASSETS_PATH: str = f"{PATH}/assets"
+    DATA_PATH: str = f"{ASSETS_PATH}/Data"
 
     @staticmethod
     def _fmt_read_error(obj_type: str, obj_path: str, err_msg: str) -> str:
