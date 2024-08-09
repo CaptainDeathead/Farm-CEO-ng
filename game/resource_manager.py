@@ -2,8 +2,8 @@ import pygame as pg
 import os
 import logging
 
-from json import loads, dumps, JSONEncodeError, JSONDecodeError
-from typing import Dict
+from json import loads, dumps, JSONDecodeError
+from typing import Tuple, Dict
 
 class ResourceManager:
     """
@@ -21,22 +21,27 @@ class ResourceManager:
 
     @staticmethod
     def _fmt_read_error(obj_type: str, obj_path: str, err_msg: str) -> str:
-        return f"Error while loading {obj_type}!\n  {obj_type}: \"{obj_path}\"\n Error: \"{err_msg}\""
+        return f"Error while loading {obj_type}!\n  {obj_type}: \"{obj_path}\"\n  Error: \"{err_msg}\""
     
     @staticmethod
     def _fmt_write_error(obj_type: str, obj_path: str, err_msg: str) -> str:
-        return f"Error while writing {obj_type}!\n  {obj_type}: \"{obj_path}\"\n Error: \"{err_msg}\""
+        return f"Error while writing {obj_type}!\n  {obj_type}: \"{obj_path}\"\n  Error: \"{err_msg}\""
 
-    def load_image(self, image_path: str) -> pg.Surface:
+    def load_image(self, image_path: str, expected_size: Tuple[int, int] = (10, 10)) -> pg.Surface:
         """image_path: str (relative to `DATA_PATH`)"""
 
-        image = pg.Surface((10, 10))
+        image = pg.Surface(expected_size)
 
         try:
             image = pg.image.load(f"{self.DATA_PATH}/{image_path}")
+
         except pg.error as message:
-            pg.draw.rect(image, (255, 0, 0), (0, 0, 10, 10)) # Red rectangle to show image load error to user
+            pg.draw.rect(image, (255, 0, 0), (0, 0, expected_size[0], expected_size[1])) # Red rectangle to show image load error to user
             logging.error(self._fmt_read_error("image", image_path, message))
+
+        except OSError as e:
+            pg.draw.rect(image, (255, 0, 0), (0, 0, expected_size[0], expected_size[1])) # Red rectangle to show image load error to user
+            logging.error(self._fmt_read_error("image", image_path, e))
 
         return image
     
@@ -50,7 +55,7 @@ class ResourceManager:
                 contents = text_file.read()
 
         except OSError as e:
-            logging.error(self._fmt_read_error("file", file_path, e.strerror))
+            logging.error(self._fmt_read_error("file", file_path, e))
 
         return contents
     
@@ -68,7 +73,7 @@ class ResourceManager:
                 text_file.write(contents)
         
         except OSError as e:
-            logging.error(self._fmt_write_error("file", file_path, e.strerror))
+            logging.error(self._fmt_write_error("file", file_path, e))
             return success
         
         success = True
@@ -100,7 +105,7 @@ class ResourceManager:
 
         try:
             json_str = dumps(py_dict)
-        except JSONEncodeError as e:
+        except JSONDecodeError as e:
             logging.error(self._fmt_write_error("json", json_path, e.msg))
             return success
 
