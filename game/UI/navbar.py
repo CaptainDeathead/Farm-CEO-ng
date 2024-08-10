@@ -17,11 +17,11 @@ class NavBar:
         
         self.rendered_surface: pg.Surface = pg.Surface((rect.w, rect.h))
         
-        self.buttons: List[Button] = [Button(self.rendered_surface, 13, 6, 120, 100, (0, 200, 255), (0, 0, 200), (255, 255, 255), "Shop", 20, (0, 0, 0, 0), 0, 0, True),
-                                      Button(self.rendered_surface, 128, 6, 120, 100, (0, 200, 255), (0, 0, 200), (255, 255, 255), "Equipment", 20, (0, 0, 0, 0), 0, 0, True),
-                                      Button(self.rendered_surface, 248, 6, 120, 100, (0, 200, 255), (0, 0, 200), (255, 255, 255), "Contracts", 20, (0, 0, 0, 0), 0, 0, True),
-                                      Button(self.rendered_surface, 368, 6, 120, 100, (0, 200, 255), (0, 0, 200), (255, 255, 255), "Grain", 20, (0, 0, 0, 0), 0, 0, True),
-                                      Button(self.rendered_surface, 488, 6, 120, 100, (0, 200, 255), (0, 0, 200), (255, 255, 255), "Finance", 20, (0, 0, 0, 0), 0, 0, True)]
+        self.buttons: List[Button] = [Button(self.rendered_surface, 13, 6, 120, 100, (0, 200, 255), (0, 0, 200), (255, 255, 255), "Shop", 30, (0, 0, 0, 0), 0, 0, True),
+                                      Button(self.rendered_surface, 128, 6, 120, 100, (0, 200, 255), (0, 0, 200), (255, 255, 255), "Equipment", 30, (0, 0, 0, 0), 0, 0, True),
+                                      Button(self.rendered_surface, 248, 6, 120, 100, (0, 200, 255), (0, 0, 200), (255, 255, 255), "Map", 30, (0, 0, 0, 0), 0, 0, True),
+                                      Button(self.rendered_surface, 368, 6, 120, 100, (0, 200, 255), (0, 0, 200), (255, 255, 255), "Grain", 30, (0, 0, 0, 0), 0, 0, True),
+                                      Button(self.rendered_surface, 488, 6, 120, 100, (0, 200, 255), (0, 0, 200), (255, 255, 255), "Finance", 30, (0, 0, 0, 0), 0, 0, True)]
         
         self.selected_button: int = 0
         self.just_rebuilt: bool = False

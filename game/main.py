@@ -3,14 +3,22 @@ import pygame as pg
 from events import Events
 from farm_ceo import FarmCEO
 
-from console import PygameConsole
+from data import *
+
+if CONSOLE_BUILD: from console import PygameConsole
 
 pg.init()
+
+class SpoofedConsole:
+    def update(self) -> None:
+        return
 
 class Window:
     PYGAME_INFO: any = pg.display.Info()
     WIDTH: int = PYGAME_INFO.current_w
     HEIGHT: int = PYGAME_INFO.current_h
+
+    TITLE: str = f"{GAME_NAME} ({BUILD_TYPE}) | Build: {BUILD} | Platform: {PLATFORM} | Version: v{GAME_VERSION}"
 
     FPS: int = 60
 
@@ -21,10 +29,11 @@ class Window:
 
         self.farm_ceo: FarmCEO = FarmCEO(self.screen, self.clock, self.events)
 
-        self.console: PygameConsole = PygameConsole(self, self.screen)
+        if CONSOLE_BUILD: self.console: PygameConsole = PygameConsole(self, self.screen)
+        else: self.console: SpoofedConsole = SpoofedConsole
 
     def main(self) -> None:
-        pg.display.set_caption("Farm CEO - Development | Platform: Linux | Build: False")
+        pg.display.set_caption(self.TITLE)
         while 1:
             events = pg.event.get()
             self.events.process_events(events)

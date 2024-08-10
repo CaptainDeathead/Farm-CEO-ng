@@ -6,6 +6,7 @@ class Events:
     def __init__(self) -> None:
         self.mouse_just_pressed: bool = False
         self.mouse_pos: Tuple[int, int] = pg.mouse.get_pos()
+        self.zoom_change: float = 0.0
 
     def process_events(self, events: List[pg.event.Event]) -> None:
         if self.mouse_just_pressed: self.mouse_just_pressed = False
@@ -19,3 +20,6 @@ class Events:
 
             elif event.type == pg.MOUSEBUTTONDOWN:
                 if event.button == 1: self.mouse_just_pressed = True
+
+            elif event.type == pg.MOUSEWHEEL:
+                self.zoom_change = event.y
