@@ -2,5 +2,5 @@
 
 from typing import Tuple
 
-UI_WIDTH: int = 480
+PANEL_WIDTH: int = 620
 BACKGROUND_COLOR: Tuple[int, int, int] = (0, 200, 255)

@@ -2,6 +2,8 @@ import pygame as pg
 import logging
 
 from resource_manager import ResourceManager
+from UI.panel import Panel
+
 from data import *
 
 logging.basicConfig()
@@ -19,11 +21,11 @@ class Map:
         self.rect = self.surface.get_rect()
         self._fit_image()
 
-        self.x: int = UI_WIDTH
+        self.x: int = PANEL_WIDTH
         self.y: int = 0
 
     def _fit_image(self) -> None:
-        scale = (self.SCREEN_WIDTH - UI_WIDTH) / self.rect.w
+        scale = (self.SCREEN_WIDTH - PANEL_WIDTH) / self.rect.w
         self.surface = pg.transform.scale(self.surface, (self.rect.w * scale, self.rect.h * scale))
         self.rect = self.surface.get_rect()
 
@@ -42,6 +44,8 @@ class FarmCEO:
         self.clock: pg.time.Clock = clock
         self.map: Map = Map(self.screen, self.RESOURCE_MANAGER.load_image("map.png", (self.WIDTH, self.HEIGHT))) # map estimated to be almost screen size
 
+        self.panel: Panel = Panel(self.screen)
+
     def background_render(self) -> None:
         self.screen.fill(BACKGROUND_COLOR)
         self.map.render()
@@ -53,4 +57,4 @@ class FarmCEO:
         ...
 
     def ui_render(self) -> None:
-        ...
+        self.panel.draw()
