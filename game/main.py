@@ -34,6 +34,8 @@ class Window:
 
     def main(self) -> None:
         pg.display.set_caption(self.TITLE)
+        pg.display.set_icon(self.farm_ceo.RESOURCE_MANAGER.load_image("game_icon.png", (100, 100)))
+
         while 1:
             events = pg.event.get()
             self.events.process_events(events)

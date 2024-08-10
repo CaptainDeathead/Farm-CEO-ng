@@ -1,0 +1,81 @@
+{
+    "name": "Green Spring",
+    "creator": "CaptainDeathead & TobyHall633",
+    "version": "v1.0.0",
+    "filename": "green_spring.png",
+    "paddock count": 9,
+    "paddocks": {
+        "1": {
+            "hectares": 60,
+            "owned by player": false,
+            "default state": 0,
+            "gate": null
+        },
+        "2": {
+            "hectares": 70,
+            "owned by player": false,
+            "default state": 0,
+            "gate": null
+        },
+        "3": {
+            "hectares": 40,
+            "owned by player": true,
+            "default state": 4,
+            "gate": null
+        },
+        "4": {
+            "hectares": 80,
+            "owned by player": false,
+            "default state": 3,
+            "gate": null
+        },
+        "5": {
+            "hectares": 85,
+            "owned by player": false,
+            "default state": 1,
+            "gate": null
+        },
+        "6": {
+            "hectares": 30,
+            "owned by player": false,
+            "default state": 1,
+            "gate": null
+        },
+        "7": {
+            "hectares": 55,
+            "owned by player": false,
+            "default state": 5,
+            "gate": null
+        },
+        "8": {
+            "hectares": 50,
+            "owned by player": true,
+            "default state": 0,
+            "gate": null
+        },
+        "9": {
+            "hectares": 52,
+            "owned by player": false,
+            "default state": 5,
+            "gate": null
+        }
+    },
+    "roads": {},
+    "sell points": {
+        "0": {
+            "name": "Green Spring Trades",
+            "location": [],
+            "rotation": 0
+        },
+        "1": {
+            "name": "Green Spring Mill",
+            "location": [],
+            "rotation": 0
+        },
+        "2": {
+            "name": "Green Spring Bakery",
+            "location": [],
+            "rotation": 0
+        }
+    }
+}

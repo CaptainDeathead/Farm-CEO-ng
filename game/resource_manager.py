@@ -18,6 +18,7 @@ class ResourceManager:
     PATH: str = os.path.abspath('.')
     ASSETS_PATH: str = f"{PATH}/assets"
     DATA_PATH: str = f"{ASSETS_PATH}/Data"
+    MAPS_PATH: str = f"{DATA_PATH}/Maps"
 
     @staticmethod
     def _fmt_read_error(obj_type: str, obj_path: str, err_msg: str) -> str:
@@ -33,7 +34,7 @@ class ResourceManager:
         image = pg.Surface(expected_size)
 
         try:
-            image = pg.image.load(f"{self.DATA_PATH}/{image_path}")
+            image = pg.image.load(f"{self.DATA_PATH}/{image_path}").convert_alpha()
 
         except pg.error as message:
             pg.draw.rect(image, (255, 0, 0), (0, 0, expected_size[0], expected_size[1])) # Red rectangle to show image load error to user
@@ -112,3 +113,16 @@ class ResourceManager:
         success = self.write_text_file(self, json_str, json_path)
 
         return success
+    
+    def load_map(self, map_name: str) -> Tuple[pg.Surface, Dict[str, any]]:
+        """map_name: str (relative to `MAPS_PATH`)"""
+
+        map_cfg = self.load_json(f"Maps/{map_name}")
+
+        if map_cfg == {}:
+            logging.error(self._fmt_read_error("map config", map_name, "Map configuration file does not exist or its configuration is invalid!"))
+            return (self.load_image("", (1000, 1000)), {}) # return blank map
+
+        map_file = map_cfg.get("filename", "")
+
+        return (self.load_image(map_file, (1000, 1000)), map_cfg)
