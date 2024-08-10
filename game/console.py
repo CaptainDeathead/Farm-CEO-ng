@@ -1,6 +1,8 @@
 import pygame
 from pygame_console.game_console import Console
 
+import sys
+
 from datetime import datetime
 from random import randint
 

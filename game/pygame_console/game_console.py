@@ -41,6 +41,7 @@
 '''
 
 from io import StringIO # for redirection of commands output to the graphical console
+import os
 import sys	# for redirection of stdout to the graphical console
 import pygame # for Surface and graphics init
 import pygame.freetype # for all the fonts
@@ -101,12 +102,17 @@ class CommandLineProcessor(cmd.Cmd):
 	def do_quit(self, params):
 		'''If "quit" was typed on the command line, set the app's exit variable to True.
 		'''
-		return self.do_exit(params)		
+		return self.do_exit(params)
 	
 	def do_EOF(self, params):
 		'''If you press CTRL-D on the command line, set the app's exit variable to True.
 		'''
 		return self.do_exit(params)
+	
+	def do_restart(self, params):
+		'''If "restart" was typed on the command line, restart the app with os and sys.
+		'''
+		os.execv(sys.executable, ['python'] + [sys.argv[0]])
 
 	def do_shell(self, params):
 		''' Executes python commands in the console. App entity can be accessed
