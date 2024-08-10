@@ -3,6 +3,8 @@ import pygame as pg
 from events import Events
 from farm_ceo import FarmCEO
 
+from console import PygameConsole
+
 pg.init()
 
 class Window:
@@ -19,10 +21,13 @@ class Window:
 
         self.farm_ceo: FarmCEO = FarmCEO(self.screen, self.clock, self.events)
 
+        self.console: PygameConsole = PygameConsole(self, self.screen)
+
     def main(self) -> None:
         pg.display.set_caption("Farm CEO - Development | Platform: Linux | Build: False")
         while 1:
-            self.events.process_events()
+            events = pg.event.get()
+            self.events.process_events(events)
 
             self.farm_ceo.background_render()
 
@@ -30,6 +35,8 @@ class Window:
 
             self.farm_ceo.foreground_render()
             self.farm_ceo.ui_render()
+
+            self.console.update(events)
 
             pg.display.flip()
             self.clock.tick(self.FPS)
