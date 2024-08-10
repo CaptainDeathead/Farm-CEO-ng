@@ -1,4 +1,6 @@
 import pygame as pg
+
+from events import Events
 from farm_ceo import FarmCEO
 
 pg.init()
@@ -11,19 +13,16 @@ class Window:
     FPS: int = 60
 
     def __init__(self) -> None:
-        self.screen: pg.Surface = pg.display.set_mode((self.WIDTH, self.HEIGHT), pg.FULLSCREEN)
+        self.screen: pg.Surface = pg.display.set_mode((self.WIDTH, self.HEIGHT), display=1)
         self.clock: pg.time.Clock = pg.time.Clock()
-        self.farm_ceo: FarmCEO = FarmCEO(self.screen, self.clock)
+        self.events: Events = Events()
 
-    def process_events(self) -> None:
-        for event in pg.event.get():
-            if event.type == pg.QUIT:
-                pg.quit()
-                exit()
+        self.farm_ceo: FarmCEO = FarmCEO(self.screen, self.clock, self.events)
 
     def main(self) -> None:
+        pg.display.set_caption("Farm CEO - Development | Platform: Linux | Build: False")
         while 1:
-            self.process_events()
+            self.events.process_events()
 
             self.farm_ceo.background_render()
 

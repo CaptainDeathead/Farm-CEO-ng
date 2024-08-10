@@ -2,6 +2,8 @@ import pygame as pg
 import logging
 
 from resource_manager import ResourceManager
+from events import Events
+
 from UI.panel import Panel
 
 from data import *
@@ -35,16 +37,18 @@ class Map:
 class FarmCEO:
     RESOURCE_MANAGER: ResourceManager = ResourceManager()
 
-    def __init__(self, screen: pg.Surface, clock: pg.time.Clock) -> None:
+    def __init__(self, screen: pg.Surface, clock: pg.time.Clock, events: Events) -> None:
         self.screen: pg.Surface = screen
 
         self.WIDTH: int = self.screen.get_width()
         self.HEIGHT: int = self.screen.get_height()
 
         self.clock: pg.time.Clock = clock
+        self.events: Events = events
+
         self.map: Map = Map(self.screen, self.RESOURCE_MANAGER.load_image("map.png", (self.WIDTH, self.HEIGHT))) # map estimated to be almost screen size
 
-        self.panel: Panel = Panel(self.screen)
+        self.panel: Panel = Panel(self.screen, events)
 
     def background_render(self) -> None:
         self.screen.fill(BACKGROUND_COLOR)

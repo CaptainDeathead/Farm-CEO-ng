@@ -14,6 +14,7 @@ class Button:
         self.y: int = y
         self.width: int = width
         self.height: int = height
+        self.rect: pg.Rect = pg.Rect(self.x, self.y, self.width, self.height)
         self.color: Tuple[int, int, int] = color
         self.selectedColor: Tuple[int, int, int] = selectedColor
         self.textColor: Tuple[int, int, int] = textColor
