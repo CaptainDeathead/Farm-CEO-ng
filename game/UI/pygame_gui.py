@@ -26,7 +26,8 @@ class Button:
         self.offset_x: int = offset_x
         self.offset_y: int = offset_y
         self.center: bool = center
-        self.rendered_surface: pg.Surface = pg.Surface((width, height))
+        self.rendered_surface: pg.Surface = pg.Surface((width, height), pg.SRCALPHA)
+        self.rendered_surface.convert_alpha()
 
         self.rebuild()
 
