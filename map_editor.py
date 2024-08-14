@@ -33,6 +33,9 @@ class Map:
 
         self.rect: pg.Rect = pg.Rect(self.x, self.y, self.image.get_width(), self.image.get_height())
 
+    def add_road(self, road: int) -> None:
+        self.roads[road] = []
+
     def render(self) -> None:
         self.screen.blit(self.image, (self.x, self.y))
 
@@ -59,21 +62,23 @@ class MapEditor:
         self.placement_buttons: List[Button] = []
 
         self.current_road: int = 0
-        self.map.roads[self.current_road] = []
+        self.map.add_road(self.current_road)
 
-        self.add_btn: Button = Button(self.screen, 350, 850, 200, 50, (60, 60, 200), (100, 100, 100), (255, 255, 255), "+", 20, (15, 15, 15, 15), 0, 0, True)
-        self.next_step_btn: Button = Button(self.screen, 350, 950, 200, 50, (60, 200, 60), (100, 100, 100), (255, 255, 255), "Next Step", 20, (15, 15, 15, 15), 0, 0, True)
+        self.add_btn: Button = Button(self.screen, 350, 850, 200, 50, (60, 60, 200), (100, 100, 255), (255, 255, 255), "+", 20, (15, 15, 15, 15), 0, 0, True, self.add_step_object)
+        self.next_step_btn: Button = Button(self.screen, 350, 950, 200, 50, (60, 200, 60), (100, 255, 100), (255, 255, 255), "Next Step", 20, (15, 15, 15, 15), 0, 0, True, self.next_step)
 
         self.step: int = 0
+
+        self.lmb_just_pressed: bool = False
 
     def render_text(self, width: int, font: pg.font.Font, text: str,
                     font_color: Tuple[int, int, int], background_color: Tuple[int, int, int]) -> pg.Surface:
         
         space_width = font.size(" ")[0]
-        line_space = font.size("abcdefghijklmnopqrstuvwxyz")[1]
+        line_size = font.get_linesize()
         line_count = 1
 
-        font_surface = pg.Surface((width, line_space))
+        font_surface = pg.Surface((width, line_size))
         font_surface.fill(background_color)
 
         curr_width = 0
@@ -82,20 +87,36 @@ class MapEditor:
         for word in words:
             if curr_width + font.size(word)[0] > width:
                 line_count += 1
-                new_font_surface = pg.Surface((width, line_space*line_count))
+                new_font_surface = pg.Surface((width, line_size*line_count))
                 new_font_surface.fill(background_color)
                 new_font_surface.blit(font_surface, (0, 0))
 
                 curr_width = 0
-                new_font_surface.blit(font.render(word, True, font_color), (curr_width, line_space*(line_count-1)))
+                new_font_surface.blit(font.render(word, True, font_color), (curr_width, line_size*(line_count-1)))
                 font_surface = new_font_surface
                 curr_width += font.size(word)[0] + space_width
             else:
-                font_surface.blit(font.render(word, True, font_color), (curr_width, line_space*(line_count-1)))
+                font_surface.blit(font.render(word, True, font_color), (curr_width, line_size*(line_count-1)))
                 curr_width += font.size(word)[0] + space_width
 
         return font_surface
    
+    def add_step_object(self) -> None:
+        obj_label = "Object"
+
+        if self.step == 0:
+            obj_label = "Road"
+
+            self.current_road += 1
+            self.map.add_road(self.current_road)
+
+        self.placement_buttons.append(Button(self.screen, 350, len(self.placement_buttons)*60+300, 200, 50,
+                                             (50, 50, 50), (100, 100, 100), (255, 255, 255), f"{obj_label}: {len(self.placement_buttons)+1}", 30,
+                                             (10, 10, 10, 10), 0, 0, True, lambda: self.select_step_obj(len(self.placement_buttons))))
+
+    def next_step(self) -> None:
+        self.step += 1
+
     def draw_point_connections(self, points: List[Tuple[int, int]], color: Tuple[int, int, int]) -> None:
         for i, point in enumerate(points):
             pg.draw.circle(self.screen, color, point, 5)
@@ -134,6 +155,8 @@ class MapEditor:
         elif self.step == 2: self.process_step_3_event(mouse_btn, lx, ly)
 
     def process_events(self) -> None:
+        self.lmb_just_pressed = False
+
         for event in pg.event.get():
             if event.type == pg.QUIT:
                 if messagebox.askokcancel("Quit?", "Are you sure you want to quit? Changes will not be saved!", icon="warning"):
@@ -141,6 +164,7 @@ class MapEditor:
                     exit()
             if event.type == pg.MOUSEBUTTONUP:
                 if event.button == 1:
+                    self.lmb_just_pressed = True
                     self.process_step_event(1)
                 elif event.button == 3:
                     self.process_step_event(3)
@@ -162,10 +186,10 @@ class MapEditor:
             self.screen.blit(self.step_description_lbls[self.step], (500 - self.step_description_lbls[self.step].get_width() / 2, 150))
 
             for button in self.placement_buttons:
-                button.draw()
+                button.draw(self.lmb_just_pressed)
 
-            self.add_btn.draw()
-            self.next_step_btn.draw()
+            self.add_btn.draw(self.lmb_just_pressed)
+            self.next_step_btn.draw(self.lmb_just_pressed)
 
             pg.display.flip()
             clock.tick(60)
@@ -244,5 +268,15 @@ def load_map_editor(name: str, author: str, version: str, file_path: str) -> Non
 def main() -> None:
     map_configure = MapConfigure()
 
+def testing() -> None:
+    name = "Example"
+    author = "developer"
+    version = "v0.0.0dev"
+    file_path = "./game/assets/Data/Maps/green_spring.png"
+
+    map_editor = MapEditor(name, author, version, file_path)
+    map_editor.main()
+
 if __name__ == "__main__":
-    main()
+    #main()
+    testing()

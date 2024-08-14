@@ -7,7 +7,7 @@ pg.init()
 class Button:
     def __init__(self, screen: pg.Surface, x: int, y: int, width: int, height: int,
                  color: Tuple[int, int, int], selectedColor: Tuple[int, int, int], textColor: Tuple[int, int, int],
-                 text: str, size: int, radius: int, offset_x: int, offset_y: int, center: bool = False) -> None:
+                 text: str, size: int, radius: int, offset_x: int, offset_y: int, center: bool = False, command: callable = None) -> None:
         
         self.screen: pg.Surface = screen
         self.x: int = x
@@ -15,6 +15,7 @@ class Button:
         self.width: int = width
         self.height: int = height
         self.rect: pg.Rect = pg.Rect(self.x, self.y, self.width, self.height)
+        self.active_color: Tuple[int, int, int] = color
         self.color: Tuple[int, int, int] = color
         self.selectedColor: Tuple[int, int, int] = selectedColor
         self.textColor: Tuple[int, int, int] = textColor
@@ -26,13 +27,14 @@ class Button:
         self.offset_x: int = offset_x
         self.offset_y: int = offset_y
         self.center: bool = center
+        self.command: callable = command
         self.rendered_surface: pg.Surface = pg.Surface((width, height), pg.SRCALPHA)
         self.rendered_surface.convert_alpha()
 
         self.rebuild()
 
     def rebuild(self) -> None:
-        color = self.color
+        color = self.active_color
 
         if self.selected:
             color = self.selectedColor
@@ -58,7 +60,21 @@ class Button:
         self.selected = selected
         if changed: self.rebuild()
 
-    def draw(self) -> None:
+    def set_color(self, new_color: any, rebuild_required: bool = False) -> None:
+        if self.active_color != new_color:
+            self.active_color = new_color
+            
+            if rebuild_required: self.rebuild()
+
+    def draw(self, just_pressed: bool = False) -> None:
+        if self.command is not None:
+            if self.rect.collidepoint(pg.mouse.get_pos()) and just_pressed: self.command()
+
+        if self.rect.collidepoint(pg.mouse.get_pos()):
+            self.set_color(self.selectedColor, rebuild_required=True)
+        else:
+            self.set_color(self.color, rebuild_required=True)
+
         self.screen.blit(self.rendered_surface, (self.x, self.y))
 
 class Table:
