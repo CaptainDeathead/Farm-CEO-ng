@@ -22,6 +22,7 @@ class Button:
         self.text: str = text
         self.radius: int = radius
         self.selected: bool = False
+        self.hidden: bool = False
         self.font: pg.font.Font = pg.font.SysFont("Arial", size)
         self.size: int = size
         self.offset_x: int = offset_x
@@ -68,7 +69,7 @@ class Button:
             if rebuild_required: self.rebuild()
 
     def draw(self, just_pressed: bool = False) -> None:
-        if self.command is not None:
+        if not self.hidden and self.command is not None:
             if self.rect.collidepoint(pg.mouse.get_pos()) and just_pressed: self.command()
 
         if self.rect.collidepoint(pg.mouse.get_pos()):
@@ -76,7 +77,14 @@ class Button:
         else:
             self.set_color(self.color, rebuild_required=True)
 
-        self.screen.blit(self.rendered_surface, (self.x, self.y))
+        if not self.hidden:
+            self.screen.blit(self.rendered_surface, (self.x, self.y))
+
+    def hide(self) -> None:
+        self.hidden = True
+
+    def show(self) -> None:
+        self.hidden = False
 
 class Table:
     def __init__(self, screen: pg.Surface, x: int, y: int, width: int, height: int, rows: List[str], columns: List[str],

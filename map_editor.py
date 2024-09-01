@@ -5,6 +5,7 @@ import tkinter as tk
 import sv_ttk
 
 from tkinter import filedialog, messagebox, ttk
+from random import seed, randint
 
 from typing import List, Tuple, Dict
 
@@ -22,9 +23,9 @@ class Map:
         self.VERSION: str = version
         self.FILE_PATH: str = file_path
 
-        self.roads: Dict[str, List[Tuple[int]]] = {}
-        self.paddocks: Dict[str, Dict[str, any]] = {}
-        self.sell_points: Dict[str, Dict[str, any]] = {}
+        self.roads: Dict[int, List[Tuple[int]]] = {}
+        self.paddocks: Dict[int, Dict[str, any]] = {}
+        self.sell_points: Dict[int, Dict[str, any]] = {}
 
         self.image: pg.Surface = pg.image.load(self.FILE_PATH).convert_alpha()
 
@@ -36,6 +37,9 @@ class Map:
     def add_road(self, road: int) -> None:
         self.roads[road] = []
 
+    def add_paddock(self, paddock: int) -> None:
+        self.paddocks[paddock] = {"center": None, "gate": None}
+
     def render(self) -> None:
         self.screen.blit(self.image, (self.x, self.y))
 
@@ -45,7 +49,7 @@ class MapEditor:
     HEIGHT: int = PYGAME_INFO.current_h
 
     def __init__(self, name: str, author: str, version: str, file_path: str) -> None:
-        self.screen: pg.Surface = pg.display.set_mode((self.WIDTH, self.HEIGHT))
+        self.screen: pg.Surface = pg.display.set_mode((self.WIDTH, self.HEIGHT), pg.FULLSCREEN, display=1)
         self.map: Map = Map(self.screen, name, author, version, file_path)
 
         self.title_font: pg.font.Font = pg.font.SysFont(None, 60)
@@ -63,6 +67,9 @@ class MapEditor:
 
         self.current_road: int = 0
         self.map.add_road(self.current_road)
+
+        self.current_pdk: int = 0
+        self.map.add_paddock(self.current_pdk)
 
         self.add_btn: Button = Button(self.screen, 350, 850, 200, 50, (60, 60, 200), (100, 100, 255), (255, 255, 255), "+", 20, (15, 15, 15, 15), 0, 0, True, self.add_step_object)
         self.next_step_btn: Button = Button(self.screen, 350, 950, 200, 50, (60, 200, 60), (100, 255, 100), (255, 255, 255), "Next Step", 20, (15, 15, 15, 15), 0, 0, True, self.next_step)
@@ -102,26 +109,39 @@ class MapEditor:
         return font_surface
     
     def select_step_obj(self, object_index: int) -> None:
-        print(object_index)
-        self.current_road = object_index
+        if self.step == 0:
+            self.current_road = object_index
+        elif self.step == 1:
+            self.current_pdk = object_index
    
     def add_step_object(self) -> None:
         obj_label = "Object"
+        action = lambda: None
+        index = len(self.placement_buttons)
 
         if self.step == 0:
             obj_label = "Road"
+            action = lambda: self.select_step_obj(index)
 
             self.current_road += 1
             self.map.add_road(self.current_road)
 
-        index = len(self.placement_buttons)
+        elif self.step == 1:
+            obj_label = "Paddock"
 
         self.placement_buttons.append(Button(self.screen, 350, len(self.placement_buttons)*60+300, 200, 50,
                                              (50, 50, 50), (100, 100, 100), (255, 255, 255), f"{obj_label}: {len(self.placement_buttons)+1}", 30,
-                                             (10, 10, 10, 10), 0, 0, True, lambda: self.select_step_obj(index)))
+                                             (10, 10, 10, 10), 0, 0, True, action))
 
     def next_step(self) -> None:
         self.step += 1
+
+        if self.step == 1:
+            self.add_btn.hide()
+        else:
+            self.add_btn.show()
+
+        self.placement_buttons = []
 
     def draw_point_connections(self, points: List[Tuple[int, int]], color: Tuple[int, int, int]) -> None:
         for i, point in enumerate(points):
@@ -133,6 +153,19 @@ class MapEditor:
     def draw_step_visualizations(self) -> None:
         if self.step == 0:
             self.draw_point_connections(self.map.roads[self.current_road], (0, 255, 0))
+            
+        elif self.step == 1:
+            for i in range(self.current_pdk+1):
+                if self.map.paddocks[i]["gate"] is None:
+                    if self.map.paddocks[i]["center"] is None: return
+
+                    mouse_pos = pg.mouse.get_pos()
+                    connections = [self.map.paddocks[i]["center"], (mouse_pos[0], mouse_pos[1])]
+                else:
+                    connections = [self.map.paddocks[i]["center"], self.map.paddocks[i]["gate"]]
+
+                seed(i)
+                self.draw_point_connections(connections, (randint(0, 255), randint(0, 255), randint(0, 255)))
 
     def process_step_1_event(self, mouse_btn: int, x: int, y: int) -> None:
         if mouse_btn == 1:
@@ -143,7 +176,20 @@ class MapEditor:
                 self.map.roads[self.current_road].pop(-1)
 
     def process_step_2_event(self, mouse_btn: int, x: int, y: int)  -> None:
-        ...
+        if mouse_btn == 1:
+            if self.map.paddocks[self.current_pdk]["center"] == None:
+                self.map.paddocks[self.current_pdk]["center"] = (x, y)
+            else:
+                self.map.paddocks[self.current_pdk]["gate"] = (x, y)
+                self.current_pdk += 1
+                self.map.add_paddock(self.current_pdk)
+                self.add_step_object()
+
+        elif mouse_btn == 3:
+            if self.map.paddocks[self.current_pdk]["gate"] is None:
+                self.map.paddocks[self.current_pdk]["center"] = None
+            else:
+                self.map.paddocks[self.current_pdk]["gate"] = None                                
 
     def process_step_3_event(self, mouse_btn: int, x: int, y: int) -> None:
         ...
@@ -157,7 +203,7 @@ class MapEditor:
         ly = int(self.map.image.get_height() - mouse_pos[1])
 
         if self.step == 0: self.process_step_1_event(mouse_btn, mouse_pos[0], mouse_pos[1])
-        elif self.step == 1: self.process_step_2_event(mouse_btn, lx, ly)
+        elif self.step == 1: self.process_step_2_event(mouse_btn, mouse_pos[0], mouse_pos[1])
         elif self.step == 2: self.process_step_3_event(mouse_btn, lx, ly)
 
     def process_events(self) -> None:
@@ -168,6 +214,7 @@ class MapEditor:
                 if messagebox.askokcancel("Quit?", "Are you sure you want to quit? Changes will not be saved!", icon="warning"):
                     pg.quit()
                     exit()
+
             if event.type == pg.MOUSEBUTTONUP:
                 if event.button == 1:
                     self.lmb_just_pressed = True

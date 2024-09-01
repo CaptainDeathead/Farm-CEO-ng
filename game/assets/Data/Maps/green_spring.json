@@ -9,55 +9,64 @@
             "hectares": 60,
             "owned by player": false,
             "default state": 0,
-            "gate": null
+            "gate": null,
+            "center": null
         },
         "2": {
             "hectares": 70,
             "owned by player": false,
             "default state": 0,
-            "gate": null
+            "gate": null,
+            "center": null
         },
         "3": {
             "hectares": 40,
             "owned by player": true,
             "default state": 4,
-            "gate": null
+            "gate": null,
+            "center": null
         },
         "4": {
             "hectares": 80,
             "owned by player": false,
             "default state": 3,
-            "gate": null
+            "gate": null,
+            "center": null
         },
         "5": {
             "hectares": 85,
             "owned by player": false,
             "default state": 1,
-            "gate": null
+            "gate": null,
+            "center": null
         },
         "6": {
             "hectares": 30,
             "owned by player": false,
             "default state": 1,
-            "gate": null
+            "gate": null,
+            "center": null
         },
         "7": {
             "hectares": 55,
             "owned by player": false,
             "default state": 5,
-            "gate": null
+            "gate": null,
+            "center": null
         },
         "8": {
             "hectares": 50,
             "owned by player": true,
             "default state": 0,
-            "gate": null
+            "gate": null,
+            "center": null
         },
         "9": {
             "hectares": 52,
             "owned by player": false,
             "default state": 5,
-            "gate": null
+            "gate": null,
+            "center": null
         }
     },
     "roads": {},
