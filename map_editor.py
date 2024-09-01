@@ -6,10 +6,34 @@ import sv_ttk
 
 from tkinter import filedialog, messagebox, ttk
 from random import seed, randint
+from math import atan2, degrees
 
 from typing import List, Tuple, Dict
 
 pg.init()
+
+# https://stackoverflow.com/questions/4183208/how-do-i-rotate-an-image-around-its-center-using-pygame
+def blitRotate(surf, image, pos, originPos, angle):
+
+    # offset from pivot to center
+    image_rect = image.get_rect(topleft = (pos[0] - originPos[0], pos[1]-originPos[1]))
+    offset_center_to_pivot = pg.math.Vector2(pos) - image_rect.center
+    
+    # roatated offset from pivot to center
+    rotated_offset = offset_center_to_pivot.rotate(-angle)
+
+    # roatetd image center
+    rotated_image_center = (pos[0] - rotated_offset.x, pos[1] - rotated_offset.y)
+
+    # get a rotated image
+    rotated_image = pg.transform.rotate(image, angle)
+    rotated_image_rect = rotated_image.get_rect(center = rotated_image_center)
+
+    # rotate and blit the image
+    surf.blit(rotated_image, rotated_image_rect)
+  
+    # draw rectangle around the image
+    #pg.draw.rect(surf, (255, 0, 0), (*rotated_image_rect.topleft, *rotated_image.get_size()),2)
 
 class Map:
     def __init__(self, screen: pg.Surface, name: str, author: str, version: str, file_path: str) -> None:
@@ -40,6 +64,9 @@ class Map:
     def add_paddock(self, paddock: int) -> None:
         self.paddocks[paddock] = {"center": None, "gate": None}
 
+    def add_sellpoint(self, sellpoint: int) -> None:
+        self.sell_points[sellpoint] = {"location": None, "rotation": None}
+
     def render(self) -> None:
         self.screen.blit(self.image, (self.x, self.y))
 
@@ -61,7 +88,7 @@ class MapEditor:
         
         self.step_description_lbls: Tuple[pg.Surface] = (self.render_text(600, self.body_font, "Left click where you want to start a road, then keep left clicking to place road checkpoints. Right click to backtrack.", (255, 255, 255), (27, 31, 35)),
                                                         self.render_text(600, self.body_font, "Left click in the middle of each paddock and then left click where you want the gate to be.", (255, 255, 255), (27, 31, 35)),
-                                                        self.render_text(600, self.body_font, "Left click to place a sell point and then left click again once you get the desired rotation.", (255, 255, 255), (27, 31, 35)))
+                                                        self.render_text(600, self.body_font, "Left click to place a sell point or silo and then left click again once you get the desired rotation.", (255, 255, 255), (27, 31, 35)))
         
         self.placement_buttons: List[Button] = []
 
@@ -70,6 +97,20 @@ class MapEditor:
 
         self.current_pdk: int = 0
         self.map.add_paddock(self.current_pdk)
+
+        grid = pg.image.load("./game/assets/Data/Sprites/grid.png").convert_alpha()
+        silo = pg.image.load("./game/assets/Data/Sprites/silo.png").convert_alpha()
+
+        self.sell_point_img: pg.Surface = pg.Surface((54, 33), pg.SRCALPHA).convert_alpha()
+        self.sell_point_img.blit(grid, (0, 0))
+        self.sell_point_img.blit(silo, (8, 0))
+
+        self.sellpoint_w = self.sell_point_img.get_width()
+        self.sellpoint_h = self.sell_point_img.get_height()
+
+        self.current_sellpoint: int = 0
+        self.map.add_sellpoint(self.current_sellpoint)
+        self.last_sellpoint_pos = (0, 0)
 
         self.add_btn: Button = Button(self.screen, 350, 850, 200, 50, (60, 60, 200), (100, 100, 255), (255, 255, 255), "+", 20, (15, 15, 15, 15), 0, 0, True, self.add_step_object)
         self.next_step_btn: Button = Button(self.screen, 350, 950, 200, 50, (60, 200, 60), (100, 255, 100), (255, 255, 255), "Next Step", 20, (15, 15, 15, 15), 0, 0, True, self.next_step)
@@ -129,6 +170,9 @@ class MapEditor:
         elif self.step == 1:
             obj_label = "Paddock"
 
+        elif self.step == 2:
+            obj_label = "Sell Point / Silo"
+
         self.placement_buttons.append(Button(self.screen, 350, len(self.placement_buttons)*60+300, 200, 50,
                                              (50, 50, 50), (100, 100, 100), (255, 255, 255), f"{obj_label}: {len(self.placement_buttons)+1}", 30,
                                              (10, 10, 10, 10), 0, 0, True, action))
@@ -136,7 +180,7 @@ class MapEditor:
     def next_step(self) -> None:
         self.step += 1
 
-        if self.step == 1:
+        if self.step == 1 or self.step == 2:
             self.add_btn.hide()
         else:
             self.add_btn.show()
@@ -151,6 +195,8 @@ class MapEditor:
                 pg.draw.line(self.screen, color, point, points[i-1])
 
     def draw_step_visualizations(self) -> None:
+        mouse_pos = pg.mouse.get_pos()
+
         if self.step == 0:
             self.draw_point_connections(self.map.roads[self.current_road], (0, 255, 0))
             
@@ -159,13 +205,28 @@ class MapEditor:
                 if self.map.paddocks[i]["gate"] is None:
                     if self.map.paddocks[i]["center"] is None: return
 
-                    mouse_pos = pg.mouse.get_pos()
                     connections = [self.map.paddocks[i]["center"], (mouse_pos[0], mouse_pos[1])]
                 else:
                     connections = [self.map.paddocks[i]["center"], self.map.paddocks[i]["gate"]]
 
                 seed(i)
                 self.draw_point_connections(connections, (randint(0, 255), randint(0, 255), randint(0, 255)))
+        
+        elif self.step == 2:
+            for i in range(self.current_sellpoint+1):
+                if self.map.sell_points[i]["rotation"] is None:
+                    if self.map.sell_points[i]["location"] is None: return
+
+                    x, y = mouse_pos
+
+                    x -= self.last_sellpoint_pos[0]
+                    y -= self.last_sellpoint_pos[1]
+
+                    rotation = -degrees(atan2(y, x)) - 180
+                else:
+                    rotation = self.map.sell_points[i]["rotation"]
+                
+                blitRotate(self.screen, self.sell_point_img, self.map.sell_points[i]["location"], (self.sellpoint_w/2, self.sellpoint_h/2), rotation)
 
     def process_step_1_event(self, mouse_btn: int, x: int, y: int) -> None:
         if mouse_btn == 1:
@@ -192,7 +253,26 @@ class MapEditor:
                 self.map.paddocks[self.current_pdk]["gate"] = None                                
 
     def process_step_3_event(self, mouse_btn: int, x: int, y: int) -> None:
-        ...
+        if mouse_btn == 1:
+            if self.map.sell_points[self.current_sellpoint]["location"] == None:
+                self.map.sell_points[self.current_sellpoint]["location"] = (x, y)
+                self.last_sellpoint_pos = (x, y)
+            else:
+                x, y = pg.mouse.get_pos()
+
+                x -= self.last_sellpoint_pos[0]
+                y -= self.last_sellpoint_pos[1]
+
+                self.map.sell_points[self.current_sellpoint]["rotation"] = -degrees(atan2(y, x)) - 180
+                self.current_sellpoint += 1
+                self.map.add_sellpoint(self.current_sellpoint)
+                self.add_step_object()
+
+        elif mouse_btn == 3:
+            if self.map.sell_points[self.current_sellpoint]["rotation"] is None:
+                self.map.sell_points[self.current_sellpoint]["location"] = None
+            else:
+                self.map.sell_points[self.current_sellpoint]["rotation"] = None   
     
     def process_step_event(self, mouse_btn: int) -> None:
         if not self.map.rect.collidepoint(pg.mouse.get_pos()): return
@@ -204,7 +284,7 @@ class MapEditor:
 
         if self.step == 0: self.process_step_1_event(mouse_btn, mouse_pos[0], mouse_pos[1])
         elif self.step == 1: self.process_step_2_event(mouse_btn, mouse_pos[0], mouse_pos[1])
-        elif self.step == 2: self.process_step_3_event(mouse_btn, lx, ly)
+        elif self.step == 2: self.process_step_3_event(mouse_btn, mouse_pos[0], mouse_pos[1])
 
     def process_events(self) -> None:
         self.lmb_just_pressed = False
