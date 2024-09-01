@@ -68,6 +68,10 @@ class Button:
             
             if rebuild_required: self.rebuild()
 
+    def set_text(self, text: str) -> None:
+        self.text = text
+        self.rebuild_required = True
+
     def draw(self, just_pressed: bool = False) -> None:
         if not self.hidden and self.command is not None:
             if self.rect.collidepoint(pg.mouse.get_pos()) and just_pressed: self.command()

@@ -3,10 +3,13 @@ from game.UI.pygame_gui import Button
 
 import tkinter as tk
 import sv_ttk
+import os
 
-from tkinter import filedialog, messagebox, ttk
+from tkinter import filedialog, messagebox, simpledialog, ttk
 from random import seed, randint
 from math import atan2, degrees
+from json import dumps
+from shutil import copyfile
 
 from typing import List, Tuple, Dict
 
@@ -31,9 +34,6 @@ def blitRotate(surf, image, pos, originPos, angle):
 
     # rotate and blit the image
     surf.blit(rotated_image, rotated_image_rect)
-  
-    # draw rectangle around the image
-    #pg.draw.rect(surf, (255, 0, 0), (*rotated_image_rect.topleft, *rotated_image.get_size()),2)
 
 class Map:
     def __init__(self, screen: pg.Surface, name: str, author: str, version: str, file_path: str) -> None:
@@ -65,7 +65,64 @@ class Map:
         self.paddocks[paddock] = {"center": None, "gate": None}
 
     def add_sellpoint(self, sellpoint: int) -> None:
-        self.sell_points[sellpoint] = {"location": None, "rotation": None}
+        self.sell_points[sellpoint] = {"location": None, "rotation": None, "silo": False, "name": None}
+
+    def export(self) -> None:
+        # Move coordinates from relative to screen to relative to map
+        new_roads = {}
+        for road in self.roads:
+            if len(self.roads[road]) == 0: continue
+
+            new_road_points = []
+
+            for point in self.roads[road]:
+                new_road_points.append((point[0]-self.x, point[1]))
+            
+            new_roads[road] = new_road_points
+        
+        new_paddocks = {}
+        for paddock in self.paddocks:
+            center = self.paddocks[paddock]["center"]
+            new_pdk_center = (center[0]-self.x, center[1])
+
+            gate = self.paddocks[paddock]["gate"]
+            new_pdk_gate = (gate[0]-self.x, gate[1])
+
+            new_paddocks[paddock] = {"center": new_pdk_center, "gate": new_pdk_gate}
+
+        new_sellpoints = {}
+        for sellpoint in self.sell_points:
+            new_sellpoints[sellpoint] = self.sell_points[sellpoint]
+            
+            location = self.sell_points[sellpoint]["location"]
+            new_location = (location[0]-self.x, location[1])
+
+            new_sellpoints[sellpoint]["location"] = new_location
+
+        # Bundle all data into dict
+        map_dict = {
+            "name": self.NAME,
+            "creator": self.AUTHOR,
+            "version": self.VERSION,
+            "filename": f"{self.NAME}_map.png",
+            "roads": new_roads,
+            "paddocks": new_paddocks,
+            "sell points": new_sellpoints
+        }
+
+        # Write all data to json
+        while 1:
+            try:
+                os.mkdir(f"./{self.NAME}_output")
+                break
+            except OSError as e:
+                print(e)
+                messagebox.showwarning("Directory Exists!", f"When exporting the map config and map image are put into this: '{self.NAME}_output/' directory, however it seems it already exists! Please rename the existing directory or delete it.")
+
+        copyfile(self.FILE_PATH, f"./{self.NAME}_output/{self.NAME}_map.png") # copy map to output
+
+        with open(f"./{self.NAME}_output/{self.NAME}_cfg.json", "w") as output:
+            output.write(dumps(map_dict))
 
     def render(self) -> None:
         self.screen.blit(self.image, (self.x, self.y))
@@ -91,6 +148,8 @@ class MapEditor:
                                                         self.render_text(600, self.body_font, "Left click to place a sell point or silo and then left click again once you get the desired rotation.", (255, 255, 255), (27, 31, 35)))
         
         self.placement_buttons: List[Button] = []
+
+        self.quit: bool = False
 
         self.current_road: int = 0
         self.map.add_road(self.current_road)
@@ -149,6 +208,45 @@ class MapEditor:
 
         return font_surface
     
+    def show_map_preview(self) -> None:
+        self.screen.fill((27, 31, 35))
+
+        self.map.render()
+        self.draw_step_visualizations(draw_all=True)
+
+        pg.display.flip()
+
+    def show_export_screen(self) -> None:
+        self.screen.fill((27, 31, 35))
+
+        text = self.title_font.render("Exporting your map... Shouldn't take to long.", True, (255, 255, 255))
+        tx, ty = text.get_width(), text.get_height()
+
+        self.screen.blit(text, (self.WIDTH/2-tx/2, self.HEIGHT/2-ty/2))
+
+        pg.display.flip()
+    
+    def save_map(self) -> None:
+        self.show_map_preview()
+
+        for sellpoint in self.map.sell_points:
+            silo = messagebox.askyesno(f"Sellpoint: {sellpoint+1} - Silo?", "Do you want this to be the farm silo? Players cannot sell crops here and the farm can have only one!", icon="question")
+            self.map.sell_points[sellpoint]["silo"] = silo
+            
+            if silo: self.map.sell_points[sellpoint]["name"] = "Farm Silo"
+            else:
+                self.map.sell_points[sellpoint]["name"] = simpledialog.askstring(f"Sellpoint: {sellpoint+1} - Name", "What do you want to name this sellpoint?")
+
+        self.show_export_screen()
+
+        self.map.export()
+
+        messagebox.showinfo("Done!", "Your map has finished exporting! The program will exit now.")
+
+        self.quit = True
+        pg.quit()
+        exit()
+    
     def select_step_obj(self, object_index: int) -> None:
         if self.step == 0:
             self.current_road = object_index
@@ -182,6 +280,20 @@ class MapEditor:
 
         if self.step == 1 or self.step == 2:
             self.add_btn.hide()
+            if self.step == 2: self.next_step_btn.set_text("Finish map!")
+
+        elif self.step == 3:
+            last_pdk = list(self.map.paddocks.keys())[-1]
+            last_sellpoint = list(self.map.sell_points.keys())[-1]
+
+            if self.map.paddocks[last_pdk]["gate"] is None:
+                del self.map.paddocks[last_pdk]
+                self.current_pdk -= 1
+            if self.map.sell_points[last_sellpoint]["rotation"] is None:
+                del self.map.sell_points[last_sellpoint]
+                self.current_sellpoint -= 1
+
+            self.save_map()
         else:
             self.add_btn.show()
 
@@ -194,13 +306,13 @@ class MapEditor:
             if i > 0:
                 pg.draw.line(self.screen, color, point, points[i-1])
 
-    def draw_step_visualizations(self) -> None:
+    def draw_step_visualizations(self, draw_all=False) -> None:
         mouse_pos = pg.mouse.get_pos()
 
-        if self.step == 0:
+        if self.step == 0 or draw_all:
             self.draw_point_connections(self.map.roads[self.current_road], (0, 255, 0))
             
-        elif self.step == 1:
+        if self.step == 1 or draw_all:
             for i in range(self.current_pdk+1):
                 if self.map.paddocks[i]["gate"] is None:
                     if self.map.paddocks[i]["center"] is None: return
@@ -211,8 +323,11 @@ class MapEditor:
 
                 seed(i)
                 self.draw_point_connections(connections, (randint(0, 255), randint(0, 255), randint(0, 255)))
+                
+                tx, ty = self.map.paddocks[i]["center"]
+                self.screen.blit(self.body_font.render(str(i+1), True, (255, 255, 255)), (tx, ty))
         
-        elif self.step == 2:
+        if self.step == 2 or draw_all:
             for i in range(self.current_sellpoint+1):
                 if self.map.sell_points[i]["rotation"] is None:
                     if self.map.sell_points[i]["location"] is None: return
@@ -227,6 +342,9 @@ class MapEditor:
                     rotation = self.map.sell_points[i]["rotation"]
                 
                 blitRotate(self.screen, self.sell_point_img, self.map.sell_points[i]["location"], (self.sellpoint_w/2, self.sellpoint_h/2), rotation)
+
+                tx, ty = self.map.sell_points[i]["location"]
+                self.screen.blit(self.body_font.render(str(i+1), True, (255, 255, 255)), (tx+30, ty))
 
     def process_step_1_event(self, mouse_btn: int, x: int, y: int) -> None:
         if mouse_btn == 1:
@@ -307,7 +425,7 @@ class MapEditor:
 
         pg.display.set_caption(f"Farm CEO ~ Map Editor - {self.map.NAME}")
 
-        while 1:
+        while not self.quit:
             self.screen.fill((27, 31, 35))
 
             self.process_events()
@@ -411,5 +529,5 @@ def testing() -> None:
     map_editor.main()
 
 if __name__ == "__main__":
-    #main()
-    testing()
+    main()
+    #testing()
