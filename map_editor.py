@@ -57,7 +57,7 @@ class MapEditor:
         
         self.step_description_lbls: Tuple[pg.Surface] = (self.render_text(600, self.body_font, "Left click where you want to start a road, then keep left clicking to place road checkpoints. Right click to backtrack.", (255, 255, 255), (27, 31, 35)),
                                                         self.render_text(600, self.body_font, "Left click in the middle of each paddock and then left click where you want the gate to be.", (255, 255, 255), (27, 31, 35)),
-                                                        self.render_text(600, self.body_font, "Left click to place a sell point and then left click again ones you get the desired rotation.", (255, 255, 255), (27, 31, 35)))
+                                                        self.render_text(600, self.body_font, "Left click to place a sell point and then left click again once you get the desired rotation.", (255, 255, 255), (27, 31, 35)))
         
         self.placement_buttons: List[Button] = []
 
@@ -100,6 +100,10 @@ class MapEditor:
                 curr_width += font.size(word)[0] + space_width
 
         return font_surface
+    
+    def select_step_obj(self, object_index: int) -> None:
+        print(object_index)
+        self.current_road = object_index
    
     def add_step_object(self) -> None:
         obj_label = "Object"
@@ -110,9 +114,11 @@ class MapEditor:
             self.current_road += 1
             self.map.add_road(self.current_road)
 
+        index = len(self.placement_buttons)
+
         self.placement_buttons.append(Button(self.screen, 350, len(self.placement_buttons)*60+300, 200, 50,
                                              (50, 50, 50), (100, 100, 100), (255, 255, 255), f"{obj_label}: {len(self.placement_buttons)+1}", 30,
-                                             (10, 10, 10, 10), 0, 0, True, lambda: self.select_step_obj(len(self.placement_buttons))))
+                                             (10, 10, 10, 10), 0, 0, True, lambda: self.select_step_obj(index)))
 
     def next_step(self) -> None:
         self.step += 1

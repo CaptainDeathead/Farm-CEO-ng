@@ -37,6 +37,7 @@ class Button:
         color = self.active_color
 
         if self.selected:
+            # WARNING: Could be a color missmatch between active_color and color
             color = self.selectedColor
             
         pg.draw.rect(self.rendered_surface, color, (0, 0, self.width, self.height),
