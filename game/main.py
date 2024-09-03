@@ -23,7 +23,7 @@ class Window:
     FPS: int = 60
 
     def __init__(self) -> None:
-        self.screen: pg.Surface = pg.display.set_mode((self.WIDTH, self.HEIGHT), display=1)
+        self.screen: pg.Surface = pg.display.set_mode((self.WIDTH, self.HEIGHT), display=int(not BUILD))
         self.clock: pg.time.Clock = pg.time.Clock()
         self.events: Events = Events()
 

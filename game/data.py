@@ -19,14 +19,14 @@ STATE_COLORS = {
 }
 
 # ---------- CONFIG ----------
-BUILD: bool = False
+BUILD: bool = True
 SUPPORTED_PLATFORMS: Tuple[str] = ("android_x86_64", "android_v7a", "arm64-v8a", "Linux", "Windows")
 PLATFORM: str = "arm64-v8a"
 BUILD_TYPE: str = "Devlopment"
-CONSOLE_BUILD: bool = True
+CONSOLE_BUILD: bool = False
 
 # ---------- DEBUG ----------
-DEBUG_BOUNDARY_LOADING: bool = True
+DEBUG_BOUNDARY_LOADING: bool = False
 
 # ---------- ABOUT ----------
 GAME_NAME: str = "Farm CEO"

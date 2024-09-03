@@ -1,12 +1,12 @@
 import pygame as pg
 import logging
 
-from random import randint
-
-from resource_manager import ResourceManager
+from resource_manager import ResourceManager, SaveManager
 from events import Events
 
 from UI.panel import Panel
+
+from paddock import Paddock
 
 from typing import Dict, List
 from data import *
@@ -42,85 +42,6 @@ class Map:
 
     def render(self) -> None:
         self.screen.blit(self.surface, (self.x, self.y))
-
-class Paddock:
-    def __init__(self, attrs: Dict[int, any], num: int, scale: float) -> None:
-        self.attrs = attrs
-        self.num = num
-        self.scale = scale
-        self.state: int = attrs.get("state", randint(0, 5))
-
-        cx, cy = attrs["center"]
-        gx, gy = attrs["gate"]
-
-        self.center = (int(cx * scale), int(cy * scale))
-        self.gate = (int(gx * scale), int(gy * scale))
-
-        self.boundary: List[Tuple] = attrs.get("boundary", [])
-
-    def __dict__(self) -> Dict[str, any]:
-        return {
-            "center": self.attrs["center"],
-            "gate": self.attrs["gate"],
-            "state": self.state
-        }
-    
-    def set_boundary(self, boundary: List[Tuple]) -> None:
-        self.boundary = boundary
-
-class SaveManager:
-    SAVE_PATH: str = "./farmceo_savegame.json"
-
-    def __new__(cls, map_config: Dict[str, any], new_save: bool = False) -> None:
-        if not hasattr(cls, 'instance'):
-            cls.instance = super(SaveManager, cls).__new__(cls)
-            cls.instance.init(map_config, new_save)
-
-        return cls.instance
-    
-    def init(self, map_config: Dict[str, any], new_save: bool) -> None:
-        if new_save: self.init_savefile(map_config)
-        
-        self.save = ResourceManager.load_json(self.SAVE_PATH)
-        if self.save == {}: self.init_savefile(map_config)
-
-    def _load_paddocks_from_conf(self, map_config: Dict[str, any]) -> Dict[int, any]:
-        new_paddocks = {}
-        for pdk in map_config["paddocks"]:
-            new_paddocks[int(pdk)] = map_config["paddocks"][pdk]
-
-        return new_paddocks
-
-    def init_savefile(self, map_config: Dict[str, any]) -> None:
-        self.new_savefile = True
-
-        if map_config == {}:
-            raise Exception("Map configuration is EMPTY! Please provide a valid map config in the arguments when creating a new save.")
-        
-        new_save = {
-            "map_name": map_config["name"],
-            "money": 500_000.0, # Starting money
-            "debt": 0.0 # No dept to start with
-        }
-
-        new_save["paddocks"] = self._load_paddocks_from_conf(map_config)
-
-        ResourceManager.write_json(new_save, self.SAVE_PATH)
-        self.save = ResourceManager.load_json(self.SAVE_PATH)
-
-    def save_game(self) -> None:
-        ResourceManager.write_json(self.save, self.SAVE_PATH)
-
-    def get_paddocks(self) -> Dict[int, any]:
-        return self.save["paddocks"]
-    
-    def set_paddocks(self, paddocks: List[Paddock]) -> None:
-        paddocks_dict = {}
-
-        for paddock in paddocks:
-            paddocks_dict[paddock.num] = paddock.__dict__()
-
-        self.save["paddocks"] = paddocks_dict
 
 class PaddockManager:
     def __init__(self, map_image: pg.Surface, paddocks: Dict[int, any], scale: float) -> None:

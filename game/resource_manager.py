@@ -3,8 +3,16 @@ import os
 import logging
 import traceback
 
+from data import *
+from paddock import Paddock
+
+if BUILD: from android.storage import app_storage_path
+else:
+    def app_storage_path() -> str:
+        return "./"
+
 from json import loads, dumps, JSONDecodeError
-from typing import Tuple, Dict
+from typing import Tuple, Dict, List
 
 class ResourceManager:
     """
@@ -51,23 +59,28 @@ class ResourceManager:
         return image
     
     @staticmethod
-    def load_text_file(file_path: str) -> str:
+    def load_text_file(file_path: str, explicit_path: bool = False) -> str:
         """file_path: str (relative to `DATA_PATH`)"""
 
         contents = ""
 
+        full_file_path = ""
+
+        if explicit_path: full_file_path = file_path
+        else: full_file_path = f"{ResourceManager.DATA_PATH}/{file_path}"
+
         try:
-            with open(f"{ResourceManager.DATA_PATH}/{file_path}", "r") as text_file:
+            with open(full_file_path, "r") as text_file:
                 contents = text_file.read()
 
         except OSError as e:
             logging.error(traceback.format_exc())
-            logging.error(ResourceManager._fmt_read_error("file", file_path, e))
+            logging.error(ResourceManager._fmt_read_error("file", full_file_path, e))
 
         return contents
     
     @staticmethod
-    def write_text_file(contents: str, file_path: str) -> bool:
+    def write_text_file(contents: str, file_path: str, explicit_path: bool = False) -> bool:
         """
         file_path: str (relative to `DATA_PATH`)
 
@@ -76,13 +89,18 @@ class ResourceManager:
 
         success = False
 
+        full_file_path = ""
+        
+        if explicit_path: full_file_path = file_path
+        else: full_file_path = f"{ResourceManager.DATA_PATH}/{file_path}"
+
         try:
-            with open(f"{ResourceManager.DATA_PATH}/{file_path}", "w") as text_file:
+            with open(full_file_path, "w") as text_file:
                 text_file.write(contents)
         
         except OSError as e:
             logging.error(traceback.format_exc())
-            logging.error(ResourceManager._fmt_write_error("file", file_path, e))
+            logging.error(ResourceManager._fmt_write_error("file", full_file_path, e))
             return success
         
         success = True
@@ -90,23 +108,27 @@ class ResourceManager:
         return success
     
     @staticmethod
-    def load_json(json_path: str) -> Dict[any, any]:
+    def load_json(json_path: str, explicit_path: bool = False) -> Dict[any, any]:
         """json_path: str (relative to `DATA_PATH`)"""
 
         json = {}
 
+        full_json_path = ""
+
+        if explicit_path: full_json_path = json_path
+        else: full_json_path = f"{ResourceManager.DATA_PATH}/{json_path}"
+
         try:
-            with open(f"{ResourceManager.DATA_PATH}/{json_path}", "r") as json_file:
-                json = loads(json_file.read())
+            json = loads(ResourceManager.load_text_file(full_json_path, explicit_path=True))
 
         except JSONDecodeError as e:
             logging.error(traceback.format_exc())
-            logging.error(ResourceManager._fmt_read_error("json", json_path, e.msg))
+            logging.error(ResourceManager._fmt_read_error("json", full_json_path, e.msg))
 
         return json
     
     @staticmethod
-    def write_json(py_dict: Dict[any, any], json_path: str) -> bool:
+    def write_json(py_dict: Dict[any, any], json_path: str, explicit_path: bool = False) -> bool:
         """
         json_path: str (relative to `DATA_PATH`)
 
@@ -115,14 +137,19 @@ class ResourceManager:
 
         success = False
 
+        full_json_path = ""
+
+        if explicit_path: full_json_path = json_path
+        else: full_json_path = f"{ResourceManager.DATA_PATH}/{json_path}"
+
         try:
             json_str = dumps(py_dict)
         except JSONDecodeError as e:
             logging.error(traceback.format_exc())
-            logging.error(ResourceManager._fmt_write_error("json", json_path, e.msg))
+            logging.error(ResourceManager._fmt_write_error("json", full_json_path, e.msg))
             return success
 
-        success = ResourceManager.write_text_file(json_str, json_path)
+        success = ResourceManager.write_text_file(json_str, full_json_path, explicit_path=True)
 
         return success
     
@@ -140,3 +167,59 @@ class ResourceManager:
         map_file = map_cfg.get("filename", "")
 
         return (ResourceManager.load_image(f"Maps/{map_file}", (1000, 1000)), map_cfg)
+    
+class SaveManager:
+    SAVE_PATH: str = os.path.join(app_storage_path(), "farmceo_savegame.json")
+
+    def __new__(cls, map_config: Dict[str, any]) -> None:
+        if not hasattr(cls, 'instance'):
+            cls.instance = super(SaveManager, cls).__new__(cls)
+            cls.instance.init(map_config)
+
+        return cls.instance
+    
+    def init(self, map_config: Dict[str, any]) -> None:
+        self.load_game()
+        if self.save == {}: self.init_savefile(map_config)
+
+    def _load_paddocks_from_conf(self, map_config: Dict[str, any]) -> Dict[int, any]:
+        new_paddocks = {}
+        for pdk in map_config["paddocks"]:
+            new_paddocks[int(pdk)] = map_config["paddocks"][pdk]
+
+        return new_paddocks
+
+    def init_savefile(self, map_config: Dict[str, any]) -> None:
+        self.new_savefile = True
+
+        if map_config == {}:
+            raise Exception("Map configuration is EMPTY! Please provide a valid map config in the arguments when creating a new save.")
+        
+        new_save = {
+            "map_name": map_config["name"],
+            "money": 500_000.0, # Starting money
+            "debt": 0.0 # No dept to start with
+        }
+
+        new_save["paddocks"] = self._load_paddocks_from_conf(map_config)
+
+        self.save = new_save
+        self.save_game()
+        self.load_game()
+
+    def load_game(self) -> None:
+        self.save = ResourceManager.load_json(self.SAVE_PATH, explicit_path=True)
+
+    def save_game(self) -> None:
+        ResourceManager.write_json(self.save, self.SAVE_PATH, explicit_path=True)
+
+    def get_paddocks(self) -> Dict[int, any]:
+        return self.save["paddocks"]
+    
+    def set_paddocks(self, paddocks: List[Paddock]) -> None:
+        paddocks_dict = {}
+
+        for paddock in paddocks:
+            paddocks_dict[paddock.num] = paddock.__dict__()
+
+        self.save["paddocks"] = paddocks_dict
