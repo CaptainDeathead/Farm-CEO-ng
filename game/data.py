@@ -19,11 +19,11 @@ STATE_COLORS = {
 }
 
 # ---------- CONFIG ----------
-BUILD: bool = True
+BUILD: bool = False
 SUPPORTED_PLATFORMS: Tuple[str] = ("android_x86_64", "android_v7a", "arm64-v8a", "Linux", "Windows")
 PLATFORM: str = "arm64-v8a"
 BUILD_TYPE: str = "Devlopment"
-CONSOLE_BUILD: bool = False
+CONSOLE_BUILD: bool = not BUILD
 
 # ---------- DEBUG ----------
 DEBUG_BOUNDARY_LOADING: bool = False

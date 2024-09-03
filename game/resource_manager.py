@@ -185,7 +185,7 @@ class SaveManager:
     def _load_paddocks_from_conf(self, map_config: Dict[str, any]) -> Dict[int, any]:
         new_paddocks = {}
         for pdk in map_config["paddocks"]:
-            new_paddocks[int(pdk)] = map_config["paddocks"][pdk]
+            new_paddocks[int(pdk)+1] = map_config["paddocks"][pdk]
 
         return new_paddocks
 

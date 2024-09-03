@@ -54,7 +54,7 @@ class PaddockManager:
     def parse_paddocks(self, paddocks: Dict[str, any]) -> List[Paddock]:
         pdk_list = []
         for paddock in paddocks:
-            pdk_list.append(Paddock(paddocks[paddock], int(paddock)+1, self.scale))
+            pdk_list.append(Paddock(paddocks[paddock], paddock, self.scale))
         
         return pdk_list
 
