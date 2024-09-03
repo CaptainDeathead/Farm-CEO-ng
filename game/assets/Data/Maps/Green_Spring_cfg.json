@@ -3,6 +3,10 @@
     "creator": "CaptainDeathead, TobyHall633",
     "version": "v1.0.0",
     "filename": "Green_Spring_map.png",
+    "shed": {
+        "rect": [730, 310, 150, 75],
+        "rotation": 0.0
+    },
     "roads": {
         "0": [
             [

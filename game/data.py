@@ -1,4 +1,4 @@
-
+import pygame as pg
 
 from typing import Tuple
 
@@ -18,6 +18,11 @@ STATE_COLORS = {
     6: (0, 0, 0)
 }
 
+TIMESCALE = 2.4 # 144 mins every min = 2.4 min every second
+
+MINS_IN_DAY = 24 * 60
+
+SHADOW_LENGTH_MULTIPLIER = 1.05
 # ---------- CONFIG ----------
 BUILD: bool = False
 SUPPORTED_PLATFORMS: Tuple[str] = ("android_x86_64", "android_v7a", "arm64-v8a", "Linux", "Windows")

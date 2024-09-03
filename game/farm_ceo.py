@@ -1,14 +1,18 @@
 import pygame as pg
 import logging
 
+from time import time
+from math import sin, cos
+
 from resource_manager import ResourceManager, SaveManager
 from events import Events
 
 from UI.panel import Panel
 
 from paddock import Paddock
+from utils import utils
 
-from typing import Dict, List
+from typing import Dict, List, Iterable
 from data import *
 
 logging.basicConfig()
@@ -150,6 +154,46 @@ class PaddockManager:
         save_manager.set_paddocks(self.paddocks)
         save_manager.save_game()
 
+class LayableRenderObj:
+    def render0(self) -> None: ...
+    def render1(self) -> None: ...
+    def render2(self) -> None: ...
+
+    def render(self) -> None:
+        self.render0(); self.render1(); self.render2()
+
+class Shed(LayableRenderObj):
+    def __init__(self, screen: pg.Surface, rect: pg.Rect, rotation: float) -> None:        
+        self.screen = screen
+
+        self.rect = rect
+        self.rect.x += PANEL_WIDTH
+
+        self.rotation = rotation
+        self.color = pg.Color(175, 195, 255)
+        self.pad_color = pg.Color(213, 207, 207)
+        self.surface = pg.Surface((self.rect.w, self.rect.h), pg.SRCALPHA)
+
+        # shading for roof
+        large_shadow_map = ResourceManager.load_image("Lighting/shed_shadow_map.png", (1000, 1000)) # Already converted
+        self.shadow_map = pg.transform.scale(large_shadow_map, (rect.w, rect.h*2/3))
+        self.shadow_map.set_alpha(128)
+
+        self.rebuild()
+
+    def rebuild(self) -> None:
+        self.surface.fill((0, 0, 0, 255))
+
+        # Shed
+        pg.draw.rect(self.surface, self.color, pg.Rect(0, 0, self.rect.w, self.rect.h*2/3))
+        self.surface.blit(self.shadow_map, (0, 0))
+
+        # Concrete pad in front of shed
+        pg.draw.rect(self.surface, self.pad_color, pg.Rect(0, self.rect.h*2/3, self.rect.w, self.rect.h/3))
+
+    def render2(self) -> None:
+        utils.blit_centered(self.screen, self.surface, (self.rect.x, self.rect.y), (self.rect.w/2, self.rect.h/2), self.rotation)
+
 class FarmCEO:
     RESOURCE_MANAGER: ResourceManager = ResourceManager()
 
@@ -163,8 +207,13 @@ class FarmCEO:
         self.events = events
 
         self.map = Map(self.screen, self.RESOURCE_MANAGER.load_map("Green_Spring_cfg.json")) # map estimated to be almost screen size
+
         self.save_manager = SaveManager(self.map.map_cfg)
         self.paddock_manager = PaddockManager(self.map.surface, self.save_manager.get_paddocks(), self.map.scale)
+
+        self.time: float = self.save_manager.get_attr("time") # time / 24 = *n* days
+
+        self.shed = Shed(self.screen, pg.Rect(self.map.map_cfg["shed"]["rect"]), self.map.map_cfg["shed"]["rotation"])
 
         self.panel = Panel(self.screen, events)
 
@@ -176,7 +225,11 @@ class FarmCEO:
         ...
 
     def foreground_render(self) -> None:
+        # Vehicles and trailers
         ...
+
+        # Buildings
+        self.shed.render()
 
     def ui_render(self) -> None:
         self.panel.draw()

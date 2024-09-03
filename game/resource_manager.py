@@ -198,7 +198,8 @@ class SaveManager:
         new_save = {
             "map_name": map_config["name"],
             "money": 500_000.0, # Starting money
-            "debt": 0.0 # No dept to start with
+            "debt": 0.0, # No dept to start with
+            "time": 0.0
         }
 
         new_save["paddocks"] = self._load_paddocks_from_conf(map_config)
@@ -213,8 +214,14 @@ class SaveManager:
     def save_game(self) -> None:
         ResourceManager.write_json(self.save, self.SAVE_PATH, explicit_path=True)
 
+    def get_attr(self, attr_name: str) -> any:
+        return self.save[attr_name]
+    
+    def set_attr(self, attr_name: str, value: any) -> None:
+        self.save[attr_name] = value
+
     def get_paddocks(self) -> Dict[int, any]:
-        return self.save["paddocks"]
+        return self.get_attr("paddocks")
     
     def set_paddocks(self, paddocks: List[Paddock]) -> None:
         paddocks_dict = {}
@@ -222,4 +229,4 @@ class SaveManager:
         for paddock in paddocks:
             paddocks_dict[paddock.num] = paddock.__dict__()
 
-        self.save["paddocks"] = paddocks_dict
+        self.set_attr("paddocks", paddocks_dict)
