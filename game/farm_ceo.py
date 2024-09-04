@@ -103,7 +103,7 @@ class FarmCEO:
         self.save_manager = SaveManager()
         self.save_manager.init(self.map.map_cfg)
 
-        self.paddock_manager = PaddockManager(self.map.surface, self.save_manager.get_paddocks(), self.map.scale)
+        self.paddock_manager = PaddockManager(self.screen, self.map.surface, self.save_manager.get_paddocks(), self.map.scale)
 
         self.time: float = self.save_manager.get_attr("time") # time / 24 = *n* days
         self.last_update_time = 0.0
@@ -115,6 +115,8 @@ class FarmCEO:
     def background_render(self) -> None:
         self.screen.fill(BACKGROUND_COLOR)
         self.map.render()
+
+        self.paddock_manager.draw_paddock_numbers()
 
     def simulate(self) -> None:
         if time() - self.last_update_time >= 1:

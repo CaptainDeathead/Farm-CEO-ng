@@ -7,7 +7,8 @@ from data import *
 from typing import Dict, List, Tuple
 
 class PaddockManager:
-    def __init__(self, map_image: pg.Surface, paddocks: Dict[int, any], scale: float) -> None:
+    def __init__(self, screen: pg.Surface, map_image: pg.Surface, paddocks: Dict[int, any], scale: float) -> None:
+        self.screen = screen
         self.map_image = map_image
         self.scale = scale
 
@@ -113,3 +114,7 @@ class PaddockManager:
         save_manager.init({})
         save_manager.set_paddocks(self.paddocks)
         save_manager.save_game()
+
+    def draw_paddock_numbers(self) -> None:
+        for paddock in self.paddocks:
+            self.screen.blit(paddock.number_surface, (PANEL_WIDTH + paddock.center[0], paddock.center[1]))

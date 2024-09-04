@@ -1,3 +1,5 @@
+import pygame as pg
+
 from random import randint
 from typing import Dict, List, Tuple
 
@@ -7,6 +9,8 @@ class Paddock:
         self.num = num
         self.scale = scale
         self.state: int = attrs.get("state", randint(0, 5))
+
+        self.number_surface = pg.font.SysFont(None, 80).render(str(self.num), True, (255, 255, 255))
 
         cx, cy = attrs["center"]
         gx, gy = attrs["gate"]
