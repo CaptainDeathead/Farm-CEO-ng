@@ -95,6 +95,79 @@ class Button:
     def show(self) -> None:
         self.hidden = False
 
+class DropDown:
+    def __init__(self, screen: pg.Surface, x: int, y: int, width: int, segment_height: int, buttons: List[Button],
+                 bg_color: pg.color.ColorValue) -> None:
+        
+        self.screen = screen
+        self.rect = pg.Rect(x, y, width, len(buttons) * segment_height)
+
+        self.rendered_surface = pg.Surface((self.rect.w, self.rect.h), pg.SRCALPHA)
+
+        self.segment_height = segment_height
+        self.buttons: List[Button] = []
+
+        for i, button in enumerate(buttons):
+            button.screen = self.rendered_surface
+            button.x = 0
+            button.y = self.segment_height * i
+
+            self.buttons.append(button)
+        
+        self.background_color = bg_color
+
+        self.dropped = False
+
+        self.selected_button = self.buttons[0]
+        self.selected_button.command = lambda: self.drop()
+
+        self.rebuild()
+
+    def undrop(self) -> None:
+        self.dropped = False
+
+    def drop(self) -> None:
+        self.dropped = True
+
+    def get_selected_text(self) -> str: return self.selected_button.text
+
+    def select_button(self, button_text: str) -> None:
+        new_buttons = []
+
+        for i, button in self.buttons:
+            if button.text == button_text:
+                self.selected_button.command = lambda: self.select_button(self.selected_button.text)
+
+                new_buttons.insert(0, button)
+                self.selected_button = button
+                self.selected_button.command = lambda: self.drop()
+
+                button.y = 0
+
+            else:
+                new_buttons.append(button)
+                button.y = self.segment_height * i
+
+        self.buttons = new_buttons
+        self.rebuild()
+
+    def rebuild(self) -> None:
+        self.rendered_surface.fill(self.bg_color)
+
+        for button in self.buttons:
+            #button.rebuild()
+            button.draw()
+
+    def update(self, just_pressed: bool = False) -> None:
+        for button in self.buttons:
+            button.update(just_pressed)
+
+    def draw(self) -> None:
+        if self.dropped:
+            self.screen.blit(self.rendered_surface, (self.rect.x, self.rect.y))
+        else:
+            self.screen.blit(self.selected_button.rendered_surface, (self.rect.x, self.rect.y))
+
 class Table:
     def __init__(self, screen: pg.Surface, x: int, y: int, width: int, height: int, rows: List[str], columns: List[str],
                  color: Tuple[int, int, int], selectedColor: Tuple[int, int, int], size: int, grid: List[List[str]]) -> None:
