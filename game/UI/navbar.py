@@ -10,10 +10,11 @@ from data import *
 from typing import List
 
 class NavBar:
-    def __init__(self, parent_surface: pg.Surface, events: Events, rect: pg.Rect) -> None:
+    def __init__(self, parent_surface: pg.Surface, events: Events, rect: pg.Rect, switch_cmd: callable) -> None:
         self.parent_surface = parent_surface
         self.events = events
         self.rect = rect
+        self.switch_cmd = switch_cmd
         
         self.rendered_surface = pg.Surface((self.rect.w, self.rect.h), pg.SRCALPHA)
         
@@ -51,6 +52,7 @@ class NavBar:
             self.selected_button = index
 
             self.rebuild(rebuild_buttons=True)
+            self.switch_cmd()
 
     def check_events(self) -> None:
         if self.events.mouse_just_pressed:

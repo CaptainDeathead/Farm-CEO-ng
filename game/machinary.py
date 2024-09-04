@@ -17,5 +17,11 @@ class Tractor(Vehicle):
         self.default_fuel = attrs["fuel"]
         self.fuel = self.default_fuel
 
+        self.string_task = "No task assigned"
+        self.paddock: int = None
+
         image = ResourceManager.load_image(self.anims['normal'])
         super().__init__(screen, image, 0, 0)
+
+class Tool(Trailer):
+    ...
