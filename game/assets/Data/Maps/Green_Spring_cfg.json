@@ -4,7 +4,7 @@
     "version": "v1.0.0",
     "filename": "Green_Spring_map.png",
     "shed": {
-        "rect": [730, 310, 150, 75],
+        "rect": [545, 230, 110, 55],
         "rotation": 0.0
     },
     "roads": {

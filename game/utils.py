@@ -23,3 +23,7 @@ class utils:
 
         # rotate and blit the image
         surf.blit(rotated_image, rotated_image_rect)
+
+    @staticmethod
+    def scale_rect(rect: pg.Rect, scale: float) -> pg.Rect:
+        return pg.Rect(rect.x * scale, rect.y * scale, rect.w * scale, rect.h * scale)

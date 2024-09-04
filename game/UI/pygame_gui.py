@@ -5,15 +5,18 @@ from typing import Tuple, List
 pg.init()
 
 class Button:
-    def __init__(self, screen: pg.Surface, x: int, y: int, width: int, height: int,
+    def __init__(self, screen: pg.Surface, x: int, y: int, width: int, height: int, parent_rect: pg.Rect,
                  color: Tuple[int, int, int], selectedColor: Tuple[int, int, int], textColor: Tuple[int, int, int],
-                 text: str, size: int, radius: int, offset_x: int, offset_y: int, center: bool = False, command: callable = None) -> None:
+                 text: str, size: int, radius: Tuple[int, int, int, int], offset_x: int, offset_y: int, center: bool = False,
+                 command: callable = None) -> None:
         
         self.screen: pg.Surface = screen
         self.x: int = x
         self.y: int = y
         self.width: int = width
         self.height: int = height
+        self.parent_rect: pg.Rect = parent_rect
+        self.global_rect: pg.Rect= pg.Rect(parent_rect.x + self.x, parent_rect.y + self.y, self.width, self.height)
         self.rect: pg.Rect = pg.Rect(self.x, self.y, self.width, self.height)
         self.active_color: Tuple[int, int, int] = color
         self.color: Tuple[int, int, int] = color
@@ -30,7 +33,6 @@ class Button:
         self.center: bool = center
         self.command: callable = command
         self.rendered_surface: pg.Surface = pg.Surface((width, height), pg.SRCALPHA)
-        self.rendered_surface.convert_alpha()
 
         self.rebuild()
 
@@ -72,15 +74,18 @@ class Button:
         self.text = text
         self.rebuild_required = True
 
-    def draw(self, just_pressed: bool = False) -> None:
-        if not self.hidden and self.command is not None:
-            if self.rect.collidepoint(pg.mouse.get_pos()) and just_pressed: self.command()
+    def update(self, just_pressed: bool = False) -> None:
+        mouse_collision = self.global_rect.collidepoint(pg.mouse.get_pos())
 
-        if self.rect.collidepoint(pg.mouse.get_pos()):
+        if not self.hidden and self.command is not None:
+            if mouse_collision and just_pressed: self.command()
+
+        if mouse_collision:
             self.set_color(self.selectedColor, rebuild_required=True)
         else:
             self.set_color(self.color, rebuild_required=True)
 
+    def draw(self) -> None:
         if not self.hidden:
             self.screen.blit(self.rendered_surface, (self.x, self.y))
 

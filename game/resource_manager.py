@@ -171,14 +171,49 @@ class ResourceManager:
 class SaveManager:
     SAVE_PATH: str = os.path.join(app_storage_path(), "farmceo_savegame.json")
 
-    def __new__(cls, map_config: Dict[str, any]) -> None:
+    def __new__(cls) -> None:
         if not hasattr(cls, 'instance'):
             cls.instance = super(SaveManager, cls).__new__(cls)
-            cls.instance.init(map_config)
 
         return cls.instance
     
     def init(self, map_config: Dict[str, any]) -> None:
+        self.money = 500_000.0 # Starting money
+        self.xp = 0.0
+        self.debt = 0.0 # No dept to start with
+        self.time = 0.0
+        self.vehicles = {
+            0: {
+                "header": False,
+                "brand": "New Holland",
+                "model": "T6 145",
+                "fuel": 290
+            },
+            1: {
+                "header": True,
+                "brand": "Case IH",
+                "model": "2388",
+                "fuel": 700
+            }
+        }
+        self.tools = {
+            0: {
+                "toolType": "Cultivators",
+                "brand": "Case IH",
+                "model": "490"
+            },
+            1: {
+                "toolType": "Seeders",
+                "brand": "John Sheerer",
+                "model": "Combine 14ft"
+            },
+            2: {
+                "toolType": "Trailers",
+                "brand": "Marshall",
+                "model": "QM-12"
+            }
+        }
+
         self.load_game()
         if self.save == {}: self.init_savefile(map_config)
 
@@ -197,9 +232,12 @@ class SaveManager:
         
         new_save = {
             "map_name": map_config["name"],
-            "money": 500_000.0, # Starting money
+            "money": self.money, # Starting money
+            "xp": self.xp,
             "debt": 0.0, # No dept to start with
-            "time": 0.0
+            "time": 0.0,
+            "vehicles": self.vehicles,
+            "tools": self.tools
         }
 
         new_save["paddocks"] = self._load_paddocks_from_conf(map_config)
@@ -211,8 +249,27 @@ class SaveManager:
     def load_game(self) -> None:
         self.save = ResourceManager.load_json(self.SAVE_PATH, explicit_path=True)
 
+        if self.save == {}: return # will create one and load values
+
+        self.money = self.save["money"]
+        self.xp = self.save["xp"]
+        self.debt = self.save["debt"]
+        self.time = self.save["time"]
+        self.vehicles = self.save["vehicles"]
+        self.tools = self.save["tools"]
+
     def save_game(self) -> None:
+        self.set_attr("money", self.money)
+        self.set_attr("xp", self.xp)
+        self.set_attr("debt", self.debt)
+        self.set_attr("time", self.time)
+        self.set_attr("vehicles", self.vehicles)
+        self.set_attr("tools", self.tools)
+
         ResourceManager.write_json(self.save, self.SAVE_PATH, explicit_path=True)
+
+    def set_money(self, new_money: float) -> None:
+        self.money = new_money
 
     def get_attr(self, attr_name: str) -> any:
         return self.save[attr_name]
@@ -230,3 +287,9 @@ class SaveManager:
             paddocks_dict[paddock.num] = paddock.__dict__()
 
         self.set_attr("paddocks", paddocks_dict)
+
+    def add_vehicle(self, header: bool, brand: str, model: str, fuel: int) -> None:
+        self.vehicles[len(self.vehicles)] = {"header": header, "brand": brand, "model": model, "fuel": fuel}
+
+    def add_tool(self, tool_type: str, brand: str, model: str) -> None:
+        self.tools[len(self.tools)] = {"toolType": tool_type, "brand": brand, "model": model}

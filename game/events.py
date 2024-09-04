@@ -17,5 +17,5 @@ class Events:
                 pg.quit()
                 exit()
 
-            elif event.type == pg.MOUSEBUTTONDOWN:
+            elif event.type == pg.MOUSEBUTTONUP:
                 if event.button == 1: self.mouse_just_pressed = True

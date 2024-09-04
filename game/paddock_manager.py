@@ -109,6 +109,7 @@ class PaddockManager:
             self.locate_paddock_boundary(paddock)
             self.load_paddock_state(paddock)
 
-        save_manager = SaveManager({})
+        save_manager = SaveManager()
+        save_manager.init({})
         save_manager.set_paddocks(self.paddocks)
         save_manager.save_game()

@@ -1,0 +1,241 @@
+import pygame as pg
+
+from resource_manager import ResourceManager, SaveManager
+from events import Events
+
+from time import time
+
+from UI.pygame_gui import Button
+from utils import utils
+from data import *
+from typing import List
+
+class Shop:
+    def __init__(self, parent_surface: pg.Surface, events: Events, rect: pg.Rect) -> None:
+        self.parent_surface = parent_surface
+        self.events = events
+        self.rect = rect
+
+        self.rendered_surface = pg.Surface((self.rect.w, self.rect.h), pg.SRCALPHA)
+
+        self.vehicles_dict = ResourceManager.load_json("Machinary/Vehicles/vehicles.json")
+        self.tools_dict = ResourceManager.load_json("Machinary/Tools/tools.json")
+
+        self.global_dict = {}
+        self.global_dict.update(self.vehicles_dict)
+        self.global_dict.update(self.tools_dict)
+
+        self.current_items = self.global_dict
+
+        self.buttons: List[Button] = []
+        self.path: List[str] = []
+
+        self.product_title_font = pg.font.SysFont(None, 80)
+        self.product_lbls_font = pg.font.SysFont(None, 60)
+
+        self.product_images: List[pg.Surface] = []
+        self.current_image = 0
+        self.last_image_change = time()
+
+        self.not_enough_money_lbl = self.product_title_font.render("Not enough money!", True, (255, 0, 0))
+        self.not_enough_xp_lbl = self.product_title_font.render("Not enough XP!", True, (255, 0, 0))
+
+        self.buy_button = Button(self.rendered_surface, PANEL_WIDTH / 2 - 150, self.rect.h - 280, 300, 100, self.rect, (0, 200, 255),
+                                  (0, 200, 255), (255, 255, 255), "Buy", 60, (20, 20, 20, 20), 0, 0, True, lambda: self.buy_selected())
+
+        self.back_button = Button(self.rendered_surface, PANEL_WIDTH / 2 - 150, self.rect.h - 160, 300, 100, self.rect, (0, 200, 255),
+                                  (0, 200, 255), (255, 255, 255), "Back", 60, (20, 20, 20, 20), 0, 0, True, lambda: self.backtrack_path())
+
+        self.just_rebuilt = False
+        self.rebuild()
+
+    def buy_selected(self) -> None:
+        price = self.current_items["price"]
+        fuel = self.current_items.get("fuel", 0)
+
+        machine_type = self.path[0]
+        brand = self.path[1]
+        model = self.path[2]
+
+        SaveManager().set_money(SaveManager().money-price)
+        
+        if machine_type in ("Tractors", "Harvesters"): SaveManager().add_vehicle(machine_type == "Harvesters", brand, model, fuel)
+        else: SaveManager().add_tool(machine_type, brand, model)
+
+        self.path = []
+        self.current_items = self.global_dict
+
+        self.buy_button.hide()
+        self.back_button.hide()
+
+        self.rebuild()
+
+    def backtrack_path(self) -> None:
+        self.current_items = self.global_dict
+        self.path.pop()
+
+        for item in self.path:
+            self.current_items = self.current_items[item]
+
+        self.rebuild()
+
+    def update_path(self, new_path_segment: str) -> None:
+        self.path.append(new_path_segment)
+        self.current_items = self.current_items[new_path_segment]
+
+        self.rebuild()
+
+    def rebuild_buyimg(self) -> None:
+        self.rendered_surface.fill((255, 255, 255), (0, 0, PANEL_WIDTH, 200)) # clear any old images
+
+        img = self.product_images[self.current_image]
+        pos = (PANEL_WIDTH / 2, 120)
+
+        utils.blit_centered(self.rendered_surface, img, pos, (img.get_width()/2, img.get_height()/2), 0.0)
+
+    def check_image_cycle(self) -> bool:
+        if time() - self.last_image_change >= 1:
+            self.current_image += 1
+            if self.current_image >= len(self.product_images): self.current_image = 0
+            
+            self.rebuild_buyimg()
+            self.last_image_change = time()
+
+            return True
+        
+        return False
+    
+    def check_can_buy(self) -> None:
+        money_required = self.current_items["price"]
+        xp_required = self.current_items["xp"]
+
+        if SaveManager().xp < xp_required:
+            self.rendered_surface.fill((255, 255, 255), (0, self.buy_button.rect.y, PANEL_WIDTH, self.buy_button.rect.h))
+            self.rendered_surface.blit(self.not_enough_xp_lbl, (PANEL_WIDTH / 2 - self.not_enough_xp_lbl.get_width() / 2, self.buy_button.rect.y + 20))
+            
+            self.buy_button.hide()
+            self.buy_button.draw()
+        
+        elif SaveManager().money < money_required:
+            self.rendered_surface.fill((255, 255, 255), (0, self.buy_button.rect.y, PANEL_WIDTH, self.buy_button.rect.h))
+            self.rendered_surface.blit(self.not_enough_money_lbl, (PANEL_WIDTH / 2 - self.not_enough_money_lbl.get_width() / 2, self.buy_button.rect.y + 20))
+
+            self.buy_button.hide()
+            self.buy_button.draw()
+        
+        else:
+            self.buy_button.show()
+            self.buy_button.draw()
+
+    def rebuild_buyscr(self) -> None:
+        self.product_images = []
+        self.current_image = 0
+        
+        for image_path in self.current_items["anims"]:
+            if image_path == "default" or self.current_items["anims"][image_path] is None: continue
+
+            new_img = pg.transform.scale_by(ResourceManager.load_image(self.current_items["anims"][image_path], (32, 32)), 4)
+            self.product_images.append(new_img)
+
+        self.rebuild_buyimg()
+
+        black = pg.Color(0, 0, 0)
+
+        brand = self.path[-2]
+        name = self.path[-1]
+        title_lbl = self.product_lbls_font.render(f"{brand} {name}", True, black)
+
+        self.rendered_surface.blit(title_lbl, (PANEL_WIDTH / 2 - title_lbl.get_width() / 2, 220))
+
+        curr_y = 300
+
+        for attr in self.current_items:
+            fullcaps = False
+
+            if attr in ("sizePx", "turningPoint", "hitch", "anims", "pipeOffset") or self.current_items[attr] is None: continue
+            elif attr == "price":
+                # int(<an_integar>):, in an f string formats with commas
+                text = self.product_title_font.render(f"Price: ${self.current_items[attr]:,}", True, black)
+                pos = (PANEL_WIDTH / 2 - text.get_width() / 2, self.rect.h - 350)
+
+                self.rendered_surface.blit(text, pos)
+                continue
+            elif attr in ("xp", "hp"): fullcaps = True
+
+            unit = ""
+            match attr:
+                case "fuel": unit = "L"
+                case "storage": unit = "T"
+                case "size": unit = "ft"
+
+            final_attr = attr.capitalize()
+            if fullcaps: final_attr = attr.upper()
+
+            text = self.product_lbls_font.render(f"{final_attr}: {self.current_items[attr]}{unit}", True, black)
+            pos = (PANEL_WIDTH / 8, curr_y)
+
+            self.rendered_surface.blit(text, pos)
+
+            curr_y += text.get_height() + 5
+
+        self.just_rebuilt = True
+
+    def rebuild(self) -> None:
+        self.rendered_surface.fill((255, 255, 255, 255))
+        self.buttons = []
+
+        if len(self.path) == 3: return self.rebuild_buyscr()
+
+        x = 25
+        y = 50
+
+        size = (self.rect.w - 25*4)/3 # padding = 25, 3 buttons in each row
+        step = size + 25 # padding = 25
+
+        for item in self.current_items:
+            self.buttons.append(Button(self.rendered_surface, x, y, size, size, self.rect, (0, 200, 255), (0, 200, 255), (255, 255, 255),
+                                       item, 30, (5, 5, 5, 5), 0, 0, True, lambda item=item: self.update_path(item)))
+            
+            x += step
+
+            if x >= step * 3 + 25 - 5:
+                y += step
+                x = 25
+
+        self.just_rebuilt = True
+
+    def check_buyscr(self) -> bool:
+        update = False
+
+        update = self.check_image_cycle()
+        self.check_can_buy()
+
+        return update
+
+    def update(self) -> bool:
+        update = False
+
+        if len(self.path) == 3:
+            update = self.check_buyscr()
+        else:
+            for button in self.buttons:
+                button.update(self.events.mouse_just_pressed)
+
+        self.buy_button.update(self.events.mouse_just_pressed)
+        self.back_button.update(self.events.mouse_just_pressed)
+
+        if self.just_rebuilt:
+            self.just_rebuilt = False
+            update = True
+        
+        return update
+
+    def draw(self) -> None:
+        for button in self.buttons: button.draw()
+
+        if len(self.path) > 0: self.back_button.show()
+        else: self.back_button.hide()
+
+        self.back_button.draw()
+
+        self.parent_surface.blit(self.rendered_surface, (self.rect.x, self.rect.y))

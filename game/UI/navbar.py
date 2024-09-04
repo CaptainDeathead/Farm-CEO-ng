@@ -10,23 +10,25 @@ from data import *
 from typing import List
 
 class NavBar:
-    def __init__(self, screen: pg.Surface, events: Events, rect: pg.Rect) -> None:
-        self.screen: pg.Surface = screen
-        self.events: Events = events
-        self.rect: pg.Rect = rect
+    def __init__(self, parent_surface: pg.Surface, events: Events, rect: pg.Rect) -> None:
+        self.parent_surface = parent_surface
+        self.events = events
+        self.rect = rect
         
-        self.rendered_surface: pg.Surface = pg.Surface((rect.w, rect.h))
+        self.rendered_surface = pg.Surface((self.rect.w, self.rect.h), pg.SRCALPHA)
         
-        self.buttons: List[Button] = [Button(self.rendered_surface, 13, 6, 120, 100, (0, 200, 255), (0, 0, 200), (255, 255, 255), "Shop", 30, (0, 0, 0, 0), 0, 0, True),
-                                      Button(self.rendered_surface, 128, 6, 120, 100, (0, 200, 255), (0, 0, 200), (255, 255, 255), "Equipment", 30, (0, 0, 0, 0), 0, 0, True),
-                                      Button(self.rendered_surface, 248, 6, 120, 100, (0, 200, 255), (0, 0, 200), (255, 255, 255), "Map", 30, (0, 0, 0, 0), 0, 0, True),
-                                      Button(self.rendered_surface, 368, 6, 120, 100, (0, 200, 255), (0, 0, 200), (255, 255, 255), "Grain", 30, (0, 0, 0, 0), 0, 0, True),
-                                      Button(self.rendered_surface, 488, 6, 120, 100, (0, 200, 255), (0, 0, 200), (255, 255, 255), "Finance", 30, (0, 0, 0, 0), 0, 0, True)]
+        self.buttons: List[Button] = [Button(self.rendered_surface, 13, 6, 120, 100, self.rect, (0, 200, 255), (0, 0, 200), (255, 255, 255), "Shop", 30, (0, 0, 0, 0), 0, 0, True),
+                                      Button(self.rendered_surface, 128, 6, 120, 100, self.rect, (0, 200, 255), (0, 0, 200), (255, 255, 255), "Equipment", 30, (0, 0, 0, 0), 0, 0, True),
+                                      Button(self.rendered_surface, 248, 6, 120, 100, self.rect, (0, 200, 255), (0, 0, 200), (255, 255, 255), "Map", 30, (0, 0, 0, 0), 0, 0, True),
+                                      Button(self.rendered_surface, 368, 6, 120, 100, self.rect, (0, 200, 255), (0, 0, 200), (255, 255, 255), "Grain", 30, (0, 0, 0, 0), 0, 0, True),
+                                      Button(self.rendered_surface, 488, 6, 120, 100, self.rect, (0, 200, 255), (0, 0, 200), (255, 255, 255), "Finance", 30, (0, 0, 0, 0), 0, 0, True)]
         
-        self.selected_button: int = 0
-        self.just_rebuilt: bool = False
+        self.selected_button = 0
+        self.just_rebuilt = False
 
         self.rebuild()
+
+    def get_selected(self) -> int: return self.selected_button
 
     def rebuild(self, rebuild_buttons: bool = False) -> None:
         self.rendered_surface.fill((255, 255, 255))
@@ -42,12 +44,13 @@ class NavBar:
 
             button.draw()
 
+        self.just_rebuilt = True
+
     def select_button(self, index: int) -> None:
         if index <= len(self.buttons):
             self.selected_button = index
 
             self.rebuild(rebuild_buttons=True)
-            self.just_rebuilt = True
 
     def check_events(self) -> None:
         if self.events.mouse_just_pressed:
@@ -64,7 +67,7 @@ class NavBar:
                 break
 
     def draw(self) -> None:
-        self.screen.blit(self.rendered_surface, (self.rect.x, self.rect.y))
+        self.parent_surface.blit(self.rendered_surface, self.rect)
 
     def update(self) -> bool:
         self.check_events()

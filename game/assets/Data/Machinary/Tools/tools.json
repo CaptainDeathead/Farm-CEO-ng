@@ -9,7 +9,7 @@
                 "hitch": 12,
                 "anims": {
                     "folded": null,
-                    "unfolded": "Data/Machinary/Tools/Cultivators/CaseIH/tool_0.bmp",
+                    "unfolded": "Machinary/Tools/Cultivators/CaseIH/tool_0.png",
                     "default": "unfolded"
                 },
                 "price": 15000,
@@ -25,7 +25,7 @@
                 "hitch": 16,
                 "anims": {
                     "folded": null,
-                    "unfolded": "Data/Machinary/Tools/Cultivators/Landoll/tool_0.bmp",
+                    "unfolded": "Machinary/Tools/Cultivators/Landoll/tool_0.png",
                     "default": "unfolded"
                 },
                 "price": 140000,
@@ -44,7 +44,7 @@
                 "hitch": 6,
                 "anims": {
                     "folded": null,
-                    "unfolded": "Data/Machinary/Tools/Seeders/JohnSheerer/tool_0.bmp",
+                    "unfolded": "Machinary/Tools/Seeders/JohnSheerer/tool_0.png",
                     "default": "unfolded"
                 },
                 "cart": null,
@@ -62,7 +62,7 @@
                 "hitch": 15,
                 "anims": {
                     "folded": null,
-                    "unfolded": "Data/Machinary/Tools/Seeders/Morris/tool_0.bmp",
+                    "unfolded": "Machinary/Tools/Seeders/Morris/tool_0.png",
                     "default": "unfolded"
                 },
                 "cart": {
@@ -70,7 +70,7 @@
                     "turningPoint": 40,
                     "anims": {
                         "open": null,
-                        "closed": "Data/Machinary/Tools/Seeders/Morris/tool_0_grainCart.bmp",
+                        "closed": "Machinary/Tools/Seeders/Morris/tool_0_grainCart.png",
                         "default": "closed"
                     }
                 },
@@ -89,9 +89,9 @@
                 "turningPoint": 15,
                 "hitch": 15,
                 "anims": {
-                    "empty": "Data/Machinary/Tools/Spreaders/Marshall/tool_0_open.bmp",
-                    "full": "Data/Machinary/Tools/Spreaders/Marshall/tool_0.bmp",
-                    "on": "Data/Machinary/Tools/Spreaders/Marshall/tool_0_on.bmp",
+                    "empty": "Machinary/Tools/Spreaders/Marshall/tool_0_open.png",
+                    "full": "Machinary/Tools/Spreaders/Marshall/tool_0.png",
+                    "on": "Machinary/Tools/Spreaders/Marshall/tool_0_on.png",
                     "default": "empty"
                 },
                 "price": 37500,
@@ -105,9 +105,9 @@
                 "turningPoint": 17,
                 "hitch": 23,
                 "anims": {
-                    "empty": "Data/Machinary/Tools/Spreaders/Marshall/tool_1_open.bmp",
-                    "full": "Data/Machinary/Tools/Spreaders/Marshall/tool_1.bmp",
-                    "on": "Data/Machinary/Tools/Spreaders/Marshall/tool_1_on.bmp",
+                    "empty": "Machinary/Tools/Spreaders/Marshall/tool_1_open.png",
+                    "full": "Machinary/Tools/Spreaders/Marshall/tool_1.png",
+                    "on": "Machinary/Tools/Spreaders/Marshall/tool_1_on.png",
                     "default": "empty"
                 },
                 "price": 59000,
@@ -125,9 +125,9 @@
                 "turningPoint": 21,
                 "hitch": 22,
                 "anims": {
-                    "folded": "Data/Machinary/Tools/Sprayers/Hardi/tool_0.bmp",
-                    "unfolded": "Data/Machinary/Tools/Sprayers/Hardi/tool_0_open.bmp",
-                    "on": "Data/Machinary/Tools/Sprayers/Hardi/tool_0_on.bmp",
+                    "folded": "Machinary/Tools/Sprayers/Hardi/tool_0.png",
+                    "unfolded": "Machinary/Tools/Sprayers/Hardi/tool_0_open.png",
+                    "on": "Machinary/Tools/Sprayers/Hardi/tool_0_on.png",
                     "default": "folded"
                 },
                 "price": 30000,
@@ -141,9 +141,9 @@
                 "turningPoint": null,
                 "hitch": "half",
                 "anims": {
-                    "folded": "Data/Machinary/Tools/Sprayers/Hardi/tool_1.bmp",
-                    "unfolded": "Data/Machinary/Tools/Sprayers/Hardi/tool_1_open.bmp",
-                    "on": "Data/Machinary/Tools/Sprayers/Hardi/tool_1_on.bmp",
+                    "folded": "Machinary/Tools/Sprayers/Hardi/tool_1.png",
+                    "unfolded": "Machinary/Tools/Sprayers/Hardi/tool_1_open.png",
+                    "on": "Machinary/Tools/Sprayers/Hardi/tool_1_on.png",
                     "default": "folded"
                 },
                 "price": 66000,
@@ -161,8 +161,8 @@
                 "turningPoint": 26,
                 "hitch": 8,
                 "anims": {
-                    "empty": "Data/Machinary/Tools/Trailers/Marshall/tool_0_open.bmp",
-                    "full": "Data/Machinary/Tools/Trailers/Marshall/tool_0.bmp",
+                    "empty": "Machinary/Tools/Trailers/Marshall/tool_0_open.png",
+                    "full": "Machinary/Tools/Trailers/Marshall/tool_0.png",
                     "default": "empty"
                 },
                 "price": 24500,
@@ -178,8 +178,8 @@
                 "turningPoint": 30,
                 "hitch": 11,
                 "anims": {
-                    "empty": "Data/Machinary/Tools/Trailers/Rolland/tool_0_open.bmp",
-                    "full": "Data/Machinary/Tools/Trailers/Rolland/tool_0.bmp",
+                    "empty": "Machinary/Tools/Trailers/Rolland/tool_0_open.png",
+                    "full": "Machinary/Tools/Trailers/Rolland/tool_0.png",
                     "default": "empty"
                 },
                 "price": 68000,

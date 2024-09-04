@@ -100,13 +100,15 @@ class FarmCEO:
 
         self.map = Map(self.screen, self.RESOURCE_MANAGER.load_map("Green_Spring_cfg.json")) # map estimated to be almost screen size
 
-        self.save_manager = SaveManager(self.map.map_cfg)
+        self.save_manager = SaveManager()
+        self.save_manager.init(self.map.map_cfg)
+
         self.paddock_manager = PaddockManager(self.map.surface, self.save_manager.get_paddocks(), self.map.scale)
 
         self.time: float = self.save_manager.get_attr("time") # time / 24 = *n* days
         self.last_update_time = 0.0
 
-        self.shed = Shed(self.screen, pg.Rect(self.map.map_cfg["shed"]["rect"]), self.map.map_cfg["shed"]["rotation"])
+        self.shed = Shed(self.screen, utils.scale_rect(pg.Rect(self.map.map_cfg["shed"]["rect"]), self.map.scale), self.map.map_cfg["shed"]["rotation"])
 
         self.panel = Panel(self.screen, events)
 
