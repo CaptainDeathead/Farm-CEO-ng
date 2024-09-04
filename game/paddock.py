@@ -10,6 +10,7 @@ class Paddock:
         self.scale = scale
         self.state: int = attrs.get("state", randint(0, 5))
         self.owned_by: str = attrs["owned_by"]
+        self.hectares: int = attrs["hectares"]
 
         color = (255, 255, 255)
         if self.owned_by == "player": color = (0, 0, 255)
@@ -29,8 +30,15 @@ class Paddock:
             "center": self.attrs["center"],
             "gate": self.attrs["gate"],
             "state": self.state,
+            "hectares": self.hectares,
             "owned_by": self.owned_by
         }
+    
+    def rebuild_num(self) -> None:
+        color = (255, 255, 255)
+        if self.owned_by == "player": color = (0, 0, 255)
+        
+        self.number_surface = pg.font.SysFont(None, 80).render(str(self.num), True, color)
     
     def set_boundary(self, boundary: List[Tuple]) -> None:
         self.boundary = boundary

@@ -96,11 +96,12 @@ class Button:
         self.hidden = False
 
 class DropDown:
-    def __init__(self, screen: pg.Surface, x: int, y: int, width: int, segment_height: int, buttons: List[Button],
-                 bg_color: pg.color.ColorValue) -> None:
+    def __init__(self, screen: pg.Surface, x: int, y: int, width: int, segment_height: int, parent_rect: pg.Rect,
+                 buttons: List[Button], bg_color: Tuple[int, int, int], on_change: callable) -> None:
         
         self.screen = screen
         self.rect = pg.Rect(x, y, width, len(buttons) * segment_height)
+        self.parent_rect = parent_rect
 
         self.rendered_surface = pg.Surface((self.rect.w, self.rect.h), pg.SRCALPHA)
 
@@ -109,60 +110,82 @@ class DropDown:
 
         for i, button in enumerate(buttons):
             button.screen = self.rendered_surface
+
             button.x = 0
             button.y = self.segment_height * i
+            button.global_rect = pg.Rect(x, self.parent_rect.y + y + segment_height * i, width, segment_height)
+
+            button.command = lambda text=button.text: self.select_button(text)
 
             self.buttons.append(button)
         
-        self.background_color = bg_color
+        self.bg_color = bg_color
+        self.on_change = on_change
 
         self.dropped = False
 
-        self.selected_button = self.buttons[0]
-        self.selected_button.command = lambda: self.drop()
+        self.selected_button = Button(self.buttons[0].screen, self.buttons[0].x, self.buttons[0].y, self.buttons[0].width, self.buttons[0].height,
+                                      self.buttons[0].parent_rect, self.buttons[0].color, self.buttons[0].selectedColor, self.buttons[0].textColor,
+                                      self.buttons[0].text, self.buttons[0].size, self.buttons[0].radius, 0, 0, True, self.toggle_drop)
+        
+        self.selected_button.global_rect = buttons[0].global_rect
+
+        self.just_changed = False
 
         self.rebuild()
 
-    def undrop(self) -> None:
-        self.dropped = False
+    def set_dropped(self, dropped: bool) -> None:
+        self.dropped = dropped
 
-    def drop(self) -> None:
-        self.dropped = True
+        if dropped: self.selected_button.hide()
+        else: self.selected_button.show()
+
+        self.rebuild()
+
+    def toggle_drop(self) -> None:
+        self.set_dropped(not self.dropped)
 
     def get_selected_text(self) -> str: return self.selected_button.text
 
     def select_button(self, button_text: str) -> None:
-        new_buttons = []
+        if not self.dropped: return
 
-        for i, button in self.buttons:
+        for button in self.buttons:
             if button.text == button_text:
-                self.selected_button.command = lambda: self.select_button(self.selected_button.text)
+                self.selected_button.text = button.text
 
-                new_buttons.insert(0, button)
-                self.selected_button = button
-                self.selected_button.command = lambda: self.drop()
+                button.rebuild()
+                self.selected_button.rebuild()
+                
+                self.on_change()
+                break
+        
+        self.set_dropped(False)
+        self.just_changed = True
 
-                button.y = 0
-
-            else:
-                new_buttons.append(button)
-                button.y = self.segment_height * i
-
-        self.buttons = new_buttons
         self.rebuild()
 
     def rebuild(self) -> None:
-        self.rendered_surface.fill(self.bg_color)
+        pg.draw.rect(self.rendered_surface, self.bg_color, (0, 0, self.rect.w, self.rect.h), border_radius=10)
 
         for button in self.buttons:
-            #button.rebuild()
             button.draw()
+
+        self.selected_button.draw()
 
     def update(self, just_pressed: bool = False) -> None:
         for button in self.buttons:
             button.update(just_pressed)
 
+        if self.just_changed:
+            self.just_changed = False
+            just_pressed = False
+
+        self.selected_button.update(just_pressed)
+
     def draw(self) -> None:
+        self.screen.fill((255, 255, 255), self.rect)
+
         if self.dropped:
             self.screen.blit(self.rendered_surface, (self.rect.x, self.rect.y))
         else:

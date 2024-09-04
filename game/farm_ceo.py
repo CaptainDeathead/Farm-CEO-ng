@@ -103,7 +103,8 @@ class FarmCEO:
         self.save_manager = SaveManager()
         self.save_manager.init(self.map.map_cfg)
 
-        self.paddock_manager = PaddockManager(self.screen, self.map.surface, self.save_manager.get_paddocks(), self.map.scale)
+        self.paddock_manager = PaddockManager()
+        self.paddock_manager.init(self.screen, self.map.surface, self.save_manager.get_paddocks(), self.map.scale)
 
         self.time: float = self.save_manager.get_attr("time") # time / 24 = *n* days
         self.last_update_time = 0.0

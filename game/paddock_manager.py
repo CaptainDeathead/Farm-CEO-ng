@@ -7,7 +7,13 @@ from data import *
 from typing import Dict, List, Tuple
 
 class PaddockManager:
-    def __init__(self, screen: pg.Surface, map_image: pg.Surface, paddocks: Dict[int, any], scale: float) -> None:
+    def __new__(cls) -> None:
+        if not hasattr(cls, 'instance'):
+            cls.instance = super(PaddockManager, cls).__new__(cls)
+
+        return cls.instance
+    
+    def init(self, screen: pg.Surface, map_image: pg.Surface, paddocks: Dict[int, any], scale: float) -> None:
         self.screen = screen
         self.map_image = map_image
         self.scale = scale

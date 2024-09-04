@@ -1,14 +1,109 @@
 import pygame as pg
 
 from resource_manager import ResourceManager, SaveManager
+from paddock_manager import PaddockManager
 from events import Events
 
 from time import time
 
-from UI.pygame_gui import Button
+from UI.pygame_gui import Button, DropDown
 from utils import utils
 from data import *
 from typing import List
+
+class PaddockBuyMenu:
+    DROPDOWN_WIDTH = 100
+    SEGMENT_HEIGHT = 50
+    def __init__(self, parent_surface: pg.Surface, events: Events, rect: pg.Rect) -> None:
+        self.parent_surface = parent_surface
+        self.events = events
+        self.rect = rect
+
+        self.rendered_surface = pg.Surface((self.rect.w, self.rect.h), pg.SRCALPHA)
+
+        self.dropdown = DropDown(self.rendered_surface, PANEL_WIDTH / 2 - self.DROPDOWN_WIDTH / 2, 50, self.DROPDOWN_WIDTH,
+                                 self.SEGMENT_HEIGHT, self.rect, self.get_buttons_for_dropdown(), (0, 200, 255), self.rebuild)
+        
+        self.product_title_font = pg.font.SysFont(None, 80)
+
+        self.not_enough_money_lbl = self.product_title_font.render("Not enough money!", True, (255, 0, 0))
+
+        self.buy_button = Button(self.rendered_surface, PANEL_WIDTH / 2 - 150, self.rect.h - 280, 300, 100, self.rect, (0, 200, 255),
+                                  (0, 200, 255), (255, 255, 255), "Buy", 60, (20, 20, 20, 20), 0, 0, True, lambda: self.buy_selected())
+        
+        self.last_money = SaveManager().money
+
+        self.rebuild()
+
+    def get_buttons_for_dropdown(self) -> List[Button]:
+        all_paddocks = PaddockManager().paddocks
+        unowned_paddocks = []
+
+        for paddock in all_paddocks:
+            if paddock.owned_by == "player": continue
+            unowned_paddocks.append(paddock)
+
+        buttons = [
+            Button(self.rendered_surface, 0, (int(paddock.num) - 1) * self.SEGMENT_HEIGHT, self.DROPDOWN_WIDTH, self.SEGMENT_HEIGHT, self.rect,
+                   (0, 200, 255), (0, 200, 255), (0, 0, 0), paddock.num, 50, (5, 5, 5, 5), 0, 0, True) for paddock in unowned_paddocks
+        ]
+
+        return buttons
+
+    def buy_selected(self) -> None:
+        selected_paddock = int(self.dropdown.get_selected_text())-1
+        paddock_area = PaddockManager().paddocks[selected_paddock].hectares
+
+        # Paddock price = Area * 12000
+        price = paddock_area * 12000
+
+        PaddockManager().paddocks[selected_paddock].owned_by = "player"
+        PaddockManager().paddocks[selected_paddock].rebuild_num()
+        SaveManager().set_money(SaveManager().money - price)
+
+        self.dropdown = DropDown(self.rendered_surface, PANEL_WIDTH / 2 - self.DROPDOWN_WIDTH / 2, 50, self.DROPDOWN_WIDTH,
+                                 self.SEGMENT_HEIGHT, self.rect, self.get_buttons_for_dropdown(), (0, 200, 255), self.rebuild)
+        
+        self.buy_button.hide()
+        self.update()
+
+    def draw_can_buy(self) -> None:
+        selected_paddock = int(self.dropdown.get_selected_text())-1
+        paddock_area = PaddockManager().paddocks[selected_paddock].hectares
+
+        # Paddock price = Area * 12000
+        price = paddock_area * 12000
+
+        price_lbl = self.product_title_font.render(f"Price: ${price:,}", True, (0, 0, 0))
+        self.rendered_surface.blit(price_lbl, (PANEL_WIDTH / 2 - price_lbl.get_width() / 2, self.rect.h - 350))
+
+        if price > SaveManager().money:
+            self.buy_button.hide()
+            self.rendered_surface.blit(self.not_enough_money_lbl, (PANEL_WIDTH / 2 - self.not_enough_money_lbl.get_width() / 2, self.buy_button.rect.y + 20))
+            return
+        
+        self.buy_button.show()
+        self.buy_button.draw()
+
+    def rebuild(self) -> None:
+        self.rendered_surface.fill((255, 255, 255), (0, 0, PANEL_WIDTH, self.rendered_surface.get_height() - 170)) # - 170 for back button below
+
+        self.draw_can_buy()
+
+    def update(self) -> None:
+        self.dropdown.update(self.events.mouse_just_pressed)
+        self.buy_button.update(self.events.mouse_just_pressed)
+
+        if self.last_money != SaveManager().money:
+            self.last_money = SaveManager().money
+
+            self.rebuild()
+        
+        self.draw()
+
+    def draw(self) -> None:
+        self.parent_surface.blit(self.rendered_surface, self.rect)
+        self.dropdown.draw()
 
 class Shop:
     def __init__(self, parent_surface: pg.Surface, events: Events, rect: pg.Rect) -> None:
@@ -36,6 +131,10 @@ class Shop:
         self.product_images: List[pg.Surface] = []
         self.current_image = 0
         self.last_image_change = time()
+
+        self.in_paddock_menu = False
+
+        self.paddock_buy_menu = PaddockBuyMenu(self.parent_surface, self.events, self.rect)
 
         self.not_enough_money_lbl = self.product_title_font.render("Not enough money!", True, (255, 0, 0))
         self.not_enough_xp_lbl = self.product_title_font.render("Not enough XP!", True, (255, 0, 0))
@@ -72,7 +171,12 @@ class Shop:
 
     def backtrack_path(self) -> None:
         self.current_items = self.global_dict
-        self.path.pop()
+        
+        if self.in_paddock_menu:
+            self.in_paddock_menu = False
+            self.path = []
+        else:
+            self.path.pop()
 
         for item in self.path:
             self.current_items = self.current_items[item]
@@ -126,6 +230,14 @@ class Shop:
         else:
             self.buy_button.show()
             self.buy_button.draw()
+
+    def open_paddocks_buy_menu(self) -> None:
+        self.in_paddock_menu = True
+        
+        self.buy_button.hide()
+        self.back_button.show()
+
+        self.draw()
 
     def rebuild_buyscr(self) -> None:
         self.product_images = []
@@ -202,6 +314,11 @@ class Shop:
                 y += step
                 x = 25
 
+        paddocks_btn = Button(self.rendered_surface, x, y, size, size, self.rect, (0, 200, 255), (0, 200, 255),(255, 255, 255),
+                              "Paddocks", 30, (5, 5, 5, 5), 0, 0, True, lambda: self.open_paddocks_buy_menu())
+        
+        self.buttons.append(paddocks_btn)
+
         self.just_rebuilt = True
 
     def check_buyscr(self) -> bool:
@@ -217,6 +334,8 @@ class Shop:
 
         if len(self.path) == 3:
             update = self.check_buyscr()
+        elif self.in_paddock_menu:
+            self.paddock_buy_menu.update()
         else:
             for button in self.buttons:
                 button.update(self.events.mouse_just_pressed)
@@ -234,7 +353,8 @@ class Shop:
         for button in self.buttons: button.draw()
 
         if len(self.path) > 0: self.back_button.show()
-        else: self.back_button.hide()
+        else:
+            if not self.in_paddock_menu: self.back_button.hide()
 
         self.back_button.draw()
 
