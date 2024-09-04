@@ -66,14 +66,18 @@ class Hitch:
 class Vehicle:
     def __init__(self, screen: pg.Surface, image: pg.Surface, hitch_offset_x: int, hitch_offset_y: int) -> None:
         self.screen: pg.Surface = screen
+        
         self.original_image: pg.Surface = image
         self.image: pg.Surface = self.original_image
+
         self.width: int = self.original_image.get_width()
         self.height: int = self.original_image.get_height()
+
         self.rect: pg.Rect = self.image.get_rect()
-        self.x: float = 200
-        self.y: float = 200
+        self.x: float = 200.0
+        self.y: float = 200.0
         self.update_rect()
+        
         self.rotation: float = 0.0
         self.velocity: List[float, float] = [0, 0]
         self.hitch: Hitch = Hitch(hitch_offset_x, hitch_offset_y, self.rect.center)
@@ -122,12 +126,15 @@ class Trailer:
     def __init__(self, screen: pg.Surface, vehicle: Vehicle, image: pg.Surface, hitch_offset_x: int, hitch_offset_y: int) -> None:
         self.screen: pg.Surface = screen
         self.vehicle: Vehicle = vehicle
+
         self.original_image: pg.Surface = image
         self.image: pg.Surface = self.original_image
+
         self.rect: pg.Rect = self.image.get_rect()
         self.x: float = 200.0
         self.y: float = 240.0
         self.update_rect()
+
         self.rotation: float = 0.0
         self.hitch: Hitch = Hitch(hitch_offset_x, hitch_offset_y, self.rect.center)
 
