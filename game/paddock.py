@@ -9,8 +9,12 @@ class Paddock:
         self.num = num
         self.scale = scale
         self.state: int = attrs.get("state", randint(0, 5))
+        self.owned_by: str = attrs["owned_by"]
 
-        self.number_surface = pg.font.SysFont(None, 80).render(str(self.num), True, (255, 255, 255))
+        color = (255, 255, 255)
+        if self.owned_by == "player": color = (0, 0, 255)
+
+        self.number_surface = pg.font.SysFont(None, 80).render(str(self.num), True, color)
 
         cx, cy = attrs["center"]
         gx, gy = attrs["gate"]
@@ -24,7 +28,8 @@ class Paddock:
         return {
             "center": self.attrs["center"],
             "gate": self.attrs["gate"],
-            "state": self.state
+            "state": self.state,
+            "owned_by": self.owned_by
         }
     
     def set_boundary(self, boundary: List[Tuple]) -> None:

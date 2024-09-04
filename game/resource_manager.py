@@ -221,6 +221,7 @@ class SaveManager:
         new_paddocks = {}
         for pdk in map_config["paddocks"]:
             new_paddocks[int(pdk)+1] = map_config["paddocks"][pdk]
+            new_paddocks[int(pdk)+1]["owned_by"] = "npc"
 
         return new_paddocks
 
