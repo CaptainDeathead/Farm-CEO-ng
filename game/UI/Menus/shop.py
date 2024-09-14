@@ -320,10 +320,10 @@ class Shop:
                 y += step
                 x = 25
 
-        paddocks_btn = Button(self.rendered_surface, x, y, size, size, self.rect, (0, 200, 255), (0, 200, 255),(255, 255, 255),
+        if len(self.path) == 0:
+            paddocks_btn = Button(self.rendered_surface, x, y, size, size, self.rect, (0, 200, 255), (0, 200, 255),(255, 255, 255),
                               "Paddocks", 30, (20, 20, 20, 20), 0, 0, True, lambda: self.open_paddocks_buy_menu())
-        
-        self.buttons.append(paddocks_btn)
+            self.buttons.append(paddocks_btn)
 
         self.just_rebuilt = True
 
