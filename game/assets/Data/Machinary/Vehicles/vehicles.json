@@ -9,7 +9,7 @@
                     "normal": "Machinary/Vehicles/Tractors/CaseIH/tractor_0.png"
                 },
                 "price": 148000,
-                "fuel": 190,
+                "max_fuel": 190,
                 "xp": 1
             },
             "Puma 210": {
@@ -20,7 +20,7 @@
                     "normal": "Machinary/Vehicles/Tractors/CaseIH/tractor_1.png"
                 },
                 "price": 226000,
-                "fuel": 380,
+                "max_fuel": 380,
                 "xp": 5
             },
             "Magnum 380": {
@@ -31,7 +31,7 @@
                     "normal": "Machinary/Vehicles/Tractors/CaseIH/tractor_2.png"
                 },
                 "price": 423500,
-                "fuel": 681,
+                "max_fuel": 681,
                 "xp": 11
             }
         },
@@ -44,7 +44,7 @@
                     "normal": "Machinary/Vehicles/Tractors/NewHolland/tractor_0.png"
                 },
                 "price": 135000,
-                "fuel": 290,
+                "max_fuel": 290,
                 "xp": 0
             },
             "T7 245": {
@@ -55,7 +55,7 @@
                     "normal": "Machinary/Vehicles/Tractors/NewHolland/tractor_1.png"
                 },
                 "price": 295000,
-                "fuel": 630,
+                "max_fuel": 630,
                 "xp": 6
             },
             "T8 350": {
@@ -66,7 +66,7 @@
                     "normal": "Machinary/Vehicles/Tractors/NewHolland/tractor_2.png"
                 },
                 "price": 390000,
-                "fuel": 1514,
+                "max_fuel": 1514,
                 "xp": 9
             }
         },
@@ -79,7 +79,7 @@
                     "normal": "Machinary/Vehicles/Tractors/JohnDeer/tractor_0.png"
                 },
                 "price": 164000,
-                "fuel": 430,
+                "max_fuel": 430,
                 "xp": 4
             },
             "7R 290": {
@@ -90,7 +90,7 @@
                     "normal": "Machinary/Vehicles/Tractors/JohnDeer/tractor_1.png"
                 },
                 "price": 310000,
-                "fuel": 800,
+                "max_fuel": 800,
                 "xp": 7
             },
             "8R 370": {
@@ -101,7 +101,7 @@
                     "normal": "Machinary/Vehicles/Tractors/JohnDeer/tractor_2.png"
                 },
                 "price": 402000,
-                "fuel": 950,
+                "max_fuel": 950,
                 "xp": 10
             }
         }
@@ -119,7 +119,7 @@
                     "pipeOut": "Machinary/Vehicles/Harvesters/CaseIH/header_0_auger.png"
                 },
                 "price": 84000,
-                "fuel": 700,
+                "max_fuel": 700,
                 "xp": 0
             },
             "7250": {
@@ -133,7 +133,7 @@
                     "pipeOut": "Machinary/Vehicles/Harvesters/CaseIH/header_1_auger.png"
                 },
                 "price": 365000,
-                "fuel": 1000,
+                "max_fuel": 1000,
                 "xp": 12
             }
         },
@@ -149,7 +149,7 @@
                     "pipeOut": "Machinary/Vehicles/Harvesters/NewHolland/header_0_auger.png"
                 },
                 "price": 240000,
-                "fuel": 1200,
+                "max_fuel": 1200,
                 "xp": 8
             },
             "CR 10.90": {
@@ -163,7 +163,7 @@
                     "pipeOut": "Machinary/Vehicles/Harvesters/NewHolland/header_1_auger.png"
                 },
                 "price": 410000,
-                "fuel": 1300,
+                "max_fuel": 1300,
                 "xp": 15
             }
         },
@@ -179,7 +179,7 @@
                     "pipeOut": "Machinary/Vehicles/Harvesters/JohnDeer/header_0_auger.png"
                 },
                 "price": 270000,
-                "fuel": 1200,
+                "max_fuel": 1200,
                 "xp": 5
             },
             "S770": {
@@ -193,7 +193,7 @@
                     "pipeOut": "Machinary/Vehicles/Harvesters/JohnDeer/header_1_auger.png"
                 },
                 "price": 347000,
-                "fuel": 1300,
+                "max_fuel": 1300,
                 "xp": 10
             }
         }

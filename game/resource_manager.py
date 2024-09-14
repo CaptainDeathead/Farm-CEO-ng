@@ -3,16 +3,11 @@ import os
 import logging
 import traceback
 
-from data import *
 from paddock import Paddock
-
-if BUILD: from android.storage import app_storage_path
-else:
-    def app_storage_path() -> str:
-        return "./"
+from data import *
 
 from json import loads, dumps, JSONDecodeError
-from typing import Tuple, Dict, List
+from typing import Tuple, Dict
 
 class ResourceManager:
     """
@@ -173,133 +168,3 @@ class ResourceManager:
         map_file = map_cfg.get("filename", "")
 
         return (ResourceManager.load_image(f"Maps/{map_file}", (1000, 1000)), map_cfg)
-    
-class SaveManager:
-    SAVE_PATH: str = os.path.join(app_storage_path(), "farmceo_savegame.json")
-
-    def __new__(cls) -> None:
-        if not hasattr(cls, 'instance'):
-            cls.instance = super(SaveManager, cls).__new__(cls)
-
-        return cls.instance
-    
-    def init(self, map_config: Dict[str, any]) -> None:
-        self.money = 500_000.0 # Starting money
-        self.xp = 0.0
-        self.debt = 0.0 # No dept to start with
-        self.time = 0.0
-        self.vehicles = {
-            0: {
-                "header": False,
-                "brand": "New Holland",
-                "model": "T6 145",
-                "fuel": 290
-            },
-            1: {
-                "header": True,
-                "brand": "Case IH",
-                "model": "2388",
-                "fuel": 700
-            }
-        }
-        self.tools = {
-            0: {
-                "toolType": "Cultivators",
-                "brand": "Case IH",
-                "model": "490"
-            },
-            1: {
-                "toolType": "Seeders",
-                "brand": "John Sheerer",
-                "model": "Combine 14ft"
-            },
-            2: {
-                "toolType": "Trailers",
-                "brand": "Marshall",
-                "model": "QM-12"
-            }
-        }
-
-        self.load_game()
-        if self.save == {}: self.init_savefile(map_config)
-
-    def _load_paddocks_from_conf(self, map_config: Dict[str, any]) -> Dict[int, any]:
-        new_paddocks = {}
-        for pdk in map_config["paddocks"]:
-            new_paddocks[int(pdk)+1] = map_config["paddocks"][pdk]
-            new_paddocks[int(pdk)+1]["owned_by"] = "npc"
-            new_paddocks[int(pdk)+1]["hectares"] = map_config["paddocks"][pdk]["hectares"]
-
-        return new_paddocks
-
-    def init_savefile(self, map_config: Dict[str, any]) -> None:
-        self.new_savefile = True
-
-        if map_config == {}:
-            raise Exception("Map configuration is EMPTY! Please provide a valid map config in the arguments when creating a new save.")
-        
-        new_save = {
-            "map_name": map_config["name"],
-            "money": self.money, # Starting money
-            "xp": self.xp,
-            "debt": 0.0, # No dept to start with
-            "time": 0.0,
-            "vehicles": self.vehicles,
-            "tools": self.tools
-        }
-
-        new_save["paddocks"] = self._load_paddocks_from_conf(map_config)
-
-        self.save = new_save
-        self.save_game()
-        self.load_game()
-
-    def load_game(self) -> None:
-        logging.debug(f"Loading savegame file: \"{self.SAVE_PATH}\"...")
-        self.save = ResourceManager.load_json(self.SAVE_PATH, explicit_path=True)
-
-        if self.save == {}: return # will create one and load values
-
-        self.money = self.save["money"]
-        self.xp = self.save["xp"]
-        self.debt = self.save["debt"]
-        self.time = self.save["time"]
-        self.vehicles = self.save["vehicles"]
-        self.tools = self.save["tools"]
-
-    def save_game(self) -> None:
-        self.set_attr("money", self.money)
-        self.set_attr("xp", self.xp)
-        self.set_attr("debt", self.debt)
-        self.set_attr("time", self.time)
-        self.set_attr("vehicles", self.vehicles)
-        self.set_attr("tools", self.tools)
-
-        logging.debug(f"Writing savegame file: \"{self.SAVE_PATH}\"...")
-        ResourceManager.write_json(self.save, self.SAVE_PATH, explicit_path=True)
-
-    def set_money(self, new_money: float) -> None:
-        self.money = new_money
-
-    def get_attr(self, attr_name: str) -> any:
-        return self.save[attr_name]
-    
-    def set_attr(self, attr_name: str, value: any) -> None:
-        self.save[attr_name] = value
-
-    def get_paddocks(self) -> Dict[int, any]:
-        return self.get_attr("paddocks")
-    
-    def set_paddocks(self, paddocks: List[Paddock]) -> None:
-        paddocks_dict = {}
-
-        for paddock in paddocks:
-            paddocks_dict[paddock.num] = paddock.__dict__()
-
-        self.set_attr("paddocks", paddocks_dict)
-
-    def add_vehicle(self, header: bool, brand: str, model: str, fuel: int) -> None:
-        self.vehicles[len(self.vehicles)] = {"header": header, "brand": brand, "model": model, "fuel": fuel}
-
-    def add_tool(self, tool_type: str, brand: str, model: str) -> None:
-        self.tools[len(self.tools)] = {"toolType": tool_type, "brand": brand, "model": model}

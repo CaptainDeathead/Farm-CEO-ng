@@ -1,7 +1,7 @@
 import pygame as pg
 import logging
 
-from resource_manager import SaveManager
+from save_manager import SaveManager
 from paddock import Paddock
 from data import *
 
@@ -122,7 +122,6 @@ class PaddockManager:
             self.load_paddock_state(paddock)
 
         save_manager = SaveManager()
-        save_manager.init({})
         save_manager.set_paddocks(self.paddocks)
         save_manager.save_game()
 

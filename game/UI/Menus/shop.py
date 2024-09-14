@@ -1,7 +1,8 @@
 import pygame as pg
 import logging
 
-from resource_manager import ResourceManager, SaveManager
+from resource_manager import ResourceManager
+from save_manager import SaveManager
 from paddock_manager import PaddockManager
 from events import Events
 
@@ -152,7 +153,6 @@ class Shop:
 
     def buy_selected(self) -> None:
         price = self.current_items["price"]
-        fuel = self.current_items.get("fuel", 0)
 
         machine_type = self.path[0]
         brand = self.path[1]
@@ -160,8 +160,8 @@ class Shop:
 
         SaveManager().set_money(SaveManager().money-price)
         
-        if machine_type in ("Tractors", "Harvesters"): SaveManager().add_vehicle(machine_type == "Harvesters", brand, model, fuel)
-        else: SaveManager().add_tool(machine_type, brand, model)
+        if machine_type in ("Tractors", "Harvesters"): SaveManager().create_vehicle(machine_type == "Harvesters", brand, model)
+        else: SaveManager().create_tool(machine_type, brand, model)
 
         self.path = []
         self.current_items = self.global_dict

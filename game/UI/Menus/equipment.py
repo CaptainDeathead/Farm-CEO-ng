@@ -1,7 +1,8 @@
 import pygame as pg
 import logging
 
-from resource_manager import ResourceManager, SaveManager
+from resource_manager import ResourceManager
+from save_manager import SaveManager
 from paddock_manager import PaddockManager
 from events import Events
 
@@ -55,7 +56,7 @@ class Equipment:
             button.draw()
             self.equipment_buttons.append(button)
 
-            name_lbl = self.title_font.render(f"{vehicle.brand} {vehicle.name}", True, white)
+            name_lbl = self.title_font.render(f"{vehicle.brand} {vehicle.model}", True, white)
             self.scrollable_surface.blit(name_lbl, (center - name_lbl.get_width()/2, y + 10))
             
             self.scrollable_surface.blit(self.body_font.render(f"Task: {vehicle.string_task}", True, white), (60, y + 30))
