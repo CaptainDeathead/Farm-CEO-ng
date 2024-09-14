@@ -18,10 +18,10 @@ logging.root.setLevel(logging.NOTSET)
 logging.basicConfig(level=logging.NOTSET)
 
 class SpoofedConsole:
-    def update(self) -> None:
+    def update(self, *args) -> None:
         return
     
-    def write(self, text: str, print: bool = True) -> None:
+    def write(self, text: str, *args) -> None:
         # Ignore `print` argument
         sys.__stdout__.write(text)
 
@@ -29,7 +29,7 @@ class SpoofedConsole:
         sys.__stdout__.flush()
 
 class PygameConsoleHandler(logging.Handler):
-    def __init__(self, console: PygameConsole | SpoofedConsole):
+    def __init__(self, console: SpoofedConsole):
         super().__init__()
         self.console = console
         self.setFormatter(logging.Formatter('%(levelname)s:%(name)s:%(message)s'))
@@ -61,7 +61,7 @@ class Window:
         logging.getLogger().addHandler(PygameConsoleHandler(self.console))
 
         self.delta_time = 0.0
-        self.performance_monitor = PerformanceMonitor(self.screen, (self.WIDTH - 120, self.HEIGHT - 100))
+        self.performance_monitor = PerformanceMonitor(self.screen, (0, 0))
 
     def main(self) -> None:
         pg.display.set_caption(self.TITLE)

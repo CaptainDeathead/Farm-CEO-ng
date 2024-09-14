@@ -86,7 +86,7 @@ class Equipment:
         if self.rect.collidepoint(pg.mouse.get_pos()):
             rx, ry = pg.mouse.get_rel()
 
-            if abs(rx) > 10 and abs(ry) > 10: return False
+            if (abs(rx) > 10 and abs(ry) > 10) or ry == 0: return False
             
             scrollable_height = self.scrollable_surface.get_height()
             if self.scroll_y + self.max_y < scrollable_height:
