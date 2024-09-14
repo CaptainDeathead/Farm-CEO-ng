@@ -1,4 +1,5 @@
 import pygame as pg
+import logging
 
 from resource_manager import ResourceManager
 from events import Events
@@ -36,6 +37,8 @@ class Panel:
         self.rebuild()
 
     def rebuild(self) -> None:
+        logging.debug("Rebuilding panel...")
+
         self.rendered_surface.fill((255, 255, 255))
 
         self.nav_bar.draw()

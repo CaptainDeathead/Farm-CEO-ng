@@ -48,6 +48,10 @@ class PygameConsole:
         # Display the console if enabled or animation is still in progress
         self.console.show(self.screen)
 
+    def write(self, text: str, print: bool = True) -> None:
+        if print: sys.__stdout__.write(text)
+        self.console.write(text)
+
     def move(self, line):
         ''' first argumet is movement on x-axis
             second argument is movement on y-axis

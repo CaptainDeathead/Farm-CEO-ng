@@ -1,4 +1,5 @@
 import pygame as pg
+import logging
 
 from resource_manager import SaveManager
 from paddock import Paddock
@@ -29,6 +30,8 @@ class PaddockManager:
         return pdk_list
 
     def locate_paddock_boundary(self, paddock: Paddock) -> None:
+        logging.debug(f"Locating paddock boundary... Paddock: {paddock.num}")
+
         def rgb_darker_than(rgb: Tuple[int, int, int], brightness: int) -> bool:
             if rgb[0] < brightness and rgb[1] < brightness and rgb[2] < brightness: return True
             return False
@@ -112,6 +115,8 @@ class PaddockManager:
         self.load_paddock_state(self.paddocks[paddock_number-1])
 
     def init_paddocks(self) -> None:
+        logging.debug("Initializing paddocks... (This may take some time)")
+        
         for paddock in self.paddocks:
             self.locate_paddock_boundary(paddock)
             self.load_paddock_state(paddock)

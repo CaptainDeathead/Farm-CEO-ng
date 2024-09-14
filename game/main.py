@@ -1,4 +1,6 @@
 import pygame as pg
+import sys
+import logging
 
 from events import Events
 from farm_ceo import FarmCEO
@@ -9,9 +11,30 @@ if CONSOLE_BUILD: from console import PygameConsole
 
 pg.init()
 
+logging.basicConfig()
+logging.root.setLevel(logging.NOTSET)
+logging.basicConfig(level=logging.NOTSET)
+
 class SpoofedConsole:
     def update(self) -> None:
         return
+    
+    def write(self, text: str, print: bool = True) -> None:
+        # Ignore `print` argument
+        sys.__stdout__.write(text)
+
+    def flush(self) -> None:
+        sys.__stdout__.flush()
+
+class PygameConsoleHandler(logging.Handler):
+    def __init__(self, console: PygameConsole | SpoofedConsole):
+        super().__init__()
+        self.console = console
+        self.setFormatter(logging.Formatter('%(levelname)s:%(name)s:%(message)s'))
+
+    def emit(self, record):
+        log_entry = self.format(record)
+        self.console.write(log_entry, False)
 
 class Window:
     PYGAME_INFO: any = pg.display.Info()
@@ -30,7 +53,10 @@ class Window:
         self.farm_ceo: FarmCEO = FarmCEO(self.screen, self.clock, self.events)
 
         if CONSOLE_BUILD: self.console: PygameConsole = PygameConsole(self, self.screen)
-        else: self.console: SpoofedConsole = SpoofedConsole
+        else: self.console: SpoofedConsole = SpoofedConsole()
+
+        sys.stdout = self.console.write
+        logging.getLogger().addHandler(PygameConsoleHandler(self.console))
 
     def main(self) -> None:
         pg.display.set_caption(self.TITLE)

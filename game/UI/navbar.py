@@ -1,4 +1,5 @@
 import pygame as pg
+import logging
 
 from resource_manager import ResourceManager
 from events import Events
@@ -32,6 +33,8 @@ class NavBar:
     def get_selected(self) -> int: return self.selected_button
 
     def rebuild(self, rebuild_buttons: bool = False) -> None:
+        logging.debug("Rebuilding navbar...")
+        
         self.rendered_surface.fill((255, 255, 255))
 
         for i, button in enumerate(self.buttons):

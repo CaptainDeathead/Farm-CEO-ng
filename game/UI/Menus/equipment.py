@@ -1,4 +1,5 @@
 import pygame as pg
+import logging
 
 from resource_manager import ResourceManager, SaveManager
 from paddock_manager import PaddockManager
@@ -33,6 +34,8 @@ class Equipment:
         self.max_y = 0.0
 
     def rebuild(self) -> None:
+        logging.debug("Rebuilding equipment menu...")
+
         self.equipment_buttons = []
 
         white = pg.Color(255, 255, 255)

@@ -1,4 +1,5 @@
 import pygame as pg
+import logging
 
 from resource_manager import ResourceManager, SaveManager
 from paddock_manager import PaddockManager
@@ -86,6 +87,7 @@ class PaddockBuyMenu:
         self.buy_button.draw()
 
     def rebuild(self) -> None:
+        logging.debug("Rebuilding paddock buy menu...")
         self.rendered_surface.fill((255, 255, 255), (0, 0, PANEL_WIDTH, self.rendered_surface.get_height() - 170)) # - 170 for back button below
 
         self.draw_can_buy()
@@ -240,6 +242,8 @@ class Shop:
         self.draw()
 
     def rebuild_buyscr(self) -> None:
+        logging.debug("Rebuilding equipment buy menu...")
+
         self.product_images = []
         self.current_image = 0
         
@@ -293,6 +297,8 @@ class Shop:
         self.just_rebuilt = True
 
     def rebuild(self) -> None:
+        logging.debug("Rebuilding buy menu items...")
+
         self.rendered_surface.fill((255, 255, 255, 255))
         self.buttons = []
 
@@ -306,7 +312,7 @@ class Shop:
 
         for item in self.current_items:
             self.buttons.append(Button(self.rendered_surface, x, y, size, size, self.rect, (0, 200, 255), (0, 200, 255), (255, 255, 255),
-                                       item, 30, (5, 5, 5, 5), 0, 0, True, lambda item=item: self.update_path(item)))
+                                       item, 30, (20, 20, 20, 20), 0, 0, True, lambda item=item: self.update_path(item)))
             
             x += step
 
@@ -315,7 +321,7 @@ class Shop:
                 x = 25
 
         paddocks_btn = Button(self.rendered_surface, x, y, size, size, self.rect, (0, 200, 255), (0, 200, 255),(255, 255, 255),
-                              "Paddocks", 30, (5, 5, 5, 5), 0, 0, True, lambda: self.open_paddocks_buy_menu())
+                              "Paddocks", 30, (20, 20, 20, 20), 0, 0, True, lambda: self.open_paddocks_buy_menu())
         
         self.buttons.append(paddocks_btn)
 

@@ -40,6 +40,7 @@ class ResourceManager:
     @staticmethod
     def load_image(image_path: str, expected_size: Tuple[int, int] = (10, 10)) -> pg.Surface:
         """image_path: str (relative to `DATA_PATH`)"""
+        logging.debug(f"Loading image: \"{image_path}\"...")
 
         image = pg.Surface(expected_size)
 
@@ -61,6 +62,7 @@ class ResourceManager:
     @staticmethod
     def load_text_file(file_path: str, explicit_path: bool = False) -> str:
         """file_path: str (relative to `DATA_PATH`)"""
+        logging.debug(f"Loading text file: \"{file_path}\"...")
 
         contents = ""
 
@@ -86,6 +88,7 @@ class ResourceManager:
 
         returns -> success status
         """
+        logging.debug(f"Writing text file: \"{file_path}\"...")
 
         success = False
 
@@ -110,6 +113,7 @@ class ResourceManager:
     @staticmethod
     def load_json(json_path: str, explicit_path: bool = False) -> Dict[any, any]:
         """json_path: str (relative to `DATA_PATH`)"""
+        logging.debug(f"Loading json file: \"{json_path}\"...")
 
         json = {}
 
@@ -134,6 +138,7 @@ class ResourceManager:
 
         returns -> success
         """
+        logging.debug(f"Writing json file: \"{json_path}\"...")
 
         success = False
 
@@ -156,6 +161,7 @@ class ResourceManager:
     @staticmethod
     def load_map(map_name: str) -> Tuple[pg.Surface, Dict[str, any]]:
         """map_name: str (relative to `MAPS_PATH`)"""
+        logging.debug(f"Loading map: \"{map_name}\"...")
 
         map_cfg = ResourceManager.load_json(f"Maps/{map_name}")
 
@@ -249,6 +255,7 @@ class SaveManager:
         self.load_game()
 
     def load_game(self) -> None:
+        logging.debug(f"Loading savegame file: \"{self.SAVE_PATH}\"...")
         self.save = ResourceManager.load_json(self.SAVE_PATH, explicit_path=True)
 
         if self.save == {}: return # will create one and load values
@@ -268,6 +275,7 @@ class SaveManager:
         self.set_attr("vehicles", self.vehicles)
         self.set_attr("tools", self.tools)
 
+        logging.debug(f"Writing savegame file: \"{self.SAVE_PATH}\"...")
         ResourceManager.write_json(self.save, self.SAVE_PATH, explicit_path=True)
 
     def set_money(self, new_money: float) -> None:

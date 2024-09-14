@@ -14,10 +14,6 @@ from farm import Shed
 from data import *
 from typing import Dict, List, Iterable
 
-logging.basicConfig()
-logging.root.setLevel(logging.NOTSET)
-logging.basicConfig(level=logging.NOTSET)
-
 class Map:
     def __init__(self, screen: pg.Surface, map_image_with_cfg: Tuple[pg.Surface, Dict[str, any]]) -> None:
         self.screen: pg.Surface = screen

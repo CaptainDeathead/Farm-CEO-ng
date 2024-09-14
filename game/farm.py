@@ -46,6 +46,9 @@ class Shed(LayableRenderObj):
         pg.draw.rect(self.surface, self.color, pg.Rect(0, 0, self.rect.w, self.rect.h*2/3))
         self.surface.blit(self.shadow_map, (0, 0))
 
+        # Line in middle of shed
+        pg.draw.line(self.surface, (150, 150, 200), (0, self.rect.h/3), (self.rect.w, self.rect.h/3), 2)
+
         # Concrete pad in front of shed
         pg.draw.rect(self.surface, self.pad_color, pg.Rect(0, self.rect.h*2/3, self.rect.w, self.rect.h/3))
 
