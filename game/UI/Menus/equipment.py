@@ -21,13 +21,14 @@ class Equipment:
         self.parent_surface = parent_surface
         self.events = events
         self.rect = rect
+        self.rect.y += 20
         self.shed = shed
 
         self.rendered_surface = pg.Surface((self.rect.w, self.rect.h), pg.SRCALPHA)
         self.scrollable_surface = self.rendered_surface
 
-        self.title_font = pg.font.SysFont(None, 25)
-        self.body_font = pg.font.SysFont(None, 20)
+        self.title_font = pg.font.SysFont(None, 60)
+        self.body_font = pg.font.SysFont(None, 40)
 
         self.equipment_buttons: List[Button] = []
 
@@ -37,6 +38,7 @@ class Equipment:
     def rebuild(self) -> None:
         logging.debug("Rebuilding equipment menu...")
 
+        self.rendered_surface.fill((255, 255, 255))
         self.equipment_buttons = []
 
         white = pg.Color(255, 255, 255)
@@ -59,11 +61,11 @@ class Equipment:
             name_lbl = self.title_font.render(f"{vehicle.brand} {vehicle.model}", True, white)
             self.scrollable_surface.blit(name_lbl, (center - name_lbl.get_width()/2, y + 10))
             
-            self.scrollable_surface.blit(self.body_font.render(f"Task: {vehicle.string_task}", True, white), (60, y + 30))
-            self.scrollable_surface.blit(self.body_font.render(f"Fuel: {vehicle.fuel}L", True, white), (60, y + 50))
+            self.scrollable_surface.blit(self.body_font.render(f"Task: {vehicle.string_task}", True, white), (60, y + 50))
+            self.scrollable_surface.blit(self.body_font.render(f"Fuel: {vehicle.fuel}L", True, white), (60, y + 80))
 
             pdk_lbl = self.body_font.render(f"Paddock: {vehicle.paddock}", True, white)
-            self.scrollable_surface.blit(pdk_lbl, (PANEL_WIDTH - 60 - pdk_lbl.get_width(), y + 50))
+            self.scrollable_surface.blit(pdk_lbl, (PANEL_WIDTH - 60 - pdk_lbl.get_width(), y + 80))
 
             y += y_inc
 
@@ -97,6 +99,5 @@ class Equipment:
         return False
 
     def draw(self) -> None:
-        self.rendered_surface.fill((255, 255, 255))
         self.rendered_surface.blit(self.scrollable_surface, (0, self.scroll_y))
         self.parent_surface.blit(self.rendered_surface, self.rect)
