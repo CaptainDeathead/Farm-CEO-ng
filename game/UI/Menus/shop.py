@@ -88,7 +88,7 @@ class PaddockBuyMenu:
         self.buy_button.draw()
 
     def rebuild(self) -> None:
-        logging.debug("Rebuilding paddock buy menu...")
+        logging.info("Rebuilding paddock buy menu...")
         self.rendered_surface.fill((255, 255, 255), (0, 0, PANEL_WIDTH, self.rendered_surface.get_height() - 170)) # - 170 for back button below
 
         self.draw_can_buy()
@@ -242,7 +242,7 @@ class Shop:
         self.draw()
 
     def rebuild_buyscr(self) -> None:
-        logging.debug("Rebuilding equipment buy menu...")
+        logging.info("Rebuilding equipment buy menu...")
 
         self.product_images = []
         self.current_image = 0
@@ -297,7 +297,7 @@ class Shop:
         self.just_rebuilt = True
 
     def rebuild(self) -> None:
-        logging.debug("Rebuilding buy menu items...")
+        logging.info("Rebuilding buy menu items...")
 
         self.rendered_surface.fill((255, 255, 255, 255))
         self.buttons = []

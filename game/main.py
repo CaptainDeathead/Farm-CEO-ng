@@ -55,7 +55,7 @@ class Window:
         if CONSOLE_BUILD: self.console: PygameConsole = PygameConsole(self, self.screen)
         else: self.console: SpoofedConsole = SpoofedConsole()
 
-        sys.stdout = self.console.write
+        sys.stdout = self.console
         logging.getLogger().addHandler(PygameConsoleHandler(self.console))
 
     def main(self) -> None:

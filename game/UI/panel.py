@@ -37,7 +37,7 @@ class Panel:
         self.rebuild()
 
     def rebuild(self) -> None:
-        logging.debug("Rebuilding panel...")
+        logging.info("Rebuilding panel...")
 
         self.rendered_surface.fill((255, 255, 255))
 

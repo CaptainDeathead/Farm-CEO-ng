@@ -33,7 +33,7 @@ class NavBar:
     def get_selected(self) -> int: return self.selected_button
 
     def rebuild(self, rebuild_buttons: bool = False) -> None:
-        logging.debug("Rebuilding navbar...")
+        logging.info("Rebuilding navbar...")
         
         self.rendered_surface.fill((255, 255, 255))
 
