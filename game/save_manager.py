@@ -165,7 +165,7 @@ class SaveManager:
 
     def create_vehicle(self, header: bool, brand: str, model: str, ) -> None:
         if header:
-            static_conf = self.STATIC_VEHICLES_DICT["Harvestors"][brand][model]
+            static_conf = self.STATIC_VEHICLES_DICT["Harvesters"][brand][model]
             vehicle = {
                 "header": True,
                 "brand": brand,

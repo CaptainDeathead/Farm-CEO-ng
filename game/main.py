@@ -9,6 +9,8 @@ from data import *
 
 if CONSOLE_BUILD: from console import PygameConsole
 
+from performance_monitor import PerformanceMonitor
+
 pg.init()
 
 logging.basicConfig()
@@ -58,6 +60,9 @@ class Window:
         sys.stdout = self.console
         logging.getLogger().addHandler(PygameConsoleHandler(self.console))
 
+        self.delta_time = 0.0
+        self.performance_monitor = PerformanceMonitor(self.screen, (self.WIDTH - 120, self.HEIGHT - 100))
+
     def main(self) -> None:
         pg.display.set_caption(self.TITLE)
         pg.display.set_icon(self.farm_ceo.RESOURCE_MANAGER.load_image("game_icon.png", (100, 100)))
@@ -73,10 +78,13 @@ class Window:
             self.farm_ceo.foreground_render()
             self.farm_ceo.ui_render()
 
+            self.performance_monitor.update(self.delta_time)
+            self.performance_monitor.draw()
+
             self.console.update(events)
 
             pg.display.flip()
-            self.clock.tick(self.FPS)
+            self.delta_time = self.clock.tick(self.FPS)
 
 def main() -> None:
     window = Window()
