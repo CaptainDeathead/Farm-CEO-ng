@@ -64,7 +64,7 @@ class Hitch:
         self.position = (self.global_x, self.global_y)
 
 class Vehicle:
-    def __init__(self, screen: pg.Surface, image: pg.Surface, hitch_offset_x: int, hitch_offset_y: int) -> None:
+    def __init__(self, screen: pg.Surface, image: pg.Surface, pos: Tuple[float, float], hitch_offset_x: int, hitch_offset_y: int) -> None:
         self.screen: pg.Surface = screen
         
         self.original_image: pg.Surface = image
@@ -74,8 +74,8 @@ class Vehicle:
         self.height: int = self.original_image.get_height()
 
         self.rect: pg.Rect = self.image.get_rect()
-        self.x: float = 200.0
-        self.y: float = 200.0
+        self.x: float = pos[0]
+        self.y: float = pos[1]
         self.update_rect()
         
         self.rotation: float = 0.0
@@ -90,7 +90,7 @@ class Vehicle:
     def speed(self) -> float:
         return math.sqrt(self.velocity[0]**2 + self.velocity[1]**2)
 
-    def rotate_image_centered(self, angle):
+    def rotate_image_centered(self, angle: float):
         self.image = pg.transform.rotate(self.original_image, angle)
         self.rect = self.image.get_rect(center=self.original_image.get_rect(topleft=(self.x, self.y)).center)
 
@@ -123,7 +123,7 @@ class Vehicle:
         pg.draw.circle(self.screen, (0, 0, 255), self.position, 3)
 
 class Trailer:
-    def __init__(self, screen: pg.Surface, vehicle: Vehicle, image: pg.Surface, hitch_offset_x: int, hitch_offset_y: int) -> None:
+    def __init__(self, screen: pg.Surface, vehicle: Vehicle, image: pg.Surface, pos: Tuple[float, float], hitch_offset_x: int, hitch_offset_y: int) -> None:
         self.screen: pg.Surface = screen
         self.vehicle: Vehicle = vehicle
 
@@ -131,8 +131,8 @@ class Trailer:
         self.image: pg.Surface = self.original_image
 
         self.rect: pg.Rect = self.image.get_rect()
-        self.x: float = 200.0
-        self.y: float = 240.0
+        self.x: float = pos[0]
+        self.y: float = pos[1]
         self.update_rect()
 
         self.rotation: float = 0.0
@@ -196,8 +196,8 @@ class Test:
     def __init__(self) -> None:
         self.screen: pg.Surface = pg.display.set_mode((800, 800))
         self.clock: pg.time.Clock = pg.time.Clock()
-        self.vehicle: Vehicle = Vehicle(self.screen, pg.image.load(f"{IMAGES_PATH}/tractor_0.png"), 0, 14)
-        self.trailer: Trailer = Trailer(self.screen, self.vehicle, pg.image.load(f"{IMAGES_PATH}/tool_0.png"), 0, -5)
+        self.vehicle: Vehicle = Vehicle(self.screen, pg.image.load(f"{IMAGES_PATH}/tractor_0.png"), (200.0, 200.0), 0, 14)
+        self.trailer: Trailer = Trailer(self.screen, self.vehicle, pg.image.load(f"{IMAGES_PATH}/tool_0.png"), (240.0, 200.0), 0, -5)
 
     def main(self) -> None:
         dt: float = 0.0001 # 0 devision errors
