@@ -72,6 +72,11 @@ class FarmCEO:
 
         self.panel = Panel(self.screen, events, self.shed)
 
+    def enable_cheats(self) -> None:
+        logging.warning("Cheats enabled! Money and XP set to 1,000,000,000,000")
+        self.save_manager.set_money(1_000_000_000_000)
+        self.save_manager.set_xp(1_000_000_000_000)
+
     def background_render(self) -> None:
         self.screen.fill(BACKGROUND_COLOR)
         self.map.render()

@@ -4,11 +4,20 @@ from typing import Tuple, List
 
 class Events:
     def __init__(self) -> None:
-        self.mouse_just_pressed: bool = False
+        self.mouse_just_pressed = pg.mouse.get_pressed()[0]
+        self.mouse_press_override = False
+
+        self.mouse_just_released = False
+        self.mouse_start_press_location: Tuple[int, int] = (-1, -1)
+
         self.mouse_pos: Tuple[int, int] = pg.mouse.get_pos()
 
+    def set_override(self, override: bool) -> None:
+        self.mouse_press_override = override
+
     def process_events(self, events: List[pg.event.Event]) -> None:
-        if self.mouse_just_pressed: self.mouse_just_pressed = False
+        self.mouse_just_pressed = False
+        self.mouse_just_released = False
 
         self.mouse_pos = pg.mouse.get_pos()
 
@@ -17,5 +26,15 @@ class Events:
                 pg.quit()
                 exit()
 
+            elif event.type == pg.MOUSEBUTTONDOWN:
+                if event.button == 1:
+                    self.mouse_just_pressed = True
+
+                    self.mouse_start_press_location = self.mouse_pos
+
             elif event.type == pg.MOUSEBUTTONUP:
-                if event.button == 1: self.mouse_just_pressed = True
+                if event.button == 1:
+                    self.set_override(False)
+                    self.mouse_just_released = True
+
+        if self.mouse_press_override: self.mouse_just_pressed = False

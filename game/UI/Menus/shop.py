@@ -94,8 +94,8 @@ class PaddockBuyMenu:
         self.draw_can_buy()
 
     def update(self) -> None:
-        self.dropdown.update(self.events.mouse_just_pressed)
-        self.buy_button.update(self.events.mouse_just_pressed)
+        self.dropdown.update(self.events.mouse_just_pressed, self.events.set_override)
+        self.buy_button.update(self.events.mouse_just_pressed, self.events.set_override)
 
         if self.last_money != SaveManager().money:
             self.last_money = SaveManager().money
@@ -144,6 +144,8 @@ class Shop:
 
         self.buy_button = Button(self.rendered_surface, PANEL_WIDTH / 2 - 150, self.rect.h - 280, 300, 100, self.rect, (0, 200, 255),
                                   (0, 200, 255), (255, 255, 255), "Buy", 60, (20, 20, 20, 20), 0, 0, True, lambda: self.buy_selected())
+        
+        self.buy_button.hide()
 
         self.back_button = Button(self.rendered_surface, PANEL_WIDTH / 2 - 150, self.rect.h - 160, 300, 100, self.rect, (0, 200, 255),
                                   (0, 200, 255), (255, 255, 255), "Back", 60, (20, 20, 20, 20), 0, 0, True, lambda: self.backtrack_path())
@@ -346,10 +348,10 @@ class Shop:
             self.paddock_buy_menu.update()
         else:
             for button in self.buttons:
-                button.update(self.events.mouse_just_pressed)
+                button.update(self.events.mouse_just_pressed, self.events.set_override)
 
-        self.buy_button.update(self.events.mouse_just_pressed)
-        self.back_button.update(self.events.mouse_just_pressed)
+        self.buy_button.update(self.events.mouse_just_pressed, self.events.set_override)
+        self.back_button.update(self.events.mouse_just_pressed, self.events.set_override)
 
         if self.just_rebuilt:
             self.just_rebuilt = False

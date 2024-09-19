@@ -74,11 +74,13 @@ class Button:
         self.text = text
         self.rebuild_required = True
 
-    def update(self, just_pressed: bool = False) -> None:
+    def update(self, pressed: bool = False, set_override: callable = lambda x: None) -> None:
         mouse_collision = self.global_rect.collidepoint(pg.mouse.get_pos())
 
-        if not self.hidden and self.command is not None:
-            if mouse_collision and just_pressed: self.command()
+        if not self.hidden:
+            if mouse_collision and pressed:
+                set_override(True)
+                self.command()
 
         if mouse_collision:
             self.set_color(self.selectedColor, rebuild_required=True)
@@ -173,15 +175,15 @@ class DropDown:
 
         self.selected_button.draw()
 
-    def update(self, just_pressed: bool = False) -> None:
+    def update(self, pressed: bool = False, set_override: callable = lambda x: None) -> None:
         for button in self.buttons:
-            button.update(just_pressed)
+            button.update(pressed, set_override)
 
         if self.just_changed:
             self.just_changed = False
-            just_pressed = False
+            pressed = False
 
-        self.selected_button.update(just_pressed)
+        self.selected_button.update(pressed, set_override)
 
     def draw(self) -> None:
         self.screen.fill((255, 255, 255), self.rect)

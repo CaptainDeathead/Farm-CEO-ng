@@ -69,6 +69,7 @@ class NavBar:
                 if button.selected: break # button already focused 
 
                 self.select_button(self.buttons.index(button))
+                self.events.set_override(True)
                 break
 
     def draw(self) -> None:

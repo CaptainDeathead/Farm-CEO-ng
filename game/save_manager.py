@@ -212,6 +212,9 @@ class SaveManager:
     def set_money(self, new_money: float) -> None:
         self.money = new_money
 
+    def set_xp(self, new_xp: float) -> None:
+        self.xp = new_xp
+
     def get_attr(self, attr_name: str) -> any:
         return self.save[attr_name]
     
@@ -244,6 +247,7 @@ class SaveManager:
         self.vehicles_dict = {}
 
         for vehicle in self.vehicles:
+            print(vehicle)
             self.vehicles_dict[vehicle.vehicle_id] = {
                 "header": isinstance(vehicle, Header),
                 "brand": vehicle.brand,
