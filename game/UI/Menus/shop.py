@@ -280,12 +280,14 @@ class Shop:
 
             unit = ""
             match attr:
-                case "fuel": unit = "L"
+                case "max_fuel": unit = "L"
                 case "storage": unit = "T"
                 case "size": unit = "ft"
 
             final_attr = attr.capitalize()
             if fullcaps: final_attr = attr.upper()
+
+            if final_attr == "Max_fuel": final_attr = "Fuel"
 
             text = self.product_lbls_font.render(f"{final_attr}: {self.current_items[attr]}{unit}", True, black)
             pos = (PANEL_WIDTH / 8, curr_y)
