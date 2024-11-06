@@ -247,7 +247,6 @@ class SaveManager:
         self.vehicles_dict = {}
 
         for vehicle in self.vehicles:
-            print(vehicle)
             self.vehicles_dict[vehicle.vehicle_id] = {
                 "header": isinstance(vehicle, Header),
                 "brand": vehicle.brand,

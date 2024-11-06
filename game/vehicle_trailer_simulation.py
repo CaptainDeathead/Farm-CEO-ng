@@ -79,7 +79,7 @@ class Vehicle:
         self.update_rect()
         
         self.rotation: float = 0.0
-        self.velocity: List[float, float] = [0, 0]
+        self.velocity: List[float] = [0, 0]
         self.hitch: Hitch = Hitch(hitch_offset_x, hitch_offset_y, self.rect.center)
 
     @property
@@ -115,7 +115,7 @@ class Vehicle:
 
         self.screen.blit(self.image, self.rect.topleft)
 
-        rotated_hitch = rotate_point_centered(self.rect.center, self.rect.center+self.hitch.vector, math.radians(-self.rotation))
+        rotated_hitch = rotate_point_centered(self.rect.center, self.rect.center + self.hitch.vector, math.radians(-self.rotation))
 
         self.hitch.update_position(rotated_hitch[0], rotated_hitch[1])
 

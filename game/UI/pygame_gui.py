@@ -8,7 +8,7 @@ class Button:
     def __init__(self, screen: pg.Surface, x: int, y: int, width: int, height: int, parent_rect: pg.Rect,
                  color: Tuple[int, int, int], selectedColor: Tuple[int, int, int], textColor: Tuple[int, int, int],
                  text: str, size: int, radius: Tuple[int, int, int, int], offset_x: int, offset_y: int, center: bool = False,
-                 command: callable = None) -> None:
+                 command: callable = None, image: pg.Surface = None) -> None:
         
         self.screen: pg.Surface = screen
         self.x: int = x
@@ -31,6 +31,7 @@ class Button:
         self.offset_x: int = offset_x
         self.offset_y: int = offset_y
         self.center: bool = center
+        self.image: pg.Surface = image
         self.command: callable = command
         self.rendered_surface: pg.Surface = pg.Surface((width, height), pg.SRCALPHA)
 
@@ -46,17 +47,20 @@ class Button:
         pg.draw.rect(self.rendered_surface, color, (0, 0, self.width, self.height),
                      border_top_left_radius = self.radius[0], border_bottom_left_radius = self.radius[1],
                      border_top_right_radius = self.radius[2], border_bottom_right_radius = self.radius[3])
-            
-        rendered_text = self.font.render(str(self.text), True, self.textColor)
+        
+        if self.image is not None:
+            self.rendered_surface.blit(self.image, (0, 0))
+        else:
+            rendered_text = self.font.render(str(self.text), True, self.textColor)
 
-        x = self.x + self.offset_x
-        y = self.y + self.offset_y
+            x = self.x + self.offset_x
+            y = self.y + self.offset_y
 
-        if self.center:
-            x = self.width / 2 - rendered_text.get_width() / 2
-            y = self.height / 2 - rendered_text.get_height() / 2
+            if self.center:
+                x = self.width / 2 - rendered_text.get_width() / 2
+                y = self.height / 2 - rendered_text.get_height() / 2
 
-        self.rendered_surface.blit(rendered_text, (x, y))
+            self.rendered_surface.blit(rendered_text, (x, y))
 
     def set_selected(self, selected: bool) -> None:
         changed = self.selected != selected
@@ -72,6 +76,10 @@ class Button:
 
     def set_text(self, text: str) -> None:
         self.text = text
+        self.rebuild_required = True
+
+    def set_image(self, image: pg.Surface) -> None:
+        self.image = image
         self.rebuild_required = True
 
     def update(self, pressed: bool = False, set_override: callable = lambda x: None) -> None:

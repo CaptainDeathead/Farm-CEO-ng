@@ -1,4 +1,5 @@
 import pygame as pg
+import logging
 
 from resource_manager import ResourceManager
 from vehicle_trailer_simulation import Vehicle, Trailer, Hitch
@@ -31,7 +32,7 @@ class Tractor(Vehicle):
 
         self.string_task = "No task assigned"
         self.paddock: int = -1
-        self.path: List[Sequence[float, float]] = []
+        self.path: List[Sequence[float]] = []
 
         self.active = False
         self.tool: Tool = None
@@ -54,6 +55,10 @@ class Tractor(Vehicle):
 
         self.desired_rotation %= 360
         self.path.pop(0)
+
+    def set_path(self, new_path: List[Sequence[float]]) -> None:
+        logging.info(f"Setting new path for vehicle: {self.vehicle_id}.")
+        self.path = new_path
 
     def update(self) -> None:
         if self.active:
