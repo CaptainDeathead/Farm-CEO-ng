@@ -1,5 +1,8 @@
 import pygame as pg
 
+from resource_manager import ResourceManager
+from events import Events
+
 from typing import Tuple, List
 
 pg.init()
@@ -251,3 +254,72 @@ class Table:
 
     def draw(self) -> None:
         return self.rendered_surface
+
+class Popup:
+    BANNER_COLOR = (63, 72, 204)
+
+    def __init__(self, screen: pg.Surface, events: Events, rect: pg.Rect, banner_height: int, title: str, callback: callable, cancel_available: bool = True) -> None:
+        self.screen = screen
+        self.events = events
+        self.rect = rect
+        self.writable_rect = pg.Rect(self.rect.x, self.rect.y + banner_height, self.rect.w, self.rect.h - banner_height * 2)
+        
+        self.banner_height = banner_height
+        self.title = title
+        self.cancel_available = cancel_available
+
+        self.callback = callback
+
+        self.surface = pg.Surface((self.rect.w, self.rect.h), pg.SRCALPHA)
+        self.writable_surface = pg.Surface((self.rect.w, self.rect.h - banner_height * 2), pg.SRCALPHA)
+        self.prerender()
+
+        # Buttons
+        button_width = self.banner_height
+        button_actual_width = self.banner_height * (4/5)
+
+        padding = (self.rect.h - button_actual_width) / 2
+
+        cancel_rect = pg.Rect(self.rect.w - (button_width + padding) * 2, self.rect.h - self.banner_height + padding, button_actual_width, button_actual_width)
+        accept_rect = pg.Rect(self.rect.w - button_width + padding, self.rect.h - self.banner_height + padding, button_actual_width, button_actual_width)
+
+        self.cancel_button = Button(self.surface, cancel_rect.x, cancel_rect.y, cancel_rect.w, cancel_rect.h, self.rect, (0, 0, 0), (0, 0, 0), (0, 0, 0),
+                                    "", 1, (0, 0, 0, 0), 0, 0, True, self.cancel_action, ResourceManager.load_image("Icons/cross.png"))
+
+        self.accept_button = Button(self.surface, accept_rect.x, accept_rect.y, accept_rect.w, accept_rect.h, self.rect, (0, 0, 0), (0, 0, 0), (0, 0, 0),
+                                    "", 1, (0, 0, 0, 0), 0, 0, True, self.accept_action, ResourceManager.load_image("Icons/tick.png"))
+
+        if not self.cancel_available:
+            self.cancel_button.hide()
+
+    def cancel_action(self) -> None:
+        self.callback(False)
+
+    def accept_action(self) -> None:
+        self.callback(True)
+
+    def prerender(self) -> None: 
+        banner_size = (self.rect.w, self.banner_height)
+
+        # Top Banner
+        pg.draw.rect(self.surface, self.BANNER_COLOR, (0, 0, banner_size[0], banner_size[1]),
+                     border_top_left_radius=20, border_top_right_radius=20)
+
+        # Bottom Banner
+        pg.draw.rect(self.surface, self.BANNER_COLOR, (0, self.rect.h - self.banner_height, banner_size[0], banner_size[1]),
+                     border_top_left_radius=20, border_top_right_radius=20)
+
+        title_surf = pg.font.SysFont(None, int(self.banner_height * (4/5))).render(self.title, True, (255, 255, 255))
+
+        self.surface.blit(title_surf, (5, self.banner_height / 2 - title_surf.get_height() / 2))
+
+    def update(self) -> None:
+        self.cancel_button.update(self.events.mouse_just_pressed, self.events.set_override)
+        self.accept_button.update(self.events.mouse_just_pressed, self.events.set_override)
+
+    def draw(self) -> None:
+        self.screen.blit(self.surface, self.rect)
+        self.screen.blit(self.writable_surface, self.writable_rect)
+
+        self.cancel_button.draw()
+        self.accept_button.draw()

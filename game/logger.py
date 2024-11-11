@@ -55,7 +55,6 @@ def setup_logging():
         # Set up console handler with colorized formatter
         console_handler = logging.StreamHandler(sys.stdout)
 
-        print(BUILD)
         if BUILD: console_handler.setFormatter(Formatter())
         else: console_handler.setFormatter(ColoredFormatter())
 
