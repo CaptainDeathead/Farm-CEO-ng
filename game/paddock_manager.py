@@ -115,7 +115,7 @@ class PaddockManager:
         self.load_paddock_state(self.paddocks[paddock_number-1])
 
     def init_paddocks(self) -> None:
-        logging.debug("Initializing paddocks... (This may take some time)")
+        logging.info("Initializing paddocks... (This may take some time)")
         
         for paddock in self.paddocks:
             self.locate_paddock_boundary(paddock)

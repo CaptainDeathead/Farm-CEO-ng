@@ -48,6 +48,8 @@ class FarmCEO:
     RESOURCE_MANAGER: ResourceManager = ResourceManager()
 
     def __init__(self, screen: pg.Surface, clock: pg.time.Clock, events: Events) -> None:
+        logging.warning("Loading game...")
+
         self.screen: pg.Surface = screen
 
         self.WIDTH: int = self.screen.get_width()
@@ -56,6 +58,7 @@ class FarmCEO:
         self.clock = clock
         self.events = events
 
+        logging.info("Loading map...")
         self.map = Map(self.screen, self.RESOURCE_MANAGER.load_map("Green_Spring_cfg.json")) # map estimated to be almost screen size
         self.game_surface = pg.Surface((self.map.rect.w, self.map.rect.h), pg.SRCALPHA)
         

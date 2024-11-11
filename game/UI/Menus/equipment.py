@@ -37,7 +37,7 @@ class Equipment:
         self.scrolling_last_frame = False
 
     def rebuild(self) -> None:
-        logging.debug("Rebuilding equipment menu...")
+        logging.info("Rebuilding equipment menu...")
 
         self.rendered_surface.fill((255, 255, 255))
         self.equipment_buttons = []

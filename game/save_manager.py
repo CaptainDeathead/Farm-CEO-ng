@@ -134,7 +134,7 @@ class SaveManager:
         self.load_game()
 
     def load_game(self) -> None:
-        logging.debug(f"Loading savegame file: \"{self.SAVE_PATH}\"...")
+        logging.info(f"Loading savegame file: \"{self.SAVE_PATH}\"...")
         self.save = ResourceManager.load_json(self.SAVE_PATH, explicit_path=True)
 
         if self.save == {}: return # will create one and load values

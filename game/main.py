@@ -1,42 +1,15 @@
 import pygame as pg
-import sys
 import logging
+import logger # WARNING: This is required for log formatting to function
 
 from events import Events
 from farm_ceo import FarmCEO
 
 from data import *
 
-if CONSOLE_BUILD: from console import PygameConsole
-
 from performance_monitor import PerformanceMonitor
 
 pg.init()
-
-logging.basicConfig()
-logging.root.setLevel(logging.NOTSET)
-logging.basicConfig(level=logging.NOTSET)
-
-class SpoofedConsole:
-    def update(self, *args) -> None:
-        return
-    
-    def write(self, text: str, *args) -> None:
-        # Ignore `print` argument
-        sys.__stdout__.write(text)
-
-    def flush(self) -> None:
-        sys.__stdout__.flush()
-
-class PygameConsoleHandler(logging.Handler):
-    def __init__(self, console: SpoofedConsole):
-        super().__init__()
-        self.console = console
-        self.setFormatter(logging.Formatter('%(levelname)s:%(name)s:%(message)s'))
-
-    def emit(self, record):
-        log_entry = self.format(record)
-        self.console.write(log_entry, False)
 
 class Window:
     PYGAME_INFO: any = pg.display.Info()
@@ -51,14 +24,9 @@ class Window:
         self.screen: pg.Surface = pg.display.set_mode((self.WIDTH, self.HEIGHT), display=int(not BUILD))
         self.clock: pg.time.Clock = pg.time.Clock()
         self.events: Events = Events()
+        self.logger = logging.getLogger(__name__)
 
         self.farm_ceo: FarmCEO = FarmCEO(self.screen, self.clock, self.events)
-
-        if CONSOLE_BUILD: self.console: PygameConsole = PygameConsole(self, self.screen)
-        else: self.console: SpoofedConsole = SpoofedConsole()
-
-        sys.stdout = self.console
-        logging.getLogger().addHandler(PygameConsoleHandler(self.console))
 
         self.delta_time = 0.0
         self.performance_monitor = PerformanceMonitor(self.screen, (0, 0))
@@ -80,8 +48,6 @@ class Window:
 
             self.performance_monitor.update(self.delta_time)
             self.performance_monitor.draw()
-
-            self.console.update(events)
 
             pg.display.flip()
             self.delta_time = self.clock.tick(self.FPS)

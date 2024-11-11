@@ -22,11 +22,10 @@ TIMESCALE = 2.4 # 144 mins every min = 2.4 min every second
 MINS_IN_DAY = 24 * 60
 
 # ---------- CONFIG ----------
-BUILD: bool = False
+BUILD: bool = True
 SUPPORTED_PLATFORMS: Tuple[str] = ("android_x86_64", "android_v7a", "arm64-v8a", "Linux", "Windows")
 PLATFORM: str = "arm64-v8a"
 BUILD_TYPE: str = "Devlopment"
-CONSOLE_BUILD: bool = not BUILD
 
 # ---------- DEBUG ----------
 DEBUG_BOUNDARY_LOADING: bool = False
@@ -34,4 +33,5 @@ DEBUG_BOUNDARY_LOADING: bool = False
 # ---------- ABOUT ----------
 GAME_NAME: str = "Farm CEO"
 GAME_VERSION: str = "0.1.0"
-CONTRIBUTORS: Tuple[str] = ("Slotho101", "TobyHall633", "Sean", "Yesn't", "Rascam")
+CONTRIBUTORS: Tuple[str] = ("Slotho101", "TobyHall633", "Sean & Andrea", "Yesn't", "Rascam", "Mum & Gaz", "Bobbi")
+SPECIAL_THANKS: Tuple[str] = ("TobyHall633", "Sean & Andrea")
