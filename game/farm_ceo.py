@@ -10,6 +10,7 @@ from paddock_manager import PaddockManager
 from events import Events
 
 from UI.panel import Panel
+from UI.pygame_gui import Popup
 
 from utils import utils
 from farm import Shed
@@ -62,7 +63,8 @@ class FarmCEO:
         self.map = Map(self.screen, self.RESOURCE_MANAGER.load_map("Green_Spring_cfg.json")) # map estimated to be almost screen size
         self.game_surface = pg.Surface((self.map.rect.w, self.map.rect.h), pg.SRCALPHA)
         
-        self.shed = Shed(self.game_surface, utils.scale_rect(pg.Rect(self.map.map_cfg["shed"]["rect"]), self.map.scale), self.map.map_cfg["shed"]["rotation"])
+        self.shed = Shed(self.game_surface, utils.scale_rect(pg.Rect(self.map.map_cfg["shed"]["rect"]), self.map.scale),
+                         self.map.map_cfg["shed"]["rotation"])
 
         self.save_manager: SaveManager = SaveManager()
         self.save_manager.init(self.map.map_cfg, self.shed.vehicles, self.shed.tools, self.shed.add_vehicle, self.shed.add_tool)
@@ -74,6 +76,12 @@ class FarmCEO:
         self.last_update_time = 0.0
 
         self.panel = Panel(self.screen, events, self.shed)
+
+        self.popup = None
+
+    def set_popup(self, popup: Popup) -> None:
+        self.events.lock_override()
+        self.popup = popup
 
     def enable_cheats(self) -> None:
         logging.warning("Cheats enabled! Money and XP set to 1,000,000,000,000")

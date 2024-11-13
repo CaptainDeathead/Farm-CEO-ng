@@ -57,6 +57,13 @@ class Shed(LayableRenderObj):
 
         ...
 
+    def task_vehicle(self, vehicle: Tractor | Header) -> None:
+        if isinstance(vehicle, Tractor):
+            ...
+
+        else:
+            ...
+
     def rebuild(self) -> None:
         self.surface.fill((0, 0, 0, 255))
 
