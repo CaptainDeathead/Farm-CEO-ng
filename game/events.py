@@ -12,8 +12,16 @@ class Events:
 
         self.mouse_pos: Tuple[int, int] = pg.mouse.get_pos()
 
+        self.override_locked: bool = False
+
     def set_override(self, override: bool) -> None:
-        self.mouse_press_override = override
+        if not self.override_locked: self.mouse_press_override = override
+
+    def lock_override(self) -> None:
+        self.override_locked = True
+
+    def unlock_override(self) -> None:
+        self.override_locked = False
 
     def process_events(self, events: List[pg.event.Event]) -> None:
         self.mouse_just_pressed = False
