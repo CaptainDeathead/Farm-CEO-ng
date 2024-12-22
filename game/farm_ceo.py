@@ -10,6 +10,7 @@ from paddock_manager import PaddockManager
 from events import Events
 
 from UI.panel import Panel
+from UI.popups import PopupType
 
 from utils import utils
 from farm import Shed
@@ -72,10 +73,20 @@ class FarmCEO:
 
         self.panel = Panel(self.screen, events, self.shed)
 
+        self.popup = None
+
     def enable_cheats(self) -> None:
         logging.warning("Cheats enabled! Money and XP set to 1,000,000,000,000")
         self.save_manager.set_money(1_000_000_000_000)
         self.save_manager.set_xp(1_000_000_000_000)
+
+    def set_popup(self, popup: PopupType) -> None:
+        self.events.lock_override()
+        self.popup = popup
+
+    def remove_popup(self) -> None:
+        self.events.unlock_override()
+        self.popup = None
 
     def background_render(self) -> None:
         self.screen.fill(BACKGROUND_COLOR)
