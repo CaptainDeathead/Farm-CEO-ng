@@ -121,6 +121,7 @@ class SaveManager:
         if update_equipment_dicts:
             self.get_vehicles_dict()
             self.get_tools_dict()
+            print(self.tools_dict)
         
         self.set_attr("money", self.money)
         self.set_attr("xp", self.xp)
@@ -180,6 +181,7 @@ class SaveManager:
             "vehicleId": -1,
             "anims": static_conf["anims"],
             "price": static_conf["price"],
+            "toolId": len(self.tools)
         }
 
         if tool_type in ("Seeder", "Spreader", "Sprayer", "Trailer"):
@@ -260,7 +262,8 @@ class SaveManager:
                 "fillType": tool.fill_type,
                 "vehicleId": tool.get_vehicle_id(),
                 "anims": tool.anims,
-                "price": tool.price
+                "price": tool.price,
+                "toolId": tool.tool_id
             }
         
         return self.tools_dict

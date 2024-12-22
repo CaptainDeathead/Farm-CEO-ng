@@ -87,7 +87,9 @@ class Shed(LayableRenderObj):
         attrs = deepcopy(SaveManager().STATIC_TOOLS_DICT)
         attrs.update(save_attrs)
 
-        ...
+        tool = Tool(self.game_surface, self.rect, attrs)
+
+        self.tools.append(tool)
 
     def task_tractor(self, vehicle: Tractor) -> None:
         ...

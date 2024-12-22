@@ -165,6 +165,8 @@ class Shop:
         if machine_type in ("Tractors", "Harvesters"): SaveManager().create_vehicle(machine_type == "Harvesters", brand, model)
         else: SaveManager().create_tool(machine_type, brand, model)
 
+        SaveManager().save_game()
+
         self.path = []
         self.current_items = self.global_dict
 

@@ -141,6 +141,7 @@ class Tool(Trailer):
         self.hitch_y = attrs["hitch"]
         self.anims = attrs["anims"]
         self.price = attrs["price"]
+        self.tool_id = attrs["toolId"]
 
         if self.tool_type in ("Seeder", "Spreader", "Sprayer", "Trailer"):
             self.storage = attrs["storage"]
@@ -151,7 +152,7 @@ class Tool(Trailer):
         if self.tool_type == "Trailer":
             self.set_animation("full")
         else:
-            self.set_animation(self.anims["defualt"]) # anims['default'] key returns the name of the key to the default image
+            self.set_animation(self.anims["default"]) # anims['default'] key returns the name of the key to the default image
 
         self.string_task = "No task assigned"
         self.paddock: int = -1
@@ -164,6 +165,10 @@ class Tool(Trailer):
         self.vehicle: Tractor | Header = None
 
         self.desired_rotation: float = 0.0
+
+    @property
+    def full_name(self) -> str:
+        return f"{self.brand} {self.model}"
 
     def get_vehicle_id(self) -> None:
         if self.vehicle is not None:

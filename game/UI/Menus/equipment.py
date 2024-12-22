@@ -84,7 +84,7 @@ class Equipment:
             self.scrollable_surface.blit(name_lbl, (center - name_lbl.get_width()/2, y + 10))
             
             self.scrollable_surface.blit(self.body_font.render(f"Task: {tool.string_task}", True, white), (60, y + 50))
-            self.scrollable_surface.blit(self.body_font.render(f"Fill - ({tool.fill_type}): {tool.fill}T", True, white), (60, y + 80))
+            self.scrollable_surface.blit(self.body_font.render(f"Fill ({tool.fill_type}): {tool.fill}T", True, white), (60, y + 80))
 
             pdk_lbl = self.body_font.render(f"Paddock: {tool.paddock}", True, white)
             self.scrollable_surface.blit(pdk_lbl, (PANEL_WIDTH - 60 - pdk_lbl.get_width(), y + 80))
