@@ -66,38 +66,7 @@ class SaveManager:
                 "workingBackwards": False
             }
         }
-        self.tools_dict = {
-            0: {
-                "toolType": "Cultivators",
-                "brand": "Case IH",
-                "model": "490",
-                "fill": 0,
-                "fillType": -1,
-                "toolId": 0,
-                "vehicleId": -1,
-                "jobId": -1
-            },
-            1: {
-                "toolType": "Seeders",
-                "brand": "John Sheerer",
-                "model": "Combine 14ft",
-                "fill": 0,
-                "fillType": 0,
-                "toolId": 1,
-                "vehicleId": -1,
-                "jobId": -1
-            },
-            2: {
-                "toolType": "Trailers",
-                "brand": "Marshall",
-                "model": "QM-12",
-                "fill": 0,
-                "fillType": 0,
-                "toolId": 2,
-                "vehicleId": -1,
-                "jobId": -1
-            }
-        }
+        self.tools_dict = {}
 
         self.load_game()
         if self.save == {}: self.init_savefile(map_config)
@@ -196,16 +165,28 @@ class SaveManager:
         self.add_vehicle(vehicle)
 
     def create_tool(self, tool_type: str, brand: str, model: str) -> None:
+        static_conf = self.STATIC_TOOLS_DICT[tool_type][brand][model]
         tool = {
             "toolType": tool_type,
             "brand": brand,
             "model": model,
+            "size": static_conf["size"],
+            "sizePx": static_conf["sizePx"],
+            "hp": static_conf["hp"],
+            "turningPoint": static_conf["turningPoint"],
+            "hitch": static_conf["hitch"],
             "fill": 0,
-            "fillType": 0,
-            "toolId": len(self.tools),
+            "fillType": -1,
             "vehicleId": -1,
-            "jobId": -1
+            "anims": static_conf["anims"],
+            "price": static_conf["price"],
         }
+
+        if tool_type in ("Seeder", "Spreader", "Sprayer", "Trailer"):
+            tool["storage"] = static_conf["storage"]
+
+        if tool_type == "Seeder":
+            tool["cart"] = static_conf["cart"]
         
         self.add_tool(tool)
 
@@ -267,13 +248,19 @@ class SaveManager:
 
         for tool in self.tools:
             self.tools_dict[tool.tool_id] = {
+                "toolType": tool.tool_type,
                 "brand": tool.brand,
                 "model": tool.model,
+                "size": tool.size,
+                "sizePx": tool.size_px,
+                "hp": tool.hp,
+                "turningPoint": tool.turning_point,
+                "hitch": tool.hitch_y,
                 "fill": tool.fill,
                 "fillType": tool.fill_type,
-                "toolId": tool.tool_id,
-                "vehicleId": tool.vehicle_id,
-                "jobId": tool.job_id
+                "vehicleId": tool.get_vehicle_id(),
+                "anims": tool.anims,
+                "price": tool.price
             }
         
         return self.tools_dict

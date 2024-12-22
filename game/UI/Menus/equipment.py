@@ -73,7 +73,23 @@ class Equipment:
             y += y_inc
 
         # TODO: Tools
-        # ...
+        for tool in self.shed.tools:
+            button = Button(self.scrollable_surface, x, y, self.BUTTON_WIDTH, button_height, self.rect,
+                       (150, 0, 255), (0, 0, 255), white, "", 20, (20, 20, 20, 20), 0, 0, command=lambda: None)
+            
+            button.draw()
+            self.equipment_buttons.append(button)
+
+            name_lbl = self.title_font.render(tool.full_name, True, white)
+            self.scrollable_surface.blit(name_lbl, (center - name_lbl.get_width()/2, y + 10))
+            
+            self.scrollable_surface.blit(self.body_font.render(f"Task: {tool.string_task}", True, white), (60, y + 50))
+            self.scrollable_surface.blit(self.body_font.render(f"Fill - ({tool.fill_type}): {tool.fill}T", True, white), (60, y + 80))
+
+            pdk_lbl = self.body_font.render(f"Paddock: {tool.paddock}", True, white)
+            self.scrollable_surface.blit(pdk_lbl, (PANEL_WIDTH - 60 - pdk_lbl.get_width(), y + 80))
+
+            y += y_inc
 
         self.max_y = y
 

@@ -153,13 +153,23 @@ class Tool(Trailer):
         else:
             self.set_animation(self.anims["defualt"]) # anims['default'] key returns the name of the key to the default image
 
+        self.string_task = "No task assigned"
         self.paddock: int = -1
         self.path: List[Sequence[float]]
+
+        self.fill = 0
+        self.fill_type = -1
 
         self.active = False
         self.vehicle: Tractor | Header = None
 
         self.desired_rotation: float = 0.0
+
+    def get_vehicle_id(self) -> None:
+        if self.vehicle is not None:
+            return self.vehicle.vehicle_id
+
+        return -1
 
     def set_animation(self, anim_name: str) -> None:
         self.master_image = ResourceManager.load_image(self.anims[anim_name])
@@ -167,3 +177,7 @@ class Tool(Trailer):
     def assign_vehicle(self, vehicle: Tractor | Header) -> None:
         self.vehicle_unloaded = vehicle
         super().__init__(self.surface, self.vehicle_unloaded, self.master_image, (self.shed_rect.x, self.shed_rect.y + 10), 0, self.hitch_y)
+
+    def update(self) -> None:
+        if self.active:
+            ...
