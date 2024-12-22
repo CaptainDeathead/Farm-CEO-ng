@@ -2,6 +2,9 @@ import pygame as pg
 
 from typing import Tuple, List
 
+from events import Events
+from resource_manager import ResourceManager
+
 pg.init()
 
 class Button:
@@ -68,11 +71,17 @@ class Button:
         self.selected = selected
         if changed: self.rebuild()
 
-    def set_color(self, new_color: any, rebuild_required: bool = False) -> None:
+    def set_color(self, new_color: any, rebuild_required: bool = False) -> bool:
+        # Returns: If a rebuild has occured
+
         if self.active_color != new_color:
             self.active_color = new_color
             
-            if rebuild_required: self.rebuild()
+            if rebuild_required:
+                self.rebuild()
+                return True
+
+        return False
 
     def set_text(self, text: str) -> None:
         self.text = text
@@ -82,8 +91,11 @@ class Button:
         self.image = image
         self.rebuild_required = True
 
-    def update(self, pressed: bool = False, set_override: callable = lambda x: None) -> None:
+    def update(self, pressed: bool = False, set_override: callable = lambda x: None) -> bool:
+        # Returns: If a redraw is required
+
         mouse_collision = self.global_rect.collidepoint(pg.mouse.get_pos())
+        redraw_required = False
 
         if not self.hidden:
             if mouse_collision and pressed:
@@ -91,9 +103,11 @@ class Button:
                 self.command()
 
         if mouse_collision:
-            self.set_color(self.selectedColor, rebuild_required=True)
+            redraw_required = self.set_color(self.selectedColor, rebuild_required=True)
         else:
-            self.set_color(self.color, rebuild_required=True)
+            redraw_required = self.set_color(self.color, rebuild_required=True)
+
+        return redraw_required
 
     def draw(self) -> None:
         if not self.hidden:
@@ -248,6 +262,117 @@ class Table:
 
     def update_table(self, grid: List[List[str]]) -> None:
         self.grid = grid
+        ... # TODO
 
     def draw(self) -> None:
         return self.rendered_surface
+    
+class Widget:
+    def __init__(self, parent_surface: pg.Surface, rect: pg.Rect) -> None:
+        self.parent_surface = parent_surface
+        self.rect = rect
+
+        self.surface = pg.Surface(self.rect.size, pg.SRCALPHA)
+
+    def update(self) -> None:
+        ...
+
+    def draw(self) -> None:
+        ...
+
+class Popup:
+    BANNER_HEIGHT = 40
+    TITLE_FONT_SIZE = 30
+
+    def __init__(self, parent_surface: pg.Surface, rect: pg.Rect, border_radius: int, title: str, contents: Widget,
+                 banner_color: tuple[int, int, int], body_color: tuple[int, int, int], exit_function: callable, submit_function: callable,
+                 events: Events, show_exit_button: bool = True) -> None:
+
+        self.parent_surface = parent_surface
+        self.rect = rect
+
+        self.surface = pg.Surface(self.rect.size, pg.SRCALPHA)
+
+        self.border_radius = border_radius
+
+        self.title = title
+        self.contents = contents
+
+        self.title_font = pg.font.SysFont(None, self.TITLE_FONT_SIZE)
+
+        self.banner_color = banner_color
+        self.body_color = body_color
+
+        self.exit_function = exit_function
+        self.submit_function = submit_function
+
+        self.events = events
+
+        self.show_exit_button = show_exit_button
+
+        self.exit_img = ResourceManager.load_image("Icons/cross.png")
+        self.submit_img = ResourceManager.load_image("Icons/tick.png")
+
+        btn_width = 30
+        padding = 5
+
+        exit_x = self.rect.w - btn_width - padding
+        exit_y = self.rect.h - btn_width - padding
+
+        submit_x = exit_x - btn_width - padding
+        submit_y = exit_y
+
+        self.exit_btn = Button(self.surface, exit_x, exit_y, btn_width, btn_width, self.rect, (0, 0, 0), (0, 0, 0), (0, 0, 0),
+                               "", 10, (0, 0, 0, 0), 0, 0, True, lambda: self.exit_popup(), self.exit_img)
+                            
+        self.submit_btn = Button(self.surface, submit_x, submit_y, btn_width, btn_width, self.rect, (0, 0, 0), (0, 0, 0), (0, 0, 0),
+                                 "", 10, (0, 0, 0, 0), 0, 0, True, lambda: self.submit_popup(), self.submit_img)
+
+        self.rebuild()
+
+    @property
+    def x(self) -> int: return self.rect.x
+
+    @property
+    def y(self) -> int: return self.rect.y
+
+    @property
+    def width(self) -> int: return self.rect.w
+
+    @property
+    def height(self) -> int: return self.rect.h
+
+    def exit_popup(self) -> None:
+        self.exit_function()
+    
+    def submit_popup(self) -> None:
+        self.submit_function()
+
+    def rebuild(self) -> None:
+        pg.draw.rect(self.surface, (0, 200, 255), self.rect, border_radius = self.border_radius)
+
+        font_surf = self.title_font.render(self.title, True, (255, 255, 255))
+
+        font_x = 10
+        font_y = (self.BANNER_HEIGHT - font_surf.get_height()) / 2
+
+        self.surface.blit(font_surf, (font_x, font_y))
+
+    def update(self) -> None:
+        mouse_pos = self.events.mouse_pos
+
+        redraw_required = False
+
+        if self.contents.rect.collidepoint(mouse_pos):
+            redraw_required = self.contents.update()
+
+        exit_btn_redraw = self.exit_btn.update(self.events.mouse_just_pressed, self.events.set_override)
+        confirm_btn_redraw = self.confirm_btn.update(self.events.mouse_just_pressed, self.events.set_override)
+
+        if exit_btn_redraw or confirm_btn_redraw:
+            redraw_required = True
+
+        if redraw_required: self.draw()
+
+    def draw(self) -> None:
+        self.surface.blit(self.contents.surface, (0, self.BANNER_HEIGHT))
