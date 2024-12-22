@@ -89,6 +89,12 @@ class Shed(LayableRenderObj):
 
         ...
 
+    def task_tractor(self, vehicle: Tractor) -> None:
+        ...
+    
+    def task_header(self, vehicle: Header) -> None:
+        ...
+
     def rebuild(self) -> None:
         self.surface.fill((0, 0, 0, 255))
 
