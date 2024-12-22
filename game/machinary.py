@@ -42,6 +42,10 @@ class Tractor(Vehicle):
         image = ResourceManager.load_image(self.anims['normal'])
         super().__init__(self.surface, image, (shed_rect.x, shed_rect.y + 10), 0, self.hitch_y)
 
+    @property
+    def full_name(self) -> str:
+        return f"{self.brand} {self.model}"
+
     def follow_path(self) -> None:
         px, py = self.path[0]
 
@@ -98,6 +102,10 @@ class Header(Vehicle):
         image = ResourceManager.load_image(self.anims['pipeIn'])
         super().__init__(self.surface, image, (shed_rect.x, shed_rect.y + 10), 0, 0)
 
+    @property
+    def full_name(self) -> str:
+        return f"{self.brand} {self.model}"
+
     def follow_path(self) -> None:
         px, py = self.path[0]
 
@@ -118,4 +126,44 @@ class Header(Vehicle):
             self.draw()
 
 class Tool(Trailer):
-    ...
+    def __init__(self, game_surface: pg.Surface, shed_rect: pg.Rect, attrs: Dict[str, any]) -> None:
+        self.surface = game_surface
+        self.shed_rect = shed_rect
+
+        self.attrs = attrs
+        self.brand = attrs["brand"]
+        self.model = attrs["model"]
+        self.tool_type = attrs["toolType"]
+        self.size = attrs["size"]
+        self.size_px = attrs["sizePx"]
+        self.hp = attrs["hp"]
+        self.turning_point = attrs["turningPoint"]
+        self.hitch_y = attrs["hitch"]
+        self.anims = attrs["anims"]
+        self.price = attrs["price"]
+
+        if self.tool_type in ("Seeder", "Spreader", "Sprayer", "Trailer"):
+            self.storage = attrs["storage"]
+
+        if self.tool_type == "Seeder":
+            self.cart = attrs["cart"]
+
+        if self.tool_type == "Trailer":
+            self.set_animation("full")
+        else:
+            self.set_animation(self.anims["defualt"]) # anims['default'] key returns the name of the key to the default image
+
+        self.paddock: int = -1
+        self.path: List[Sequence[float]]
+
+        self.active = False
+        self.vehicle: Tractor | Header = None
+
+        self.desired_rotation: float = 0.0
+
+    def set_animation(self, anim_name: str) -> None:
+        self.master_image = ResourceManager.load_image(self.anims[anim_name])
+
+    def assign_vehicle(self, vehicle: Tractor | Header) -> None:
+        self.vehicle_unloaded = vehicle
+        super().__init__(self.surface, self.vehicle_unloaded, self.master_image, (self.shed_rect.x, self.shed_rect.y + 10), 0, self.hitch_y)
