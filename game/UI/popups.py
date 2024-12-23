@@ -80,6 +80,7 @@ class TractorNewTaskPopup(PopupType):
         widget.tool_dropdown = DropDown(widget.surface, widget.tool_dropdown_pos[0], widget.tool_dropdown_pos[1], widget.tool_dropdown_width, widget.dropdown_height,
                                         self.widget_rect, widget.tool_dropdown_buttons, widget.dropdown_bg_color, self.widget_tool_dropdown_on_change)
 
+        widget.tool_dropdown.draw()
         
         widget.update = self.spoofed_widget_update
 
