@@ -274,10 +274,10 @@ class Widget:
 
         self.surface = pg.Surface(self.rect.size, pg.SRCALPHA)
 
-    def update(self) -> None:
+    def draw(self) -> None:
         ...
 
-    def draw(self) -> None:
+    def update(self) -> None:
         ...
 
 class Popup:
@@ -358,7 +358,7 @@ class Popup:
 
         self.surface.blit(font_surf, (font_x, font_y))
 
-    def update(self) -> None:
+    def update(self) -> bool:
         mouse_pos = self.events.mouse_pos
 
         redraw_required = False
@@ -373,6 +373,8 @@ class Popup:
             redraw_required = True
 
         if redraw_required: self.draw()
+
+        return redraw_required
 
     def draw(self) -> None:
         self.surface.blit(self.contents.surface, (0, self.BANNER_HEIGHT))

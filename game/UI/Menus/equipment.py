@@ -7,9 +7,12 @@ from paddock_manager import PaddockManager
 from events import Events
 
 from UI.pygame_gui import Button
+from UI.popups import TractorNewTaskPopup
 
 from utils import utils
 from farm import Shed
+from machinary import Tractor
+from sellpoints import SellpointManager
 from data import *
 
 from typing import List
@@ -17,12 +20,13 @@ from typing import List
 class Equipment:
     BUTTON_WIDTH = PANEL_WIDTH - 40
 
-    def __init__(self, parent_surface: pg.Surface, events: Events, rect: pg.Rect, shed: Shed) -> None:
+    def __init__(self, parent_surface: pg.Surface, events: Events, rect: pg.Rect, shed: Shed, sellpoint_manager: SellpointManager) -> None:
         self.parent_surface = parent_surface
         self.events = events
         self.rect = rect
         self.rect.y += 20
         self.shed = shed
+        self.sellpoint_manager = sellpoint_manager
 
         self.rendered_surface = pg.Surface((self.rect.w, self.rect.h), pg.SRCALPHA)
         self.scrollable_surface = pg.Surface((self.rect.w, self.rect.h), pg.SRCALPHA)
@@ -35,6 +39,22 @@ class Equipment:
         self.scroll_y = 0.0
         self.max_y = 0.0
         self.scrolling_last_frame = False
+
+    def trigger_vehicle_popup(self, vehicle_id: int) -> None:
+        popup_type = None
+
+        vehicle = self.shed.get_vehicle(vehicle_id)
+
+        if vehicle.active == True:
+            ... # TODO: Error vehicle already active popup
+        elif isinstance(vehicle, Tractor):
+            popup_type = TractorNewTaskPopup
+        else:
+            ... # TODO: popup_type = HeaderNewTaskPopup
+
+        popup = TractorNewTaskPopup(self.events, vehicle.full_name, self.shed, self.sellpoint_manager.sellpoints)
+
+        self.activate_popup()
 
     def rebuild(self) -> None:
         logging.debug("Rebuilding equipment menu...")
@@ -54,9 +74,10 @@ class Equipment:
 
         x, y = center - self.BUTTON_WIDTH / 2, 0
 
+        # Vehicles
         for vehicle in self.shed.vehicles:
             button = Button(self.scrollable_surface, x, y, self.BUTTON_WIDTH, button_height, self.rect,
-                       (0, 200, 255), (0, 0, 255), white, "", 20, (20, 20, 20, 20), 0, 0, command=lambda: None)
+                       (0, 200, 255), (0, 0, 255), white, "", 20, (20, 20, 20, 20), 0, 0, command=lambda: self.trigger_vehicle_popup(vehicle.vehicle_id))
             
             button.draw()
             self.equipment_buttons.append(button)
@@ -72,7 +93,7 @@ class Equipment:
 
             y += y_inc
 
-        # TODO: Tools
+        # Tools
         for tool in self.shed.tools:
             button = Button(self.scrollable_surface, x, y, self.BUTTON_WIDTH, button_height, self.rect,
                        (150, 0, 255), (0, 0, 255), white, "", 20, (20, 20, 20, 20), 0, 0, command=lambda: None)

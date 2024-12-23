@@ -18,8 +18,24 @@ STATE_COLORS = {
     6: (0, 0, 0)
 }
 
-TIMESCALE = 2.4 # 144 mins every min = 2.4 min every second
-MINS_IN_DAY = 24 * 60
+CROP_TYPES = ["wheat", "barley", "oat", "canola"]
+
+CROP_IDS = {
+    "wheat": 0,
+    "barley": 1,
+    "oat": 2,
+    "canola": 3
+}
+
+BASE_CROP_PRICES = {
+    0: 300,
+    1: 400,
+    2: 800,
+    3: 600
+}
+
+TIMESCALE = 24 # 144 mins every min = 2.4 min every second
+MINS_IN_DAY = TIMESCALE * 60
 
 # ---------- CONFIG ----------
 BUILD: bool = False

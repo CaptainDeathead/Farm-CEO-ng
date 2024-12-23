@@ -7,6 +7,7 @@ from resource_manager import ResourceManager
 from save_manager import SaveManager
 
 from paddock_manager import PaddockManager
+from sellpoints import SellpointManager
 from events import Events
 
 from UI.panel import Panel
@@ -68,10 +69,12 @@ class FarmCEO:
         self.paddock_manager: PaddockManager = PaddockManager()
         self.paddock_manager.init(self.screen, self.map.surface, self.save_manager.get_paddocks(), self.map.scale)
 
+        self.sellpoint_manager = SellpointManager(self.game_surface, self.map.scale, self.save_manager.get_sellpoints())
+
         self.time: float = self.save_manager.get_attr("time") # time / 24 = *n* days
         self.last_update_time = 0.0
 
-        self.panel = Panel(self.screen, events, self.shed)
+        self.panel = Panel(self.screen, events, self.shed, self.sellpoint_manager)
 
         self.popup = None
 

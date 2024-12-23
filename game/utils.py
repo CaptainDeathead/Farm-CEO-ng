@@ -27,3 +27,11 @@ class utils:
     @staticmethod
     def scale_rect(rect: pg.Rect, scale: float) -> pg.Rect:
         return pg.Rect(rect.x * scale, rect.y * scale, rect.w * scale, rect.h * scale)
+
+class LayableRenderObj:
+    def render0(self) -> None: ...
+    def render1(self) -> None: ...
+    def render2(self) -> None: ...
+
+    def render(self) -> None:
+        self.render0(); self.render1(); self.render2()

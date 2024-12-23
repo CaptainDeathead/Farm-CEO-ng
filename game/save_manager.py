@@ -29,10 +29,13 @@ class SaveManager:
         self.STATIC_VEHICLES_DICT = ResourceManager().load_json("Machinary/Vehicles/vehicles.json")
         self.STATIC_TOOLS_DICT = ResourceManager().load_json("Machinary/Tools/tools.json")
         
+        self.map_config = map_config
+
         self.money = 500_000.0 # Starting money
         self.xp = 0.0
         self.debt = 0.0 # No dept to start with
         self.time = 0.0
+        self.sellpoints = {}
         
         self.vehicles = vehicles
         self.tools = tools
@@ -69,25 +72,25 @@ class SaveManager:
         self.tools_dict = {}
 
         self.load_game()
-        if self.save == {}: self.init_savefile(map_config)
+        if self.save == {}: self.init_savefile()
 
-    def _load_paddocks_from_conf(self, map_config: Dict[str, any]) -> Dict[int, any]:
+    def _load_paddocks_from_conf(self) -> Dict[int, any]:
         new_paddocks = {}
-        for pdk in map_config["paddocks"]:
-            new_paddocks[int(pdk)+1] = map_config["paddocks"][pdk]
+        for pdk in self.map_config["paddocks"]:
+            new_paddocks[int(pdk)+1] = self.map_config["paddocks"][pdk]
             new_paddocks[int(pdk)+1]["owned_by"] = "npc"
-            new_paddocks[int(pdk)+1]["hectares"] = map_config["paddocks"][pdk]["hectares"]
+            new_paddocks[int(pdk)+1]["hectares"] = self.map_config["paddocks"][pdk]["hectares"]
 
         return new_paddocks
 
-    def init_savefile(self, map_config: Dict[str, any]) -> None:
+    def init_savefile(self) -> None:
         self.new_savefile = True
 
-        if map_config == {}:
+        if self.map_config == {}:
             raise Exception("Map configuration is EMPTY! Please provide a valid map config in the arguments when creating a new save.")
         
         new_save = {
-            "map_name": map_config["name"],
+            "map_name": self.map_config["name"],
             "money": self.money, # Starting money
             "xp": self.xp,
             "debt": 0.0, # No dept to start with
@@ -96,7 +99,7 @@ class SaveManager:
             "tools": self.tools_dict
         }
 
-        new_save["paddocks"] = self._load_paddocks_from_conf(map_config)
+        new_save["paddocks"] = self._load_paddocks_from_conf()
 
         self.save = new_save
         self.save_game(update_equipment_dicts = False)
@@ -114,14 +117,16 @@ class SaveManager:
         self.time = self.save["time"]
         self.vehicles_dict = self.save["vehicles"]
         self.tools_dict = self.save["tools"]
+        self.sellpoints = self.save.get("sellpoints", {}) 
 
         self.load_equipment_from_dicts()
 
     def save_game(self, update_equipment_dicts: bool = True) -> None:
+        logging.info("Saving game...")
+
         if update_equipment_dicts:
             self.get_vehicles_dict()
             self.get_tools_dict()
-            print(self.tools_dict)
         
         self.set_attr("money", self.money)
         self.set_attr("xp", self.xp)
@@ -129,9 +134,12 @@ class SaveManager:
         self.set_attr("time", self.time)
         self.set_attr("vehicles", self.vehicles_dict)
         self.set_attr("tools", self.tools_dict)
+        self.set_attr("sellpoints", self.sellpoints)
 
         logging.debug(f"Writing savegame file: \"{self.SAVE_PATH}\"...")
         ResourceManager.write_json(self.save, self.SAVE_PATH, explicit_path=True)
+
+        logging.info("Game saved successfully.")
 
     def create_vehicle(self, header: bool, brand: str, model: str, ) -> None:
         if header:
@@ -267,3 +275,17 @@ class SaveManager:
             }
         
         return self.tools_dict
+
+    def get_sellpoints(self) -> Dict[str, any]:
+        if self.sellpoints == {}:
+            logging.warning("No sellpoints found in the save file! Loading sellpoints from map config...")
+            self.sellpoints = self.map_config["sell points"]
+
+        return self.sellpoints
+
+    def set_sellpoints(self, sellpoints: Dict[str, any]) -> None:
+        logging.debug("Updating sellpoints save...")
+        self.sellpoints.update(sellpoints)
+
+        logging.debug("Sellpoints save updated. Saving game...")
+        self.save_game()

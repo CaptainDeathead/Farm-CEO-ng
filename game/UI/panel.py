@@ -5,6 +5,7 @@ from resource_manager import ResourceManager
 from events import Events
 
 from farm import Shed
+from sellpoints import SellpointManager
 
 from UI.pygame_gui import Button
 from UI.navbar import NavBar
@@ -17,7 +18,7 @@ from data import *
 class Panel:
     NAVBAR_HEIGHT = 110
 
-    def __init__(self, screen: pg.Surface, events: Events, shed: Shed) -> None:
+    def __init__(self, screen: pg.Surface, events: Events, shed: Shed, sellpoint_manager: SellpointManager) -> None:
         self.screen: pg.Surface = screen
         self.events: Events = events
 
@@ -32,7 +33,7 @@ class Panel:
         page_height = pg.Rect(0, self.NAVBAR_HEIGHT, PANEL_WIDTH, self.SCREEN_HEIGHT - self.NAVBAR_HEIGHT)
 
         self.shop = Shop(self.rendered_surface, self.events, page_height)
-        self.equipment = Equipment(self.rendered_surface, self.events, page_height, shed)
+        self.equipment = Equipment(self.rendered_surface, self.events, page_height, shed, sellpoint_manager)
 
         self.rebuild()
 
