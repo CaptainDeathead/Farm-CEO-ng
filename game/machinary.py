@@ -9,6 +9,7 @@ from math import atan2
 from typing import Dict, List, Sequence
 
 class Tractor(Vehicle):
+    IS_VEHICLE: bool = True
     def __init__(self, game_surface: pg.Surface, shed_rect: pg.Rect, attrs: Dict[str, any]) -> None:
         self.surface = game_surface
         self.shed_rect = shed_rect
@@ -72,6 +73,8 @@ class Tractor(Vehicle):
             self.draw()
 
 class Header(Vehicle):
+    IS_VEHICLE: bool = True
+
     def __init__(self, game_surface: pg.Surface, shed_rect: pg.Rect, attrs: Dict[str, any]) -> None:
         self.surface = game_surface
         self.shed_rect = shed_rect
@@ -126,6 +129,8 @@ class Header(Vehicle):
             self.draw()
 
 class Tool(Trailer):
+    IS_VEHICLE: bool = False
+
     def __init__(self, game_surface: pg.Surface, shed_rect: pg.Rect, attrs: Dict[str, any]) -> None:
         self.surface = game_surface
         self.shed_rect = shed_rect

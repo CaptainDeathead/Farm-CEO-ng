@@ -66,6 +66,7 @@ class Events:
                 if event.button == 1:
                     self.set_override(False)
                     self.mouse_just_released = True
+                    self.authority_mouse_just_released = True
 
         if self.mouse_press_override:
             if not self.override_requires_authority:

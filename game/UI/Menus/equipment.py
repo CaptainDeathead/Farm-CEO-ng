@@ -43,19 +43,23 @@ class Equipment:
         self.max_y = 0.0
         self.scrolling_last_frame = False
 
-    def trigger_vehicle_popup(self, vehicle_id: int) -> None:
-        popup_type = None
+    def close_popup(self) -> None:
+        self.set_popup(None)
 
+        self.rebuild()
+        self.draw()
+
+    def trigger_vehicle_popup(self, vehicle_id: int) -> None:
         vehicle = self.shed.get_vehicle(vehicle_id)
 
         if vehicle.active == True:
             ... # TODO: Error vehicle already active popup
         elif isinstance(vehicle, Tractor):
-            popup_type = TractorNewTaskPopup
+            popup = TractorNewTaskPopup(self.events, vehicle.full_name, self.shed, self.sellpoint_manager.sellpoints, self.equipment_buttons, self.draw,
+                                        lambda: self.close_popup())
         else:
             ... # TODO: popup_type = HeaderNewTaskPopup
 
-        popup = TractorNewTaskPopup(self.events, vehicle.full_name, self.shed, self.sellpoint_manager.sellpoints, lambda: self.set_popup(None))
         self.set_popup(popup)
 
     def rebuild(self) -> None:
@@ -79,7 +83,7 @@ class Equipment:
         # Vehicles
         for vehicle in self.shed.vehicles:
             button = Button(self.scrollable_surface, x, y, self.BUTTON_WIDTH, button_height, self.rect,
-                       (0, 200, 255), (0, 0, 255), white, "", 20, (20, 20, 20, 20), 0, 0, command=lambda vehicle=vehicle: self.trigger_vehicle_popup(vehicle.vehicle_id))
+                       (0, 200, 255), (0, 0, 255), white, "", 20, (20, 20, 20, 20), 0, 0, command=lambda vehicle=vehicle: self.trigger_vehicle_popup(vehicle.vehicle_id), authority=True)
             
             button.draw()
             self.equipment_buttons.append(button)
@@ -99,7 +103,7 @@ class Equipment:
         # Tools
         for tool in self.shed.tools:
             button = Button(self.scrollable_surface, x, y, self.BUTTON_WIDTH, button_height, self.rect,
-                       (150, 0, 255), (0, 0, 255), white, "", 20, (20, 20, 20, 20), 0, 0, command=lambda: None)
+                       (150, 0, 255), (0, 0, 255), white, "", 20, (20, 20, 20, 20), 0, 0, command=lambda: None, authority=True)
             
             button.draw()
             self.equipment_buttons.append(button)
@@ -125,7 +129,7 @@ class Equipment:
             button.global_rect = pg.Rect(og_button_rect.x, og_button_rect.y + self.scroll_y, og_button_rect.width, og_button_rect.height)
 
             # Mouse was pressed on the button and the mouse is released now (these buttons are different because the scrolling can press them)
-            button_press = self.events.mouse_just_released and button.global_rect.collidepoint(self.events.mouse_start_press_location)
+            button_press = self.events.authority_mouse_just_released and button.global_rect.collidepoint(self.events.authority_mouse_start_press_location)
             button.update(button_press, self.events.set_override)
 
         if len(self.shed.vehicles) + len(self.shed.tools) != len(self.equipment_buttons):

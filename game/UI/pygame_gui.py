@@ -37,12 +37,16 @@ class Button:
         self.image: pg.Surface = image
         self.command: callable = command
         self.authority: bool = authority
+        self.opacity: int = 256
         self.rendered_surface: pg.Surface = pg.Surface((width, height), pg.SRCALPHA)
 
         if self.image is not None:
             self.image = pg.transform.scale(image, (self.width, self.height))
 
         self.rebuild()
+
+    def set_opacity(self, opacity: int) -> None:
+        self.opacity = opacity
 
     def rebuild(self) -> None:
         color = self.active_color
@@ -115,6 +119,7 @@ class Button:
 
     def draw(self) -> None:
         if not self.hidden:
+            self.rendered_surface.set_alpha(self.opacity)
             self.screen.blit(self.rendered_surface, (self.x, self.y))
 
     def hide(self) -> None:
@@ -176,8 +181,6 @@ class DropDown:
     def get_selected_text(self) -> str: return self.selected_button.text
 
     def select_button(self, button_text: str) -> None:
-        if not self.dropped: return
-
         for button in self.buttons:
             if button.text == button_text:
                 self.selected_button.text = button.text
@@ -200,6 +203,8 @@ class DropDown:
             button.draw()
 
         self.selected_button.draw()
+
+        self.draw()
 
     def update(self, pressed: bool = False, set_override: callable = lambda x: None) -> None:
         for button in self.buttons:
