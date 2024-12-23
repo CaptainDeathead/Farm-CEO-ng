@@ -11,7 +11,7 @@ class Button:
     def __init__(self, screen: pg.Surface, x: int, y: int, width: int, height: int, parent_rect: pg.Rect,
                  color: Tuple[int, int, int], selectedColor: Tuple[int, int, int], textColor: Tuple[int, int, int],
                  text: str, size: int, radius: Tuple[int, int, int, int], offset_x: int, offset_y: int, center: bool = False,
-                 command: callable = None, image: pg.Surface = None) -> None:
+                 command: callable = None, image: pg.Surface = None, authority: bool = False) -> None:
         
         self.screen: pg.Surface = screen
         self.x: int = x
@@ -36,7 +36,11 @@ class Button:
         self.center: bool = center
         self.image: pg.Surface = image
         self.command: callable = command
+        self.authority: bool = authority
         self.rendered_surface: pg.Surface = pg.Surface((width, height), pg.SRCALPHA)
+
+        if self.image is not None:
+            self.image = pg.transform.scale(image, (self.width, self.height))
 
         self.rebuild()
 
@@ -46,14 +50,14 @@ class Button:
         if self.selected:
             # WARNING: Could be a color missmatch between active_color and color
             color = self.selectedColor
-            
-        pg.draw.rect(self.rendered_surface, color, (0, 0, self.width, self.height),
-                     border_top_left_radius = self.radius[0], border_bottom_left_radius = self.radius[1],
-                     border_top_right_radius = self.radius[2], border_bottom_right_radius = self.radius[3])
         
         if self.image is not None:
             self.rendered_surface.blit(self.image, (0, 0))
         else:
+            pg.draw.rect(self.rendered_surface, color, (0, 0, self.width, self.height),
+                        border_top_left_radius = self.radius[0], border_bottom_left_radius = self.radius[1],
+                        border_top_right_radius = self.radius[2], border_bottom_right_radius = self.radius[3])
+
             rendered_text = self.font.render(str(self.text), True, self.textColor)
 
             x = self.x + self.offset_x
@@ -281,15 +285,16 @@ class Widget:
         ...
 
 class Popup:
-    BANNER_HEIGHT = 40
-    TITLE_FONT_SIZE = 30
+    BANNER_HEIGHT = 80
+    TITLE_FONT_SIZE = 80
 
-    def __init__(self, parent_surface: pg.Surface, rect: pg.Rect, border_radius: int, title: str, contents: Widget,
+    def __init__(self, parent_surface: pg.Surface, rect: pg.Rect, parent_rect: pg.Rect, border_radius: int, title: str, contents: Widget,
                  banner_color: tuple[int, int, int], body_color: tuple[int, int, int], exit_function: callable, submit_function: callable,
                  events: Events, show_exit_button: bool = True) -> None:
 
         self.parent_surface = parent_surface
         self.rect = rect
+        self.parent_rect = parent_rect
 
         self.surface = pg.Surface(self.rect.size, pg.SRCALPHA)
 
@@ -313,19 +318,19 @@ class Popup:
         self.exit_img = ResourceManager.load_image("Icons/cross.png")
         self.submit_img = ResourceManager.load_image("Icons/tick.png")
 
-        btn_width = 30
-        padding = 5
+        padding = 10
+        btn_width = self.BANNER_HEIGHT - padding * 2
 
-        exit_x = self.rect.w - btn_width - padding
-        exit_y = self.rect.h - btn_width - padding
+        submit_x = self.rect.w - btn_width - padding
+        submit_y = self.rect.h - btn_width - padding
 
-        submit_x = exit_x - btn_width - padding
-        submit_y = exit_y
+        exit_x = submit_x - btn_width - padding * 2
+        exit_y = submit_y
 
-        self.exit_btn = Button(self.surface, exit_x, exit_y, btn_width, btn_width, self.rect, (0, 0, 0), (0, 0, 0), (0, 0, 0),
+        self.exit_btn = Button(self.surface, exit_x, exit_y, btn_width, btn_width, self.parent_rect, (0, 0, 0), (0, 0, 0), (0, 0, 0),
                                "", 10, (0, 0, 0, 0), 0, 0, True, lambda: self.exit_popup(), self.exit_img)
                             
-        self.submit_btn = Button(self.surface, submit_x, submit_y, btn_width, btn_width, self.rect, (0, 0, 0), (0, 0, 0), (0, 0, 0),
+        self.submit_btn = Button(self.surface, submit_x, submit_y, btn_width, btn_width, self.parent_rect, (0, 0, 0), (0, 0, 0), (0, 0, 0),
                                  "", 10, (0, 0, 0, 0), 0, 0, True, lambda: self.submit_popup(), self.submit_img)
 
         self.rebuild()
@@ -349,12 +354,12 @@ class Popup:
         self.submit_function()
 
     def rebuild(self) -> None:
-        pg.draw.rect(self.surface, (0, 200, 255), self.rect, border_radius = self.border_radius)
+        pg.draw.rect(self.surface, self.banner_color, self.rect, border_radius = self.border_radius)
 
         font_surf = self.title_font.render(self.title, True, (255, 255, 255))
 
         font_x = 10
-        font_y = (self.BANNER_HEIGHT - font_surf.get_height()) / 2
+        font_y = self.BANNER_HEIGHT / 2 - font_surf.get_height() / 2
 
         self.surface.blit(font_surf, (font_x, font_y))
 
@@ -366,10 +371,10 @@ class Popup:
         if self.contents.rect.collidepoint(mouse_pos):
             redraw_required = self.contents.update()
 
-        exit_btn_redraw = self.exit_btn.update(self.events.mouse_just_pressed, self.events.set_override)
-        confirm_btn_redraw = self.confirm_btn.update(self.events.mouse_just_pressed, self.events.set_override)
+        exit_btn_redraw = self.exit_btn.update(self.events.authority_mouse_just_pressed, self.events.set_override)
+        submit_btn_redraw = self.submit_btn.update(self.events.authority_mouse_just_pressed, self.events.set_override)
 
-        if exit_btn_redraw or confirm_btn_redraw:
+        if exit_btn_redraw or submit_btn_redraw:
             redraw_required = True
 
         if redraw_required: self.draw()
@@ -377,4 +382,7 @@ class Popup:
         return redraw_required
 
     def draw(self) -> None:
+        self.exit_btn.draw()
+        self.submit_btn.draw()
+
         self.surface.blit(self.contents.surface, (0, self.BANNER_HEIGHT))

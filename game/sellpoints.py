@@ -18,8 +18,8 @@ class SellPoint(LayableRenderObj):
         self.pos = pos
         self.rotation = rotation
 
-        self.grid_surface = pg.transform.scale(ResourceManager.load_image("Sprites/grid.png"), (map_scale, map_scale))
-        self.silo_surface = pg.transform.scale(ResourceManager.load_image("Sprites/silo.png"), (map_scale, map_scale))
+        self.grid_surface = pg.transform.scale_by(ResourceManager.load_image("Sprites/grid.png"), map_scale)
+        self.silo_surface = pg.transform.scale_by(ResourceManager.load_image("Sprites/silo.png"), map_scale)
         
         grid_rect = self.grid_surface.get_rect()
         silo_rect = self.silo_surface.get_rect()

@@ -20,9 +20,11 @@ from typing import List
 class Equipment:
     BUTTON_WIDTH = PANEL_WIDTH - 40
 
-    def __init__(self, parent_surface: pg.Surface, events: Events, rect: pg.Rect, shed: Shed, sellpoint_manager: SellpointManager) -> None:
+    def __init__(self, parent_surface: pg.Surface, events: Events, set_popup: callable, rect: pg.Rect, shed: Shed, sellpoint_manager: SellpointManager) -> None:
         self.parent_surface = parent_surface
         self.events = events
+        self.set_popup = set_popup
+
         self.rect = rect
         self.rect.y += 20
         self.shed = shed
@@ -35,6 +37,7 @@ class Equipment:
         self.body_font = pg.font.SysFont(None, 40)
 
         self.equipment_buttons: List[Button] = []
+        self.og_equipment_button_rects: List[pg.Rect] = []
 
         self.scroll_y = 0.0
         self.max_y = 0.0
@@ -52,9 +55,8 @@ class Equipment:
         else:
             ... # TODO: popup_type = HeaderNewTaskPopup
 
-        popup = TractorNewTaskPopup(self.events, vehicle.full_name, self.shed, self.sellpoint_manager.sellpoints)
-
-        self.activate_popup()
+        popup = TractorNewTaskPopup(self.events, vehicle.full_name, self.shed, self.sellpoint_manager.sellpoints, lambda: self.set_popup(None))
+        self.set_popup(popup)
 
     def rebuild(self) -> None:
         logging.debug("Rebuilding equipment menu...")
@@ -77,10 +79,11 @@ class Equipment:
         # Vehicles
         for vehicle in self.shed.vehicles:
             button = Button(self.scrollable_surface, x, y, self.BUTTON_WIDTH, button_height, self.rect,
-                       (0, 200, 255), (0, 0, 255), white, "", 20, (20, 20, 20, 20), 0, 0, command=lambda: self.trigger_vehicle_popup(vehicle.vehicle_id))
+                       (0, 200, 255), (0, 0, 255), white, "", 20, (20, 20, 20, 20), 0, 0, command=lambda vehicle=vehicle: self.trigger_vehicle_popup(vehicle.vehicle_id))
             
             button.draw()
             self.equipment_buttons.append(button)
+            self.og_equipment_button_rects.append(button.global_rect)
 
             name_lbl = self.title_font.render(f"{vehicle.brand} {vehicle.model}", True, white)
             self.scrollable_surface.blit(name_lbl, (center - name_lbl.get_width()/2, y + 10))
@@ -100,6 +103,7 @@ class Equipment:
             
             button.draw()
             self.equipment_buttons.append(button)
+            self.og_equipment_button_rects.append(button.global_rect)
 
             name_lbl = self.title_font.render(tool.full_name, True, white)
             self.scrollable_surface.blit(name_lbl, (center - name_lbl.get_width()/2, y + 10))
@@ -115,7 +119,11 @@ class Equipment:
         self.max_y = y
 
     def update(self) -> bool:
-        for button in self.equipment_buttons:
+        for i, button in enumerate(self.equipment_buttons):
+            # Move the button's global_rect values to where they are with scrolling (only effects mouse press detection)
+            og_button_rect = self.og_equipment_button_rects[i]
+            button.global_rect = pg.Rect(og_button_rect.x, og_button_rect.y + self.scroll_y, og_button_rect.width, og_button_rect.height)
+
             # Mouse was pressed on the button and the mouse is released now (these buttons are different because the scrolling can press them)
             button_press = self.events.mouse_just_released and button.global_rect.collidepoint(self.events.mouse_start_press_location)
             button.update(button_press, self.events.set_override)

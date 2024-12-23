@@ -74,7 +74,7 @@ class FarmCEO:
         self.time: float = self.save_manager.get_attr("time") # time / 24 = *n* days
         self.last_update_time = 0.0
 
-        self.panel = Panel(self.screen, events, self.shed, self.sellpoint_manager)
+        self.panel = Panel(self.screen, events, self.set_popup, self.shed, self.sellpoint_manager)
 
         self.popup = None
 
@@ -84,11 +84,16 @@ class FarmCEO:
         self.save_manager.set_xp(1_000_000_000_000)
 
     def set_popup(self, popup: PopupType) -> None:
-        self.events.lock_override()
+        if popup is None:
+            return self.remove_popup()
+
+        self.events.set_override(False)
+        self.events.set_override_authority_requirement(True)
+
         self.popup = popup
 
     def remove_popup(self) -> None:
-        self.events.unlock_override()
+        self.events.set_override_authority_requirement(False)
         self.popup = None
 
     def background_render(self) -> None:
@@ -113,3 +118,11 @@ class FarmCEO:
 
     def ui_render(self) -> None:
         self.panel.draw()
+
+
+        # WARNING: THIS HAS TO BE LAST
+        if self.popup is not None:
+            self.popup.update()
+
+            if self.popup is not None:
+                self.screen.blit(self.popup.surface, (self.popup.x, self.popup.y))

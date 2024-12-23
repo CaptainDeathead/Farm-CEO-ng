@@ -14,10 +14,10 @@ class PopupType:
         ...
 
 class TractorNewTaskPopup(PopupType):
-    WIDTH = 500
-    HEIGHT = 400
+    WIDTH = 900
+    HEIGHT = 600
 
-    def __init__(self, events: Events, vehicle_name: str, shed: Shed, sell_points: List[SellPoint]) -> None:
+    def __init__(self, events: Events, vehicle_name: str, shed: Shed, sell_points: List[SellPoint], close_popup: callable) -> None:
         self.parent_surface = pg.display.get_surface()
         self.surface = pg.Surface((self.WIDTH, self.HEIGHT), pg.SRCALPHA)
         self.events = events
@@ -26,20 +26,28 @@ class TractorNewTaskPopup(PopupType):
         self.tools = shed.tools
         self.sell_points = sell_points
 
+        self.close_popup = close_popup
+
         self.x = self.parent_surface.get_width() / 2 - self.WIDTH / 2
         self.y = self.parent_surface.get_height() / 2 - self.HEIGHT / 2
 
         self.rect = pg.Rect(self.x, self.y, self.WIDTH, self.HEIGHT)
-        self.widget_rect = pg.Rect(self.x, self.y + Popup.BANNER_HEIGHT, self.WIDTH, self.HEIGHT - Popup.BANNER_HEIGHT)
+        self.widget_rect = pg.Rect(self.x, self.y + Popup.BANNER_HEIGHT, self.WIDTH, self.HEIGHT - Popup.BANNER_HEIGHT * 2)
 
         self.widget = Widget(self.parent_surface, self.widget_rect)
         self.init_widget_components()
 
-        self.popup = Popup(self.parent_surface, self.rect, 20, f"{vehicle_name} - New Task", self.widget, (0, 200, 255), (255, 255, 255), self.cancel, self.submit, self.events)
+
+        self.popup = Popup(self.parent_surface, pg.Rect(0, 0, self.WIDTH, self.HEIGHT), self.rect, 20, f"{vehicle_name} - New Task", self.widget, (63, 72, 204), (255, 255, 255),
+                           self.cancel, self.submit, self.events)
+
+        self.popup.draw()
+        self.draw()
 
     def init_widget_components(self) -> None:
         widget = self.widget
 
+        widget.surface.fill((255, 255, 255))
         widget.font = pg.font.SysFont(None, 20)
 
         widget.tool_lbl = self.widget.font.render("Tool: ", True, (0, 0, 0))
@@ -76,9 +84,10 @@ class TractorNewTaskPopup(PopupType):
         widget.update = self.spoofed_widget_update
 
     def cancel(self) -> None:
-        ...
+        self.close_popup()
 
     def submit(self) -> None:
+        self.close_popup()
         ...
 
     def widget_tool_dropdown_on_change(self) -> None:
@@ -89,7 +98,6 @@ class TractorNewTaskPopup(PopupType):
 
     def draw(self) -> None:
         self.surface.blit(self.popup.surface, (0, 0))
-        self.surface.blit(self.widget.surface, self.widget.rect)
 
     def update(self) -> None:
         redraw_req = self.popup.update()
