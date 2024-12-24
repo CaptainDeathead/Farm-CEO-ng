@@ -39,7 +39,7 @@ version = 0.1
 
 # (list) Application requirements
 # comma separated e.g. requirements = sqlite3,kivy
-requirements = python3,pygame-ce,android
+requirements = python3,pygame-ce,android,cython
 
 # (str) Custom source folders for requirements
 # Sets custom source for any requirements with recipes
@@ -112,7 +112,7 @@ android.minapi = 21
 #android.sdk = 20
 
 # (str) Android NDK version to use
-#android.ndk = 23b
+#android.ndk = 25b
 
 # (int) Android NDK API to use. This is the minimum API your app will support, it should usually match android.minapi.
 android.ndk_api = 21
@@ -121,7 +121,8 @@ android.ndk_api = 21
 #android.private_storage = True
 
 # (str) Android NDK directory (if empty, it will be automatically downloaded.)
-#android.ndk_path =
+#android.ndk_path = ~/.buildozer/android/platform/android-ndk-r25b-linux-x86_64.zip
+#android.ndk_path = /tmp/android-ndk-r27c-linux-x86_64
 
 # (str) Android SDK directory (if empty, it will be automatically downloaded.)
 #android.sdk_path =
