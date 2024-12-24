@@ -59,7 +59,6 @@ class TractorNewTaskPopup(PopupType):
 
         self.widget.tool_dropdown.draw()
         self.widget.draw()
-        pg.image.save(self.widget.surface, 'drop.png')
         self.draw()
 
     def rewire_equipment_buttons(self) -> None:
