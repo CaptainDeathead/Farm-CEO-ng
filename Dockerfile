@@ -9,6 +9,9 @@ ENV LANG="en_US.UTF-8" \
     LANGUAGE="en_US.UTF-8" \
     LC_ALL="en_US.UTF-8"
 
+
+RUN ls -a /tmp
+
 RUN apt update -qq > /dev/null \
     && DEBIAN_FRONTEND=noninteractive apt install -qq --yes --no-install-recommends \
     locales \
@@ -55,6 +58,14 @@ RUN pip install --upgrade \
     jinja2 \
     toml \
     build
+
+RUN ls -a /tmp
+
+# Create the target path where the NDK will go
+RUN mkdir -p /home/user/.buildozer/android/platform
+
+# Copy the file from /tmp to the target path
+COPY /tmp/android-ndk-r27c-linux.zip /home/user/.buildozer/android/platform/
 
 USER ${USER}
 WORKDIR ${WORK_DIR}

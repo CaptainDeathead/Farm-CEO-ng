@@ -4,6 +4,7 @@ from typing import Tuple
 
 # ---------- PANEL ----------
 PANEL_WIDTH: int = 620
+NAVBAR_HEIGHT: int = 110
 
 # ---------- GAME ----------
 BACKGROUND_COLOR: Tuple[int, int, int] = (0, 200, 255)

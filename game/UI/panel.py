@@ -16,7 +16,7 @@ from UI.Menus.equipment import Equipment
 from data import *
 
 class Panel:
-    NAVBAR_HEIGHT = 110
+    NAVBAR_HEIGHT = NAVBAR_HEIGHT
 
     def __init__(self, screen: pg.Surface, events: Events, set_popup: callable, shed: Shed, sellpoint_manager: SellpointManager) -> None:
         self.screen: pg.Surface = screen

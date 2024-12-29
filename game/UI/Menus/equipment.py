@@ -129,8 +129,9 @@ class Equipment:
             button.global_rect = pg.Rect(og_button_rect.x, og_button_rect.y + self.scroll_y, og_button_rect.width, og_button_rect.height)
 
             # Mouse was pressed on the button and the mouse is released now (these buttons are different because the scrolling can press them)
-            button_press = self.events.authority_mouse_just_released and button.global_rect.collidepoint(self.events.authority_mouse_start_press_location)
-            button.update(button_press, self.events.set_override)
+            if self.events.mouse_pos[1] > NAVBAR_HEIGHT:
+                button_press = self.events.authority_mouse_just_released and button.global_rect.collidepoint(self.events.authority_mouse_start_press_location)
+                button.update(button_press, self.events.set_override)
 
         if len(self.shed.vehicles) + len(self.shed.tools) != len(self.equipment_buttons):
             self.rebuild()
