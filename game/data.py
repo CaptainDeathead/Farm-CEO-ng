@@ -39,7 +39,7 @@ TIMESCALE = 24 # 144 mins every min = 2.4 min every second
 MINS_IN_DAY = TIMESCALE * 60
 
 # ---------- CONFIG ----------
-BUILD: bool = False
+BUILD: bool = True
 SUPPORTED_PLATFORMS: Tuple[str] = ("android_x86_64", "android_v7a", "arm64-v8a", "Linux", "Windows")
 PLATFORM: str = "arm64-v8a"
 BUILD_TYPE: str = "Devlopment"
