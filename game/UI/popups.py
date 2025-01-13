@@ -59,6 +59,7 @@ class TractorNewTaskPopup(PopupType):
         self.widget.tool_button.text = self.tools[tool_index].full_name
 
         self.widget.tool_button.rebuild()
+        self.widget.tool_button.draw()
         self.widget.draw()
         self.draw()
 
