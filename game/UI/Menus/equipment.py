@@ -11,8 +11,9 @@ from UI.popups import TractorNewTaskPopup
 
 from utils import utils
 from farm import Shed
-from machinary import Tractor
+from machinary import Tractor, Header, Tool
 from sellpoints import SellpointManager
+from destination import Destination
 from data import *
 
 from typing import List
@@ -44,7 +45,11 @@ class Equipment:
         self.scrolling_last_frame = False
         self.in_scroll = False
 
+        self.selected_vehicle = None
         self.showing_destination_picker = False
+
+        self.destination_exit_btn = None
+        self.destination_submit_btn = None
 
     def close_popup(self) -> None:
         self.set_popup(None)
@@ -52,19 +57,28 @@ class Equipment:
         self.rebuild()
         self.draw()
 
+    def cancel_task_assign(self) -> None:
+        self.showing_destination_picker = False
+
+    def assign_task(self) -> None:
+        self.showing_destination_picker = False
+        
+        ...
+
     def show_destination_picker(self, tool_index: int) -> None:
         tool = self.shed.tools[tool_index]
-        self.show_destination_picker = True
+        self.showing_destination_picker = True
 
-        self.rebuild_destination_picker(tool)
+        self.rebuild_destination_picker(tool, Destination(None))
+        self.draw()
 
     def trigger_vehicle_popup(self, vehicle_id: int) -> None:
-        vehicle = self.shed.get_vehicle(vehicle_id)
+        self.selected_vehicle = self.shed.get_vehicle(vehicle_id)
 
-        if vehicle.active == True:
+        if self.selected_vehicle.active == True:
             ... # TODO: Error vehicle already active popup
-        elif isinstance(vehicle, Tractor):
-            popup = TractorNewTaskPopup(self.events, vehicle.full_name, self.shed, self.sellpoint_manager.sellpoints, self.equipment_buttons, self.draw,
+        elif isinstance(self.selected_vehicle, Tractor):
+            popup = TractorNewTaskPopup(self.events, self.selected_vehicle.full_name, self.shed, self.sellpoint_manager.sellpoints, self.equipment_buttons, self.draw,
                                         lambda: self.close_popup(), self.show_destination_picker)
         else:
             ... # TODO: popup_type = HeaderNewTaskPopup
@@ -77,7 +91,6 @@ class Equipment:
         self.rendered_surface.fill(UI_BACKGROUND_COLOR)
         self.equipment_buttons = []
 
-        white = pg.Color(255, 255, 255)
         center = PANEL_WIDTH / 2
 
         button_height = 130
@@ -92,19 +105,19 @@ class Equipment:
         # Vehicles
         for vehicle in self.shed.vehicles:
             button = Button(self.scrollable_surface, x, y, self.BUTTON_WIDTH, button_height, self.rect,
-                       UI_MAIN_COLOR, UI_ACTIVE_COLOR, white, "", 20, (20, 20, 20, 20), 0, 0, command=lambda vehicle=vehicle: self.trigger_vehicle_popup(vehicle.vehicle_id), authority=True)
+                       UI_MAIN_COLOR, UI_ACTIVE_COLOR, UI_TEXT_COLOR, "", 20, (20, 20, 20, 20), 0, 0, command=lambda vehicle=vehicle: self.trigger_vehicle_popup(vehicle.vehicle_id), authority=True)
             
             button.draw()
             self.equipment_buttons.append(button)
             self.og_equipment_button_rects.append(button.global_rect)
 
-            name_lbl = self.title_font.render(f"{vehicle.brand} {vehicle.model}", True, white)
+            name_lbl = self.title_font.render(f"{vehicle.brand} {vehicle.model}", True, UI_TEXT_COLOR)
             self.scrollable_surface.blit(name_lbl, (center - name_lbl.get_width()/2, y + 10))
             
-            self.scrollable_surface.blit(self.body_font.render(f"Task: {vehicle.string_task}", True, white), (60, y + 50))
-            self.scrollable_surface.blit(self.body_font.render(f"Fuel: {vehicle.fuel}L", True, white), (60, y + 80))
+            self.scrollable_surface.blit(self.body_font.render(f"Task: {vehicle.string_task}", True, UI_TEXT_COLOR), (60, y + 50))
+            self.scrollable_surface.blit(self.body_font.render(f"Fuel: {vehicle.fuel}L", True, UI_TEXT_COLOR), (60, y + 80))
 
-            pdk_lbl = self.body_font.render(f"Paddock: {vehicle.paddock}", True, white)
+            pdk_lbl = self.body_font.render(f"Paddock: {vehicle.paddock}", True, UI_TEXT_COLOR)
             self.scrollable_surface.blit(pdk_lbl, (PANEL_WIDTH - 60 - pdk_lbl.get_width(), y + 80))
 
             y += y_inc
@@ -112,26 +125,92 @@ class Equipment:
         # Tools
         for tool in self.shed.tools:
             button = Button(self.scrollable_surface, x, y, self.BUTTON_WIDTH, button_height, self.rect,
-                       UI_TOOL_BUTTON_COLOR, UI_ACTIVE_COLOR, white, "", 20, (20, 20, 20, 20), 0, 0, command=lambda: None, authority=True)
+                       UI_TOOL_BUTTON_COLOR, UI_ACTIVE_COLOR, UI_TEXT_COLOR, "", 20, (20, 20, 20, 20), 0, 0, command=lambda: None, authority=True)
             
             button.draw()
             self.equipment_buttons.append(button)
             self.og_equipment_button_rects.append(button.global_rect)
 
-            name_lbl = self.title_font.render(tool.full_name, True, white)
+            name_lbl = self.title_font.render(tool.full_name, True, UI_TEXT_COLOR)
             self.scrollable_surface.blit(name_lbl, (center - name_lbl.get_width()/2, y + 10))
             
-            self.scrollable_surface.blit(self.body_font.render(f"Task: {tool.string_task}", True, white), (60, y + 50))
-            self.scrollable_surface.blit(self.body_font.render(f"Fill ({tool.fill_type}): {tool.fill}T", True, white), (60, y + 80))
+            self.scrollable_surface.blit(self.body_font.render(f"Task: {tool.string_task}", True, UI_TEXT_COLOR), (60, y + 50))
+            self.scrollable_surface.blit(self.body_font.render(f"Fill ({tool.fill_type}): {tool.fill}T", True, UI_TEXT_COLOR), (60, y + 80))
 
-            pdk_lbl = self.body_font.render(f"Paddock: {tool.paddock}", True, white)
+            pdk_lbl = self.body_font.render(f"Paddock: {tool.paddock}", True, UI_TEXT_COLOR)
             self.scrollable_surface.blit(pdk_lbl, (PANEL_WIDTH - 60 - pdk_lbl.get_width(), y + 80))
 
             y += y_inc
 
         self.max_y = y
 
+    def rebuild_destination_picker(self, tool: Tool, selected_destination: Destination) -> None:
+        self.rendered_surface.fill(UI_BACKGROUND_COLOR)
+
+        wrap_length = int(PANEL_WIDTH * 0.8)
+
+        self.title_font.align = pg.FONT_CENTER
+        self.body_font.align = pg.FONT_LEFT
+
+        title_lbl = self.title_font.render(f"Select destination for new job:", True, UI_TEXT_COLOR, wraplength=wrap_length)
+        machine_info_lbl = self.body_font.render(f"\nVehicle: {self.selected_vehicle.full_name}\nTool: {tool.full_name}\n\n", True, UI_TEXT_COLOR, wraplength=wrap_length)
+
+        selected_lbl = self.title_font.render(f"Selected: {selected_destination.name}", True, UI_TEXT_COLOR, wraplength=wrap_length)
+
+        self.body_font.align = pg.FONT_CENTER
+        info_lbl = self.body_font.render(f"\nNote: Tap on the destination you want on the map to select it.", True, UI_TEXT_COLOR, wraplength=wrap_length)
+
+        lbls_height = title_lbl.get_height() + machine_info_lbl.get_height() + selected_lbl.get_height() + info_lbl.get_height()
+        lbls_surface = pg.Surface((PANEL_WIDTH, lbls_height), pg.SRCALPHA)
+
+        curr_y = 0
+
+        lbls_surface.blit(title_lbl, (PANEL_WIDTH / 2 - title_lbl.get_width() / 2, curr_y))
+        curr_y += title_lbl.get_height()
+
+        lbls_surface.blit(machine_info_lbl, (PANEL_WIDTH / 2 - machine_info_lbl.get_width() / 2, curr_y))
+        curr_y += machine_info_lbl.get_height()
+
+        lbls_surface.blit(selected_lbl, (PANEL_WIDTH / 2 - selected_lbl.get_width() / 2, curr_y))
+        curr_y += selected_lbl.get_height()
+
+        lbls_surface.blit(info_lbl, (PANEL_WIDTH / 2 - info_lbl.get_width() / 2, curr_y))
+        curr_y += 50
+
+        self.rendered_surface.blit(lbls_surface, (PANEL_WIDTH / 2 - lbls_surface.get_width() / 2, 50))
+
+        btn_width = 75
+        btn_y = PANEL_WIDTH / 2 + lbls_surface.get_height() / 2 + 50
+
+        exit_img = ResourceManager.load_image("Icons/cross.png")
+        submit_img = ResourceManager.load_image("Icons/tick.png")
+
+        self.destination_exit_btn = Button(self.rendered_surface, PANEL_WIDTH / 2 - btn_width / 2 - btn_width / 1.5, btn_y, btn_width, btn_width, pg.Rect(0, 0, 0, 0), (0, 0, 0), (0, 0, 0), (0, 0, 0),
+                               "", 10, (0, 0, 0, 0), 0, 0, True, self.cancel_task_assign, exit_img)
+        
+        self.destination_submit_btn = Button(self.rendered_surface, PANEL_WIDTH / 2 - btn_width / 2 + btn_width / 1.5, btn_y, btn_width, btn_width, pg.Rect(0, 0, 0, 0), (0, 0, 0), (0, 0, 0), (0, 0, 0),
+                                 "", 10, (0, 0, 0, 0), 0, 0, True, self.assign_task, submit_img)
+
+        self.destination_exit_btn.draw()
+        self.destination_submit_btn.draw()
+
     def update(self) -> bool:
+        if self.showing_destination_picker:
+            redraw_all = False
+
+            redraw_required = self.destination_exit_btn.update(self.events.mouse_just_released, self.events.set_override)
+            if redraw_required:
+                redraw_all = True
+                self.destination_exit_btn.draw()
+
+            redraw_required = self.destination_submit_btn.update(self.events.mouse_just_released, self.events.set_override)
+            if redraw_required:
+                redraw_all = True
+                self.destination_submit_btn.draw()
+
+            if redraw_all:
+                self.draw()
+
         for i, button in enumerate(self.equipment_buttons):
             # Move the button's global_rect values to where they are with scrolling (only effects mouse press detection)
             og_button_rect = self.og_equipment_button_rects[i]
@@ -171,7 +250,8 @@ class Equipment:
         return False
 
     def draw(self) -> None:
-        self.rendered_surface.fill(UI_BACKGROUND_COLOR)
+        if not self.showing_destination_picker:
+            self.rendered_surface.fill(UI_BACKGROUND_COLOR)
+            self.rendered_surface.blit(self.scrollable_surface, (0, self.scroll_y))
 
-        self.rendered_surface.blit(self.scrollable_surface, (0, self.scroll_y))
         self.parent_surface.blit(self.rendered_surface, self.rect)
