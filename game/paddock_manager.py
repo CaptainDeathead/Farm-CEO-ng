@@ -111,14 +111,18 @@ class PaddockManager:
         self.fill_paddock(paddock, STATE_COLORS[paddock.state])
 
     def set_paddock_state(self, paddock_number: int, state: int) -> None:
-        self.paddocks[paddock_number-1].state = state
-        self.load_paddock_state(self.paddocks[paddock_number-1])
+        paddock = self.paddocks[paddock_number-1]
+
+        paddock.state = state
+        paddock.fill(STATE_COLORS[paddock.state])
 
     def init_paddocks(self) -> None:
         logging.debug("Initializing paddocks... (This may take some time)")
         
         for paddock in self.paddocks:
             self.locate_paddock_boundary(paddock)
+            paddock.init_collision()
+
             self.load_paddock_state(paddock)
 
         save_manager = SaveManager()

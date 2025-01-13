@@ -197,7 +197,7 @@ class DropDown:
         self.rebuild()
 
     def rebuild(self) -> None:
-        pg.draw.rect(self.rendered_surface, self.bg_color, (0, 0, self.rect.w, self.rect.h), border_radius=10)
+        #pg.draw.rect(self.rendered_surface, self.bg_color, (0, 0, self.rect.w, self.rect.h), border_radius=10)
 
         for button in self.buttons:
             button.draw()
@@ -217,7 +217,7 @@ class DropDown:
         self.selected_button.update(pressed, set_override)
 
     def draw(self) -> None:
-        self.screen.fill((255, 255, 255), self.rect)
+        self.screen.fill(pg.Color(0, 0, 0, 0), self.rect)
 
         if self.dropped:
             self.screen.blit(self.rendered_surface, (self.rect.x, self.rect.y))

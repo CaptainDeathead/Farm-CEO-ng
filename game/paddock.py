@@ -25,6 +25,14 @@ class Paddock:
 
         self.boundary: List[Tuple] = attrs.get("boundary", [])
 
+    def init_collision(self) -> None:
+        self.surface, self.rect = self.create_surface()
+        self.localised_boundary = self.localise_boundary()
+
+        # Fill the paddock red so the mask can see the red pixels
+        self.fill(pg.Color(255, 0, 0))
+        self.mask = pg.mask.from_surface(self.surface)
+
     def __dict__(self) -> Dict[str, any]:
         return {
             "center": self.attrs["center"],
@@ -42,3 +50,29 @@ class Paddock:
     
     def set_boundary(self, boundary: List[Tuple]) -> None:
         self.boundary = boundary
+
+    def create_surface(self) -> tuple[pg.Surface, pg.Rect]:
+        min_x, min_y = float('inf'), float('inf')
+        max_x, max_y = 0, 0
+
+        for coord in self.boundary:
+            if coord[0] < min_x: min_x = coord[0]
+            if coord[0] > max_x: max_x = coord[0]
+
+            if coord[1] < min_y: min_y = coord[1]
+            if coord[1] > max_y: max_y = coord[1]
+
+        width, height = max_x - min_x, max_y - min_y
+        surface = pg.Surface((width, height), pg.SRCALPHA)
+        rect = pg.Rect(min_x, min_y, width, height)
+
+        return surface, rect
+
+    def localise_boundary(self) -> list[tuple]:
+        return [(coord[0] - self.rect.x, coord[1] - self.rect.y) for coord in self.boundary]
+
+    def fill(self, color: pg.Color) -> None:
+        pg.draw.polygon(self.surface, color, self.localised_boundary)
+
+    def update(self, mouse_pos: tuple[int, int]) -> None:
+        ...

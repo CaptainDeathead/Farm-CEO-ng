@@ -19,11 +19,11 @@ class NavBar:
         
         self.rendered_surface = pg.Surface((self.rect.w, self.rect.h), pg.SRCALPHA)
         
-        self.buttons: List[Button] = [Button(self.rendered_surface, 13, 6, 120, 100, self.rect, (0, 200, 255), (0, 0, 200), (255, 255, 255), "Shop", 30, (0, 0, 0, 0), 0, 0, True),
-                                      Button(self.rendered_surface, 128, 6, 120, 100, self.rect, (0, 200, 255), (0, 0, 200), (255, 255, 255), "Equipment", 30, (0, 0, 0, 0), 0, 0, True),
-                                      Button(self.rendered_surface, 248, 6, 120, 100, self.rect, (0, 200, 255), (0, 0, 200), (255, 255, 255), "Map", 30, (0, 0, 0, 0), 0, 0, True),
-                                      Button(self.rendered_surface, 368, 6, 120, 100, self.rect, (0, 200, 255), (0, 0, 200), (255, 255, 255), "Grain", 30, (0, 0, 0, 0), 0, 0, True),
-                                      Button(self.rendered_surface, 488, 6, 120, 100, self.rect, (0, 200, 255), (0, 0, 200), (255, 255, 255), "Finance", 30, (0, 0, 0, 0), 0, 0, True)]
+        self.buttons: List[Button] = [Button(self.rendered_surface, 13, 6, 120, 100, self.rect, UI_MAIN_COLOR, UI_ACTIVE_COLOR, UI_TEXT_COLOR, "Shop", 30, (0, 0, 0, 0), 0, 0, True),
+                                      Button(self.rendered_surface, 128, 6, 120, 100, self.rect, UI_MAIN_COLOR, UI_ACTIVE_COLOR, UI_TEXT_COLOR, "Equipment", 30, (0, 0, 0, 0), 0, 0, True),
+                                      Button(self.rendered_surface, 248, 6, 120, 100, self.rect, UI_MAIN_COLOR, UI_ACTIVE_COLOR, UI_TEXT_COLOR, "Map", 30, (0, 0, 0, 0), 0, 0, True),
+                                      Button(self.rendered_surface, 368, 6, 120, 100, self.rect, UI_MAIN_COLOR, UI_ACTIVE_COLOR, UI_TEXT_COLOR, "Grain", 30, (0, 0, 0, 0), 0, 0, True),
+                                      Button(self.rendered_surface, 488, 6, 120, 100, self.rect, UI_MAIN_COLOR, UI_ACTIVE_COLOR, UI_TEXT_COLOR, "Finance", 30, (0, 0, 0, 0), 0, 0, True)]
         
         self.selected_button = 0
         self.just_rebuilt = False
@@ -35,7 +35,7 @@ class NavBar:
     def rebuild(self, rebuild_buttons: bool = False) -> None:
         logging.info("Rebuilding navbar...")
         
-        self.rendered_surface.fill((255, 255, 255))
+        self.rendered_surface.fill(UI_BACKGROUND_COLOR)
 
         for i, button in enumerate(self.buttons):
             if self.selected_button == i: button.set_selected(True)

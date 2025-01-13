@@ -41,7 +41,7 @@ class Panel:
     def rebuild(self) -> None:
         logging.info("Rebuilding panel...")
 
-        self.rendered_surface.fill((255, 255, 255))
+        self.rendered_surface.fill(UI_BACKGROUND_COLOR)
 
         self.nav_bar.draw()
         

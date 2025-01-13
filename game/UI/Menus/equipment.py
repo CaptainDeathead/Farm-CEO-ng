@@ -43,11 +43,19 @@ class Equipment:
         self.max_y = 0.0
         self.scrolling_last_frame = False
 
+        self.showing_destination_picker = False
+
     def close_popup(self) -> None:
         self.set_popup(None)
 
         self.rebuild()
         self.draw()
+
+    def show_destination_picker(self, tool_index: int) -> None:
+        tool = self.shed.tools[tool_index]
+        self.show_destination_picker = True
+
+        self.rebuild_destination_picker(tool)
 
     def trigger_vehicle_popup(self, vehicle_id: int) -> None:
         vehicle = self.shed.get_vehicle(vehicle_id)
@@ -56,7 +64,7 @@ class Equipment:
             ... # TODO: Error vehicle already active popup
         elif isinstance(vehicle, Tractor):
             popup = TractorNewTaskPopup(self.events, vehicle.full_name, self.shed, self.sellpoint_manager.sellpoints, self.equipment_buttons, self.draw,
-                                        lambda: self.close_popup())
+                                        lambda: self.close_popup(), self.show_destination_picker)
         else:
             ... # TODO: popup_type = HeaderNewTaskPopup
 
@@ -65,7 +73,7 @@ class Equipment:
     def rebuild(self) -> None:
         logging.debug("Rebuilding equipment menu...")
 
-        self.rendered_surface.fill((255, 255, 255))
+        self.rendered_surface.fill(UI_BACKGROUND_COLOR)
         self.equipment_buttons = []
 
         white = pg.Color(255, 255, 255)
@@ -83,7 +91,7 @@ class Equipment:
         # Vehicles
         for vehicle in self.shed.vehicles:
             button = Button(self.scrollable_surface, x, y, self.BUTTON_WIDTH, button_height, self.rect,
-                       (0, 200, 255), (0, 0, 255), white, "", 20, (20, 20, 20, 20), 0, 0, command=lambda vehicle=vehicle: self.trigger_vehicle_popup(vehicle.vehicle_id), authority=True)
+                       UI_MAIN_COLOR, UI_ACTIVE_COLOR, white, "", 20, (20, 20, 20, 20), 0, 0, command=lambda vehicle=vehicle: self.trigger_vehicle_popup(vehicle.vehicle_id), authority=True)
             
             button.draw()
             self.equipment_buttons.append(button)
@@ -103,7 +111,7 @@ class Equipment:
         # Tools
         for tool in self.shed.tools:
             button = Button(self.scrollable_surface, x, y, self.BUTTON_WIDTH, button_height, self.rect,
-                       (150, 0, 255), (0, 0, 255), white, "", 20, (20, 20, 20, 20), 0, 0, command=lambda: None, authority=True)
+                       UI_TOOL_BUTTON_COLOR, UI_ACTIVE_COLOR, white, "", 20, (20, 20, 20, 20), 0, 0, command=lambda: None, authority=True)
             
             button.draw()
             self.equipment_buttons.append(button)
@@ -158,7 +166,7 @@ class Equipment:
         return False
 
     def draw(self) -> None:
-        self.rendered_surface.fill((255, 255, 255))
+        self.rendered_surface.fill(UI_BACKGROUND_COLOR)
 
         self.rendered_surface.blit(self.scrollable_surface, (0, self.scroll_y))
         self.parent_surface.blit(self.rendered_surface, self.rect)

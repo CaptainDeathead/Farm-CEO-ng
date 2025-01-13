@@ -97,7 +97,7 @@ class FarmCEO:
         self.popup = None
 
     def background_render(self) -> None:
-        self.screen.fill(BACKGROUND_COLOR)
+        self.screen.fill(UI_BACKGROUND_COLOR)
         self.map.render()
 
         self.paddock_manager.draw_paddock_numbers()
