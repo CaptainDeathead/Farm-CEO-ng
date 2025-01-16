@@ -38,13 +38,42 @@ class Map:
         self.x: int = PANEL_WIDTH
         self.y: int = 0
 
+        dark = pg.Surface((self.rect.w, self.rect.h), pg.SRCALPHA)
+        dark.fill((0, 0, 0, 128))
+
+        self.dark_surface = pg.Surface((self.rect.w, self.rect.h), pg.SRCALPHA)
+        self.dark_surface.blit(self.surface, (0, 0))
+        self.dark_surface.blit(dark, (0, 0), special_flags=pg.BLEND_RGBA_SUB)
+
+        self.active_surface = self.surface
+
+        self.dark_overlay_enabled = True
+        self.render_required = True
+
+        self.enable_dark_overlay()
+
     def _fit_image(self) -> None:
         self.scale = (self.SCREEN_WIDTH - PANEL_WIDTH) / self.rect.w
         self.surface = pg.transform.scale(self.original_surface, (self.rect.w * self.scale, self.rect.h * self.scale))
         self.rect = self.surface.get_rect()
 
+    def enable_dark_overlay(self) -> None:
+        if not self.dark_overlay_enabled:
+            self.active_surface = self.dark_surface
+
+            self.dark_overlay_enabled = True
+            self.render_required = True
+
+    def disable_dark_overlay(self) -> None:
+        if self.dark_overlay_enabled:
+            self.active_surface = self.surface
+
+            self.dark_overlay_enabled = False
+            self.render_required = True
+
     def render(self) -> None:
-        self.screen.blit(self.surface, (self.x, self.y))
+        self.screen.blit(self.active_surface, (self.x, self.y))
+        self.render_required = False
 
 class FarmCEO:
     RESOURCE_MANAGER: ResourceManager = ResourceManager()
@@ -67,7 +96,7 @@ class FarmCEO:
         self.save_manager.init(self.map.map_cfg, self.shed.vehicles, self.shed.tools, self.shed.add_vehicle, self.shed.add_tool)
 
         self.paddock_manager: PaddockManager = PaddockManager()
-        self.paddock_manager.init(self.screen, self.map.surface, self.save_manager.get_paddocks(), self.map.scale)
+        self.paddock_manager.init(self.screen, self.map.surface, self.map.active_surface, self.save_manager.get_paddocks(), self.map.scale)
 
         self.sellpoint_manager = SellpointManager(self.game_surface, self.map.scale, self.save_manager.get_sellpoints())
 
@@ -95,12 +124,15 @@ class FarmCEO:
     def remove_popup(self) -> None:
         self.events.set_override_authority_requirement(False)
         self.popup = None
+        self.map.render_required = True
 
     def background_render(self) -> None:
-        self.screen.fill(UI_BACKGROUND_COLOR)
-        self.map.render()
+        if self.map.render_required:
+            self.screen.fill(UI_BACKGROUND_COLOR)
+            self.map.render()
 
-        self.paddock_manager.draw_paddock_numbers()
+            self.paddock_manager.fill_all_paddocks()
+            self.paddock_manager.draw_paddock_numbers()
 
     def simulate(self) -> None:
         if time() - self.last_update_time >= 1:

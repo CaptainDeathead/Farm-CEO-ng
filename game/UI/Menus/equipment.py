@@ -59,6 +59,7 @@ class Equipment:
 
     def cancel_task_assign(self) -> None:
         self.showing_destination_picker = False
+        self.draw()
 
     def assign_task(self) -> None:
         self.showing_destination_picker = False
@@ -185,10 +186,10 @@ class Equipment:
         exit_img = ResourceManager.load_image("Icons/cross.png")
         submit_img = ResourceManager.load_image("Icons/tick.png")
 
-        self.destination_exit_btn = Button(self.rendered_surface, PANEL_WIDTH / 2 - btn_width / 2 - btn_width / 1.5, btn_y, btn_width, btn_width, pg.Rect(0, 0, 0, 0), (0, 0, 0), (0, 0, 0), (0, 0, 0),
+        self.destination_exit_btn = Button(self.rendered_surface, PANEL_WIDTH / 2 - btn_width / 2 - btn_width / 1.5, btn_y, btn_width, btn_width, self.rect, (0, 0, 0), (0, 0, 0), (0, 0, 0),
                                "", 10, (0, 0, 0, 0), 0, 0, True, self.cancel_task_assign, exit_img)
         
-        self.destination_submit_btn = Button(self.rendered_surface, PANEL_WIDTH / 2 - btn_width / 2 + btn_width / 1.5, btn_y, btn_width, btn_width, pg.Rect(0, 0, 0, 0), (0, 0, 0), (0, 0, 0), (0, 0, 0),
+        self.destination_submit_btn = Button(self.rendered_surface, PANEL_WIDTH / 2 - btn_width / 2 + btn_width / 1.5, btn_y, btn_width, btn_width, self.rect, (0, 0, 0), (0, 0, 0), (0, 0, 0),
                                  "", 10, (0, 0, 0, 0), 0, 0, True, self.assign_task, submit_img)
 
         self.destination_exit_btn.draw()
@@ -208,8 +209,7 @@ class Equipment:
                 redraw_all = True
                 self.destination_submit_btn.draw()
 
-            if redraw_all:
-                self.draw()
+            return redraw_all
 
         for i, button in enumerate(self.equipment_buttons):
             # Move the button's global_rect values to where they are with scrolling (only effects mouse press detection)

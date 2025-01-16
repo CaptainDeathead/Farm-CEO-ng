@@ -14,9 +14,10 @@ class PaddockManager:
 
         return cls.instance
     
-    def init(self, screen: pg.Surface, map_image: pg.Surface, paddocks: Dict[int, any], scale: float) -> None:
+    def init(self, screen: pg.Surface, map_image: pg.Surface, active_map_image: pg.Surface, paddocks: Dict[int, any], scale: float) -> None:
         self.screen = screen
         self.map_image = map_image
+        self.active_map_image = active_map_image
         self.scale = scale
 
         self.paddocks = self.parse_paddocks(paddocks)
@@ -70,8 +71,10 @@ class PaddockManager:
         curr_x = start_x
         curr_y = start_y
 
+        surface = pg.display.get_surface()
+
         while 1:
-            if DEBUG_BOUNDARY_LOADING: pg.display.update(pg.draw.circle(pg.display.get_surface(), (255, 255, 255), (curr_x, curr_y), 1))
+            if DEBUG_BOUNDARY_LOADING: surface.set_at((curr_x, curr_y), (255, 255, 255))
             found_new_px = False
 
             # get adjacent paddock squares (black)
@@ -99,13 +102,15 @@ class PaddockManager:
                             boundary.append((nx, ny))
                             curr_x, curr_y = nx, ny
                         else:
-                            if DEBUG_BOUNDARY_LOADING: pg.display.update(pg.draw.circle(pg.display.get_surface(), (255, 0, 0), (nx, ny), 1))
+                            if DEBUG_BOUNDARY_LOADING: surface.set_at((nx, ny), (255, 0, 0))
 
-            if DEBUG_BOUNDARY_LOADING: pg.display.update(pg.draw.circle(pg.display.get_surface(), (255, 0, 0), (nx, ny), 1))
+            if DEBUG_BOUNDARY_LOADING:
+                surface.set_at((nx, ny), (255, 0, 0))
+                pg.display.flip()
 
     def fill_paddock(self, paddock: Paddock, color: pg.Color) -> None:
         boundary = paddock.boundary
-        pg.draw.polygon(self.map_image, color, boundary)
+        pg.draw.polygon(self.active_map_image, color, boundary)
 
     def load_paddock_state(self, paddock: Paddock) -> None:
         self.fill_paddock(paddock, STATE_COLORS[paddock.state])
@@ -115,6 +120,10 @@ class PaddockManager:
 
         paddock.state = state
         paddock.fill(STATE_COLORS[paddock.state])
+
+    def fill_all_paddocks(self) -> None:
+        for paddock in self.paddocks:
+            self.load_paddock_state(paddock)
 
     def init_paddocks(self) -> None:
         logging.debug("Initializing paddocks... (This may take some time)")
@@ -132,3 +141,12 @@ class PaddockManager:
     def draw_paddock_numbers(self) -> None:
         for paddock in self.paddocks:
             self.screen.blit(paddock.number_surface, (PANEL_WIDTH + paddock.center[0], paddock.center[1]))
+
+    def check_paddock_clicks(self) -> Paddock | None:
+        pos = pg.mouse.get_pos()
+
+        for paddock in self.paddocks:
+            pressed = paddock.update(pos)
+
+            if pressed:
+                return paddock
