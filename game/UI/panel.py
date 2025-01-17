@@ -18,7 +18,7 @@ from data import *
 class Panel:
     NAVBAR_HEIGHT = NAVBAR_HEIGHT
 
-    def __init__(self, screen: pg.Surface, events: Events, set_popup: callable, shed: Shed, sellpoint_manager: SellpointManager) -> None:
+    def __init__(self, screen: pg.Surface, events: Events, set_popup: callable, shed: Shed, sellpoint_manager: SellpointManager, map_funcs: dict[str, object]) -> None:
         self.screen: pg.Surface = screen
         self.events: Events = events
         self.set_popup = set_popup
@@ -34,7 +34,7 @@ class Panel:
         page_height = pg.Rect(0, self.NAVBAR_HEIGHT, PANEL_WIDTH, self.SCREEN_HEIGHT - self.NAVBAR_HEIGHT)
 
         self.shop = Shop(self.rendered_surface, self.events, page_height)
-        self.equipment = Equipment(self.rendered_surface, self.events, self.set_popup, page_height, shed, sellpoint_manager)
+        self.equipment = Equipment(self.rendered_surface, self.events, self.set_popup, page_height, shed, sellpoint_manager, map_funcs)
 
         self.rebuild()
 

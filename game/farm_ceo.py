@@ -46,11 +46,11 @@ class Map:
         self.dark_surface.blit(dark, (0, 0), special_flags=pg.BLEND_RGBA_SUB)
 
         self.active_surface = self.surface
+        self.paddocks_surface = pg.Surface((self.rect.w, self.rect.h), pg.SRCALPHA)
 
         self.dark_overlay_enabled = True
         self.render_required = True
-
-        self.enable_dark_overlay()
+        self.disable_dark_overlay()
 
     def _fit_image(self) -> None:
         self.scale = (self.SCREEN_WIDTH - PANEL_WIDTH) / self.rect.w
@@ -73,6 +73,7 @@ class Map:
 
     def render(self) -> None:
         self.screen.blit(self.active_surface, (self.x, self.y))
+        self.screen.blit(self.paddocks_surface, (self.x, self.y))
         self.render_required = False
 
 class FarmCEO:
@@ -96,14 +97,21 @@ class FarmCEO:
         self.save_manager.init(self.map.map_cfg, self.shed.vehicles, self.shed.tools, self.shed.add_vehicle, self.shed.add_tool)
 
         self.paddock_manager: PaddockManager = PaddockManager()
-        self.paddock_manager.init(self.screen, self.map.surface, self.map.active_surface, self.save_manager.get_paddocks(), self.map.scale)
+        self.paddock_manager.init(self.screen, self.map.surface, self.map.paddocks_surface, self.save_manager.get_paddocks(), self.map.scale)
 
         self.sellpoint_manager = SellpointManager(self.game_surface, self.map.scale, self.save_manager.get_sellpoints())
 
         self.time: float = self.save_manager.get_attr("time") # time / 24 = *n* days
         self.last_update_time = 0.0
 
-        self.panel = Panel(self.screen, events, self.set_popup, self.shed, self.sellpoint_manager)
+        equipment_map_funcs = {
+            "map_lighten": self.map.disable_dark_overlay,
+            "map_darken": self.map.enable_dark_overlay,
+            "set_location_click_callback": self.paddock_manager.set_location_click_callback,
+            "destroy_location_click_callback": self.paddock_manager.destroy_location_click_callback
+        }
+
+        self.panel = Panel(self.screen, events, self.set_popup, self.shed, self.sellpoint_manager, equipment_map_funcs)
 
         self.popup = None
 
@@ -129,15 +137,18 @@ class FarmCEO:
     def background_render(self) -> None:
         if self.map.render_required:
             self.screen.fill(UI_BACKGROUND_COLOR)
-            self.map.render()
 
             self.paddock_manager.fill_all_paddocks()
+
+            self.map.render()
             self.paddock_manager.draw_paddock_numbers()
 
     def simulate(self) -> None:
         if time() - self.last_update_time >= 1:
             self.last_update_time = time()
             self.time += TIMESCALE
+
+        self.paddock_manager.update(self.events.mouse_just_released)
 
     def foreground_render(self) -> None:
         # Vehicles and trailers

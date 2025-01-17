@@ -2,6 +2,7 @@ import pygame as pg
 
 from random import randint
 from typing import Dict, List, Tuple
+from data import PANEL_WIDTH
 
 class Paddock:
     def __init__(self, attrs: Dict[int, any], num: int, scale: float) -> None:
@@ -74,5 +75,11 @@ class Paddock:
     def fill(self, color: pg.Color) -> None:
         pg.draw.polygon(self.surface, color, self.localised_boundary)
 
-    def update(self, mouse_pos: tuple[int, int]) -> None:
-        ...
+    def update(self, mouse_pos: tuple[int, int]) -> bool:
+        # Need to check if it lies in the mask rect first or an error will occur
+        if not self.rect.collidepoint((mouse_pos[0] - PANEL_WIDTH, mouse_pos[1])): return False
+
+        mouse_pos_rel = (mouse_pos[0] - self.rect.x - PANEL_WIDTH, mouse_pos[1] - self.rect.y)
+        if self.mask.get_at(mouse_pos_rel): return True
+
+        return False

@@ -3,6 +3,7 @@ import logging
 
 from save_manager import SaveManager
 from paddock import Paddock
+from destination import Destination
 from data import *
 
 from typing import Dict, List, Tuple
@@ -14,14 +15,16 @@ class PaddockManager:
 
         return cls.instance
     
-    def init(self, screen: pg.Surface, map_image: pg.Surface, active_map_image: pg.Surface, paddocks: Dict[int, any], scale: float) -> None:
+    def init(self, screen: pg.Surface, map_image: pg.Surface, map_paddocks_surf: pg.Surface, paddocks: Dict[int, any], scale: float) -> None:
         self.screen = screen
         self.map_image = map_image
-        self.active_map_image = active_map_image
+        self.map_paddocks_surf = map_paddocks_surf
         self.scale = scale
 
         self.paddocks = self.parse_paddocks(paddocks)
         self.init_paddocks()
+
+        self.location_callback = None
 
     def parse_paddocks(self, paddocks: Dict[str, any]) -> List[Paddock]:
         pdk_list = []
@@ -110,7 +113,7 @@ class PaddockManager:
 
     def fill_paddock(self, paddock: Paddock, color: pg.Color) -> None:
         boundary = paddock.boundary
-        pg.draw.polygon(self.active_map_image, color, boundary)
+        pg.draw.polygon(self.map_paddocks_surf, color, boundary)
 
     def load_paddock_state(self, paddock: Paddock) -> None:
         self.fill_paddock(paddock, STATE_COLORS[paddock.state])
@@ -150,3 +153,16 @@ class PaddockManager:
 
             if pressed:
                 return paddock
+
+    def set_location_click_callback(self, callback: callable) -> None:
+        self.location_callback = callback
+
+    def destroy_location_click_callback(self) -> None:
+        self.location_callback = None
+
+    def update(self, mouse_just_released: bool) -> None:
+        if mouse_just_released and self.location_callback is not None:
+            paddock_clicked = self.check_paddock_clicks()
+
+            if paddock_clicked is not None:
+                self.location_callback(Destination(paddock_clicked))

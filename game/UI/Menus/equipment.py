@@ -21,7 +21,9 @@ from typing import List
 class Equipment:
     BUTTON_WIDTH = PANEL_WIDTH - 40
 
-    def __init__(self, parent_surface: pg.Surface, events: Events, set_popup: callable, rect: pg.Rect, shed: Shed, sellpoint_manager: SellpointManager) -> None:
+    def __init__(self, parent_surface: pg.Surface, events: Events, set_popup: callable, rect: pg.Rect, shed: Shed, sellpoint_manager: SellpointManager,
+                 map_funcs: dict[str, object]) -> None:
+
         self.parent_surface = parent_surface
         self.events = events
         self.set_popup = set_popup
@@ -30,6 +32,11 @@ class Equipment:
         self.rect.y += 20
         self.shed = shed
         self.sellpoint_manager = sellpoint_manager
+
+        self.map_darken = map_funcs["map_darken"]
+        self.map_lighten = map_funcs["map_lighten"]
+        self.set_location_click_callback = map_funcs["set_location_click_callback"]
+        self.destroy_location_click_callback = map_funcs["destroy_location_click_callback"]
 
         self.rendered_surface = pg.Surface((self.rect.w, self.rect.h), pg.SRCALPHA)
         self.scrollable_surface = pg.Surface((self.rect.w, self.rect.h), pg.SRCALPHA)
@@ -51,6 +58,9 @@ class Equipment:
         self.destination_exit_btn = None
         self.destination_submit_btn = None
 
+        self.selected_vehicle = None
+        self.selected_tool = None
+
     def close_popup(self) -> None:
         self.set_popup(None)
 
@@ -59,18 +69,30 @@ class Equipment:
 
     def cancel_task_assign(self) -> None:
         self.showing_destination_picker = False
+
         self.draw()
+        self.map_lighten()
+        self.destroy_location_click_callback()
 
     def assign_task(self) -> None:
         self.showing_destination_picker = False
-        
-        ...
+
+        self.draw()
+        self.map_lighten()
+        self.destroy_location_click_callback()
+
+    def location_click_callback(self, destination: Destination) -> None:
+        self.rebuild_destination_picker(self.selected_tool, destination)
+        self.draw()
 
     def show_destination_picker(self, tool_index: int) -> None:
-        tool = self.shed.tools[tool_index]
+        self.selected_tool = self.shed.tools[tool_index]
         self.showing_destination_picker = True
 
-        self.rebuild_destination_picker(tool, Destination(None))
+        self.set_location_click_callback(self.location_click_callback)
+
+        self.rebuild_destination_picker(self.selected_tool, Destination(None))
+        self.map_darken()
         self.draw()
 
     def trigger_vehicle_popup(self, vehicle_id: int) -> None:
