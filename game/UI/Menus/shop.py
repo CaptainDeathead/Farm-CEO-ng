@@ -136,6 +136,9 @@ class Shop:
         self.current_image = 0
         self.last_image_change = time()
 
+        self.last_100_pages = []
+        self.easter_egg = False
+
         self.in_paddock_menu = False
 
         self.paddock_buy_menu = PaddockBuyMenu(self.parent_surface, self.events, self.rect)
@@ -246,6 +249,13 @@ class Shop:
 
         self.draw()
 
+    def check_last_100(self) -> None:
+        if len(self.last_100_pages) == 100:
+            for item in self.last_100_pages:
+                if item != "Case IH Maxxum 150": return
+
+            self.easter_egg = True # congrats i guess...
+
     def rebuild_buyscr(self) -> None:
         logging.info("Rebuilding equipment buy menu...")
 
@@ -265,6 +275,11 @@ class Shop:
         brand = self.path[-2]
         name = self.path[-1]
         title_lbl = self.product_lbls_font.render(f"{brand} {name}", True, color)
+
+        # Very important code here, shhhhhhhh
+        if len(self.last_100_pages) == 100: self.last_100_pages.pop(0)
+        self.last_100_pages.append(f"{brand} {name}")
+        self.check_last_100()
 
         self.rendered_surface.blit(title_lbl, (PANEL_WIDTH / 2 - title_lbl.get_width() / 2, 220))
 
@@ -318,7 +333,14 @@ class Shop:
         step = size + 25 # padding = 25
 
         for item in self.current_items:
-            self.buttons.append(Button(self.rendered_surface, x, y, size, size, self.rect, UI_MAIN_COLOR, UI_MAIN_COLOR, UI_TEXT_COLOR,
+            
+            
+            if self.easter_egg:
+                self.buttons.append(Button(self.rendered_surface, x, y, size, size, self.rect, UI_MAIN_COLOR, UI_MAIN_COLOR, UI_TEXT_COLOR,
+                                       item, 30, (20, 20, 20, 20), 0, 0, True, lambda item=item: self.update_path(item),
+                                       image=ResourceManager.load_image("Sprites/linus.jpg", (size, size))))
+            else:
+                self.buttons.append(Button(self.rendered_surface, x, y, size, size, self.rect, UI_MAIN_COLOR, UI_MAIN_COLOR, UI_TEXT_COLOR,
                                        item, 30, (20, 20, 20, 20), 0, 0, True, lambda item=item: self.update_path(item)))
             
             x += step
@@ -330,6 +352,7 @@ class Shop:
         if len(self.path) == 0:
             paddocks_btn = Button(self.rendered_surface, x, y, size, size, self.rect, UI_MAIN_COLOR, UI_MAIN_COLOR, UI_TEXT_COLOR,
                               "Paddocks", 30, (20, 20, 20, 20), 0, 0, True, lambda: self.open_paddocks_buy_menu())
+                            
             self.buttons.append(paddocks_btn)
 
         self.just_rebuilt = True

@@ -57,8 +57,7 @@ class Job:
         for i, point in enumerate(path):
             pg.draw.line(screen, (255, 0, 0), (path[i-1][0] + 620, path[i-1][1]), (point[0] + 620, point[1]))
             pg.display.flip()
-            pg.time.wait(10)
-            #screen.set_at((point[0] + 620, point[1]), (255, 0, 0))
+            pg.time.wait(1)
 
         pg.display.flip()
 
@@ -128,59 +127,26 @@ class Job:
                 line_end = (x, collision_polygon_rect.y + collision_polygon_rect.h)
 
                 point_collisions = utils.line_collides_mask((line_start, line_end), collision_polygon_mask, collision_polygon_rect)
-                lines = utils.lines_form_points(point_collisions)
 
-                for point in point_collisions:
-                    pg.display.get_surface().set_at((point[0] + 620, point[1]), (0, 0, 255))
-
-                for line in lines:
-                    #pg.draw.line(pg.display.get_surface(), (0, 0, 255), (line[0][0] + 620, line[0][1]), (line[1][0] + 620, line[1][1]))
+                if DEBUG_PATH_GENERATION:
+                    for point in point_collisions:
+                        pg.display.get_surface().set_at((point[0] + 620, point[1]), (0, 0, 255))
                     pg.display.flip()
-                    pg.time.wait(100)
 
-                line_path = []
-
-                if len(lines) > 1:
-                    for i, line in enumerate(lines[0:-1]):
-                        join_path = self.join_lines(line[1], lines[i+1][0], boundary)
-
-                        line_path.extend(line)
-                        line_path.extend(join_path)
-                else:
-                    line_path.extend(lines[0])
-
-                line_transition = (line_end[0] + working_width / 2, line_end[1] + working_width)
-
-                path.extend(line_path)
-                path.append(line_transition)
+                path.extend(point_collisions)
         else:
             for y in range(collision_polygon_rect.y + int(working_width / 2), collision_polygon_rect.y + collision_polygon_rect.h, working_width): # TODO: Locallise the polygons position first so surface isnt big
                 line_start = (collision_polygon_rect.x, y)
                 line_end = (collision_polygon_rect.x + collision_polygon_rect.w, y)
 
                 point_collisions = utils.line_collides_mask((line_start, line_end), collision_polygon_mask, collision_polygon_rect)
-                lines = utils.lines_form_points(point_collisions)
 
-                for line in lines:
-                    pg.draw.line(pg.display.get_surface(), (0, 0, 255), (line[0][0] + 620, line[0][1]), (line[1][0] + 620, line[1][1]))
+                if DEBUG_PATH_GENERATION:
+                    for point in point_collisions:
+                        pg.display.get_surface().set_at((point[0] + 620, point[1]), (0, 0, 255))
                     pg.display.flip()
-                    pg.time.wait(100)
 
-                line_path = []
-
-                if len(lines) > 1:
-                    for i, line in enumerate(lines[0:-1]):
-                        join_path = self.join_lines(line[1], lines[i+1][0], boundary)
-
-                        line_path.extend(line)
-                        line_path.extend(join_path)
-                else:
-                    line_path.extend(lines[0])
-
-                line_transition = (line_end[0] + working_width, line_end[1] + working_width / 2)
-
-                path.extend(line_path)
-                path.append(line_transition)
+                path.extend(point_collisions)
 
         return path
 

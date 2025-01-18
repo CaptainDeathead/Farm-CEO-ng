@@ -113,9 +113,7 @@ class FarmCEO:
         
         # TODO: THIS IS JUST AN EXAMPLE
         self.background_render()
-        input()
-        for i in range(9): self.example_path = self.shed.task_manager.test_make_job(self.paddock_manager.paddocks[i])
-        input()
+        for i in range(9): self.shed.task_manager.test_make_job(self.paddock_manager.paddocks[i])
 
     def enable_cheats(self) -> None:
         logging.warning("Cheats enabled! Money and XP set to 1,000,000,000,000")
@@ -155,13 +153,6 @@ class FarmCEO:
         self.shed.render()
 
         self.screen.blit(self.game_surface, (PANEL_WIDTH, 0))
-
-
-        # TODO: JUST AN EXAMPLE
-        for i, pos in enumerate(self.example_path[1:]):
-            pg.draw.aaline(self.screen, (255, 0, 0), (self.example_path[i-1][0] + PANEL_WIDTH, self.example_path[i-1][1]), (pos[0] + PANEL_WIDTH, pos[1]))
-            pg.display.flip()
-            pg.time.wait(100)
 
     def ui_render(self) -> None:
         self.panel.draw()
