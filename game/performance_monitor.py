@@ -18,8 +18,8 @@ class PerformanceMonitor:
         self.last_120_frames: List[float] = []
 
     def get_frame_color(self, frame_percent: float) -> pg.Color:
-        r = max(0, min(255, int(255 * (1 - (frame_percent / 60)))))
-        g = max(0, min(255, int(255 * (frame_percent / 60))))
+        r = max(0, min(255, int(255 * (1 - (frame_percent / self.TARGET_FPS)))))
+        g = max(0, min(255, int(255 * (frame_percent / self.TARGET_FPS))))
         b = 0
 
         return pg.Color(r, g, b)

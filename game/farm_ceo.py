@@ -49,7 +49,6 @@ class Map:
         self.paddocks_surface = pg.Surface((self.rect.w, self.rect.h), pg.SRCALPHA)
 
         self.dark_overlay_enabled = True
-        self.render_required = True
         self.disable_dark_overlay()
 
     def _fit_image(self) -> None:
@@ -58,29 +57,26 @@ class Map:
         self.rect = self.surface.get_rect()
 
     def enable_dark_overlay(self) -> None:
-        if not self.dark_overlay_enabled:
-            self.active_surface = self.dark_surface
-
-            self.dark_overlay_enabled = True
-            self.render_required = True
+        self.active_surface = self.dark_surface
+        self.dark_overlay_enabled = True
 
     def disable_dark_overlay(self) -> None:
-        if self.dark_overlay_enabled:
-            self.active_surface = self.surface
-
-            self.dark_overlay_enabled = False
-            self.render_required = True
+        self.active_surface = self.surface
+        self.dark_overlay_enabled = False
 
     def render(self) -> None:
+        if self.dark_overlay_enabled:
+            self.screen.fill((0, 0, 0), (self.x, self.y, self.rect.w, self.rect.h))
+
         self.screen.blit(self.active_surface, (self.x, self.y))
         self.screen.blit(self.paddocks_surface, (self.x, self.y))
-        self.render_required = False
 
 class FarmCEO:
     RESOURCE_MANAGER: ResourceManager = ResourceManager()
 
     def __init__(self, screen: pg.Surface, clock: pg.time.Clock, events: Events) -> None:
         self.screen: pg.Surface = screen
+        self.screen.fill(UI_BACKGROUND_COLOR)
 
         self.WIDTH: int = self.screen.get_width()
         self.HEIGHT: int = self.screen.get_height()
@@ -114,6 +110,12 @@ class FarmCEO:
         self.panel = Panel(self.screen, events, self.set_popup, self.shed, self.sellpoint_manager, equipment_map_funcs)
 
         self.popup = None
+        
+        # TODO: THIS IS JUST AN EXAMPLE
+        self.background_render()
+        input()
+        for i in range(9): self.example_path = self.shed.task_manager.test_make_job(self.paddock_manager.paddocks[i])
+        input()
 
     def enable_cheats(self) -> None:
         logging.warning("Cheats enabled! Money and XP set to 1,000,000,000,000")
@@ -132,16 +134,11 @@ class FarmCEO:
     def remove_popup(self) -> None:
         self.events.set_override_authority_requirement(False)
         self.popup = None
-        self.map.render_required = True
 
     def background_render(self) -> None:
-        if self.map.render_required:
-            self.screen.fill(UI_BACKGROUND_COLOR)
-
-            self.paddock_manager.fill_all_paddocks()
-
-            self.map.render()
-            self.paddock_manager.draw_paddock_numbers()
+        self.paddock_manager.fill_all_paddocks()
+        self.map.render()
+        self.paddock_manager.draw_paddock_numbers()
 
     def simulate(self) -> None:
         if time() - self.last_update_time >= 1:
@@ -158,6 +155,13 @@ class FarmCEO:
         self.shed.render()
 
         self.screen.blit(self.game_surface, (PANEL_WIDTH, 0))
+
+
+        # TODO: JUST AN EXAMPLE
+        for i, pos in enumerate(self.example_path[1:]):
+            pg.draw.aaline(self.screen, (255, 0, 0), (self.example_path[i-1][0] + PANEL_WIDTH, self.example_path[i-1][1]), (pos[0] + PANEL_WIDTH, pos[1]))
+            pg.display.flip()
+            pg.time.wait(100)
 
     def ui_render(self) -> None:
         self.panel.draw()

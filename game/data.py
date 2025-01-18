@@ -49,7 +49,7 @@ BUILD: bool = False
 SUPPORTED_PLATFORMS: Tuple[str] = ("android_x86_64", "android_v7a", "arm64-v8a", "Linux", "Windows")
 PLATFORM: str = "arm64-v8a"
 BUILD_TYPE: str = "Devlopment"
-CONSOLE_BUILD: bool = False
+CONSOLE_BUILD: bool = not BUILD
 
 # ---------- DEBUG ----------
 DEBUG_BOUNDARY_LOADING: bool = False
@@ -58,4 +58,4 @@ DEBUG_BOUNDARY_LOADING: bool = False
 GAME_NAME: str = "Farm CEO"
 GAME_VERSION: str = "0.1.0"
 TRADEMARK_MESSAGE: str = "This game is not affiliated with or endorsed by ANY of the brands used!!!\nAll trademarks and logos are the property of their respective owners.\nMachinary specifications are not a direct reflection of the real thing, as they are heavily tweaked by us to work with the game."
-CONTRIBUTORS: Tuple[str] = ("Slotho101", "TobyHall633", "Sean", "Yesn't", "Rascam")
+CONTRIBUTORS: Tuple[str] = ("Slotho101", "TobyHall633", "Mum & Gaz", "Dad", "Sean & Andrea", "Yesn't", "Rascam")

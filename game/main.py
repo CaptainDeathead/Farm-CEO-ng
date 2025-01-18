@@ -63,6 +63,8 @@ class Window:
         self.delta_time = 0.0
         self.performance_monitor = PerformanceMonitor(self.screen, (0, 0))
 
+        self.fps_font = pg.font.SysFont(None, 40)
+
     def main(self) -> None:
         pg.display.set_caption(self.TITLE)
         pg.display.set_icon(self.farm_ceo.RESOURCE_MANAGER.load_image("game_icon.png", (100, 100)))
@@ -83,8 +85,11 @@ class Window:
 
             self.console.update(events)
 
+            fps_rendered = self.fps_font.render(f"{int(self.clock.get_fps())}", True, (255, 255, 255), (0, 0, 255))
+            self.screen.blit(fps_rendered, (20, 20))
+
             pg.display.flip()
-            self.delta_time = self.clock.tick(self.FPS)
+            self.delta_time = self.clock.tick(60)
 
 def main() -> None:
     window = Window()

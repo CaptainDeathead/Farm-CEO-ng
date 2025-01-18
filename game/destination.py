@@ -6,6 +6,8 @@ from sellpoints import SellPoint
 class Destination:
     def __init__(self, destination: Paddock | SellPoint | None) -> None:
         self.destination = destination
+        self.is_paddock = isinstance(destination, Paddock)
+
         self.name = self.get_name()
 
     def get_name(self) -> str:
