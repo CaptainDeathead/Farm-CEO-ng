@@ -103,8 +103,8 @@ class Job:
         path.extend(lap_1)
 
         laps = [lap_1]
-        for _ in range(outside_laps - 1):
-            laps.append(utils.shrink_polygon(laps[-1], working_width))
+        for i in range(outside_laps - 1):
+            laps.append(utils.shrink_polygon(boundary, working_width * (i + 1)))
             path.extend(laps[-1])
             self.draw_path(laps[-1])
 

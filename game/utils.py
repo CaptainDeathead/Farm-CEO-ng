@@ -1,5 +1,7 @@
 import pygame as pg
-import pyclipper
+#import pyclipper
+import shapely
+from shapely.geometry import Polygon
 
 from typing import Tuple
 
@@ -31,10 +33,13 @@ class utils:
 
     @staticmethod
     def shrink_polygon(polygon: list[tuple[int, int]], shrink: int) -> list[tuple[int, int]]:
-        offset = pyclipper.PyclipperOffset()
-        offset.AddPath(polygon, pyclipper.JT_MITER, pyclipper.ET_CLOSEDPOLYGON)
+        #offset = pyclipper.PyclipperOffset()
+        #offset.AddPath(polygon, pyclipper.JT_MITER, pyclipper.ET_CLOSEDPOLYGON)
 
-        return offset.Execute(-shrink)[0]
+        #return offset.Execute(-shrink)[0]
+
+        poly = Polygon(polygon)
+        return list(poly.buffer(-shrink).exterior.coords)
 
     @staticmethod
     def get_polygon_rect(polygon: list[tuple[int, int]]) -> pg.Rect:

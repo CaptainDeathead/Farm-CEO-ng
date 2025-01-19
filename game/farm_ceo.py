@@ -109,11 +109,13 @@ class FarmCEO:
 
         self.panel = Panel(self.screen, events, self.set_popup, self.shed, self.sellpoint_manager, equipment_map_funcs)
 
+        self.paddock_manager.fill_all_paddocks()
+
         self.popup = None
         
         # TODO: THIS IS JUST AN EXAMPLE
-        self.background_render()
-        for i in range(9): self.shed.task_manager.test_make_job(self.paddock_manager.paddocks[i])
+        #self.background_render()
+        #for i in range(9): self.shed.task_manager.test_make_job(self.paddock_manager.paddocks[i])
 
     def enable_cheats(self) -> None:
         logging.warning("Cheats enabled! Money and XP set to 1,000,000,000,000")
@@ -134,7 +136,6 @@ class FarmCEO:
         self.popup = None
 
     def background_render(self) -> None:
-        self.paddock_manager.fill_all_paddocks()
         self.map.render()
         self.paddock_manager.draw_paddock_numbers()
 

@@ -7,7 +7,8 @@ from paddock import Paddock
 from machinary import Tractor, Header, Tool
 from data import *
 
-if BUILD: from android.storage import app_storage_path
+if BUILD:
+    from android.storage import app_storage_path
 else:
     def app_storage_path() -> str:
         return "./"

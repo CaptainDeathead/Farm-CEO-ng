@@ -254,7 +254,7 @@ class Equipment:
             if not self.scrolling_last_frame: pg.mouse.get_rel() # clear rel because user was not scrolling jast frame (avoids jitter)
             rx, ry = pg.mouse.get_rel()
 
-            if (abs(rx) > 10 and abs(ry) > 10) or ry == 0:
+            if (abs(rx) > 10 and abs(ry) > 10) or abs(ry) <= 2:
                 self.scrolling_last_frame = True
                 return False
 

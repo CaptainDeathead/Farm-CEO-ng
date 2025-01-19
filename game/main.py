@@ -2,11 +2,13 @@ import pygame as pg
 import sys
 import logging
 
+from time import sleep
 from events import Events
 from farm_ceo import FarmCEO
 
 from data import *
 
+if BUILD: from jnius import autoclass
 if CONSOLE_BUILD: from console import PygameConsole
 
 from performance_monitor import PerformanceMonitor
@@ -48,7 +50,11 @@ class Window:
     FPS: int = 60
 
     def __init__(self) -> None:
-        self.screen: pg.Surface = pg.display.set_mode((self.WIDTH, self.HEIGHT), display=int(not BUILD))
+        if BUILD:
+            self.setup_android()
+            sleep(1)
+
+        self.screen: pg.Surface = pg.display.set_mode((self.WIDTH, self.HEIGHT), pg.DOUBLEBUF, display=int(not BUILD))
         self.clock: pg.time.Clock = pg.time.Clock()
         self.events: Events = Events()
 
@@ -64,6 +70,26 @@ class Window:
         self.performance_monitor = PerformanceMonitor(self.screen, (0, 0))
 
         self.fps_font = pg.font.SysFont(None, 40)
+
+    def setup_android(self):
+        # Get the current activity and decor view
+        PythonActivity = autoclass('org.kivy.android.PythonActivity')
+        activity_instance = PythonActivity.mActivity
+
+        def _set_ui_flags():
+            window = activity_instance.getWindow()
+            decor_view = window.getDecorView()
+
+            # System UI flags for immersive fullscreen mode
+            SYSTEM_UI_FLAG_FULLSCREEN = 4
+            SYSTEM_UI_FLAG_HIDE_NAVIGATION = 2
+            SYSTEM_UI_FLAG_IMMERSIVE_STICKY = 4096
+            flags = SYSTEM_UI_FLAG_FULLSCREEN | SYSTEM_UI_FLAG_HIDE_NAVIGATION | SYSTEM_UI_FLAG_IMMERSIVE_STICKY
+
+            decor_view.setSystemUiVisibility(flags)
+
+        # Run on the UI thread
+        activity_instance.runOnUiThread(_set_ui_flags)
 
     def main(self) -> None:
         pg.display.set_caption(self.TITLE)
@@ -89,7 +115,7 @@ class Window:
             self.screen.blit(fps_rendered, (20, 20))
 
             pg.display.flip()
-            self.delta_time = self.clock.tick(60)
+            self.delta_time = self.clock.tick(self.FPS)
 
 def main() -> None:
     window = Window()
