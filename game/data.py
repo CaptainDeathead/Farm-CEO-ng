@@ -54,6 +54,7 @@ CONSOLE_BUILD: bool = not BUILD
 # ---------- DEBUG ----------
 DEBUG_BOUNDARY_LOADING: bool = False
 DEBUG_PATH_GENERATION: bool = True
+DEBUG_PATH_MASK_COLLISION: bool = False
 DEBUG_MOUSE_EVENTS: bool = False
 
 # ---------- ABOUT ----------

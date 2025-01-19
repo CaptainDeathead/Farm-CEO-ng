@@ -1,6 +1,8 @@
 import pygame as pg
 from shapely.geometry import Polygon
 
+from data import *
+
 from typing import Tuple
 
 class utils:
@@ -88,15 +90,17 @@ class utils:
 
                 last_was_collision = True
 
-                #pg.draw.circle(pg.display.get_surface(), (0, 255, 0), (x1 + 620, y1), 3)
-                #pg.display.flip()
-                #pg.time.wait(1)
+                if DEBUG_PATH_MASK_COLLISION:
+                    pg.draw.circle(pg.display.get_surface(), (0, 255, 0), (x1 + 620, y1), 3)
+                    pg.display.flip()
+                    pg.time.wait(1)
             else:
                 last_was_collision = False
 
-                #pg.draw.circle(pg.display.get_surface(), (255, 0, 0), (x1 + 620, y1), 3)
-                #pg.display.flip()
-                #pg.time.wait(1)
+                if DEBUG_PATH_MASK_COLLISION:
+                    pg.draw.circle(pg.display.get_surface(), (255, 0, 0), (x1 + 620, y1), 3)
+                    pg.display.flip()
+                    pg.time.wait(1)
             
             x1 += step_x
             y1 += step_y

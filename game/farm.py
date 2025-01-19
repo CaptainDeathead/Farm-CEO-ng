@@ -54,8 +54,23 @@ class Job:
             p1_index = point_1_index
             p2_index = point_2_index
 
-        dist_1 = p1_index - p2_index
-        dist_2 = p1_index + ((len(boundary) - 1) - p2_index)
+        dist_1 = 0
+        for px, py in boundary[p1_index:p2_index]:
+            index = boundary.index((px, py))
+            nx, ny = boundary[index+1]
+            dist_1 += sqrt((nx - px) ** 2 + (ny - py) ** 2)
+
+        dist_2 = 0
+        for px, py in boundary[p1_index::-1]:
+            index = boundary.index((px, py))
+            nx, ny = boundary[index+1]
+            dist_2 += sqrt((nx - px) ** 2 + (ny - py) ** 2)
+
+        for px, py in boundary[-1:p2_index-1:-1]:
+            index = boundary.index((px, py))
+
+            nx, ny = boundary[index + 1]
+            dist_2 += sqrt((nx - px) ** 2 + (ny - py) ** 2)
 
         if dist_1 < dist_2:
             path = boundary[p1_index:p2_index]
@@ -145,7 +160,7 @@ class Job:
 
                 point_collisions = []
                 for i, col_list in enumerate(point_collisions_list):
-                    point_collisions.extend(col_list)
+                    point_collisions.extend(col_list[::10]) # Every 10 px
 
                     if i == len(point_collisions_list) - 1: break
 
@@ -163,11 +178,16 @@ class Job:
                 line_start = (collision_polygon_rect.x, y)
                 line_end = (collision_polygon_rect.x + collision_polygon_rect.w, y)
 
-                point_collisions_list = utils.line_collides_mask((line_start, line_end), collision_polygon_mask, collision_polygon_rect)[::10] # Every 10 pixels
+                point_collisions_list = utils.line_collides_mask((line_start, line_end), collision_polygon_mask, collision_polygon_rect)[::10]
 
                 point_collisions = []
                 for col_list in point_collisions_list:
-                    point_collisions.extend(col_list)
+                    point_collisions.extend(col_list[::10]) # Every 10 px
+
+                    if i == len(point_collisions_list) - 1: break
+
+                    # Path around the first lap
+                    point_collisions.extend(self.trace_collision_boundary(col_list[-1], point_collisions_list[i+1][0], lap_1))
 
                 if DEBUG_PATH_GENERATION:
                     for point in point_collisions:
@@ -194,13 +214,31 @@ class Job:
             ab_runlines.extend(skipped_rows)
 
         ab_reversed = True
-        for runline in ab_runlines:
+        for i, runline in enumerate(ab_runlines):
             ab_reversed = not ab_reversed
+
+            if i >= len(ab_runlines) - 1:
+                next_runline = []
+            else:
+                next_runline = ab_runlines[i+1]
             
             if ab_reversed:
-                path.extend(list(reversed(runline)))
+                directed_runline = list(reversed(runline))
+                directed_next_runline = next_runline
             else:
-                path.extend(runline)
+                directed_runline = runline
+                directed_next_runline = list(reversed(runline))
+            
+            path.extend(directed_runline)
+
+            if next_runline == []: continue
+
+            # Checks if next runline is close enough to go without path
+            dist = sqrt((directed_runline[-1][0] - directed_next_runline[0][0]) ** 2 + (directed_runline[-1][1] - directed_next_runline[0][1]) ** 2)
+
+            # If its too far, it will follow the boundary
+            if dist > working_width * 2:
+                path.extend(self.trace_collision_boundary(directed_runline[-1], directed_next_runline[0], lap_1))
 
         return path
 

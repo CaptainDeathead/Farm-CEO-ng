@@ -114,13 +114,14 @@ class FarmCEO:
         self.popup = None
         
         # TODO: THIS IS JUST AN EXAMPLE
-        #self.background_render()
+        self.background_render()
         #for i in range(9): self.shed.task_manager.test_make_job(self.paddock_manager.paddocks[i])
 
-        for i, point in enumerate(self.shed.task_manager.test_make_job(self.paddock_manager.paddocks[0])[1300:]):
-            c = pg.draw.circle(self.screen, (i%255, i**2%255, 0), (point[0] + PANEL_WIDTH, point[1]), 3)
-            pg.display.update(c)
-            pg.time.wait(10)
+        for pdk in range(9):
+            for i, point in enumerate(self.shed.task_manager.test_make_job(self.paddock_manager.paddocks[pdk])):
+                c = pg.draw.circle(self.screen, (i%255, i**2%255, 0), (point[0] + PANEL_WIDTH, point[1]), 3)
+                pg.display.update(c)
+                pg.time.wait(30)
 
         input()
 
