@@ -58,7 +58,7 @@ class Job:
             pg.draw.line(screen, (255, 0, 0), (path[i-1][0] + 620, path[i-1][1]), (point[0] + 620, point[1]))
             pg.display.flip()
 
-    def generate_working_path(self, paddock_destination: Destination, working_width: float, outside_laps: int = 2) -> List[Sequence[float]]:
+    def generate_working_path(self, paddock_destination: Destination, working_width: float, outside_laps: int = 2, skiprow: bool = False) -> List[Sequence[float]]:
         """
         How does this work?
 
@@ -117,33 +117,60 @@ class Job:
         collision_polygon_mask = pg.mask.from_surface(collision_polygon_surf)
 
         north = collision_polygon_rect.h > collision_polygon_rect.w
+        ab_runlines = []
 
         if north:
             for x in range(collision_polygon_rect.x + int(working_width / 2), collision_polygon_rect.x + collision_polygon_rect.w, working_width): # TODO: Locallise the polygons position first so surface isnt big
                 line_start = (x, collision_polygon_rect.y)
                 line_end = (x, collision_polygon_rect.y + collision_polygon_rect.h)
 
-                point_collisions = utils.line_collides_mask((line_start, line_end), collision_polygon_mask, collision_polygon_rect)
+                point_collisions = utils.line_collides_mask((line_start, line_end), collision_polygon_mask, collision_polygon_rect)[::10] # Every 10 pixels
 
                 if DEBUG_PATH_GENERATION:
                     for point in point_collisions:
                         pg.display.get_surface().set_at((point[0] + 620, point[1]), (0, 0, 255))
                     pg.display.flip()
 
-                path.extend(point_collisions)
+                ab_runlines.append(point_collisions)
         else:
             for y in range(collision_polygon_rect.y + int(working_width / 2), collision_polygon_rect.y + collision_polygon_rect.h, working_width): # TODO: Locallise the polygons position first so surface isnt big
                 line_start = (collision_polygon_rect.x, y)
                 line_end = (collision_polygon_rect.x + collision_polygon_rect.w, y)
 
-                point_collisions = utils.line_collides_mask((line_start, line_end), collision_polygon_mask, collision_polygon_rect)
+                point_collisions = utils.line_collides_mask((line_start, line_end), collision_polygon_mask, collision_polygon_rect)[::10] # Every 10 pixels
 
                 if DEBUG_PATH_GENERATION:
                     for point in point_collisions:
                         pg.display.get_surface().set_at((point[0] + 620, point[1]), (0, 0, 255))
                     pg.display.flip()
 
-                path.extend(point_collisions)
+                ab_runlines.append(point_collisions)
+
+        if skiprow:
+            skipped_rows = []
+            non_skipped_rows = []
+            skip_this_row = True
+
+            for runline in ab_runlines:
+                skip_this_row = not skip_this_row
+
+                if skip_this_row:
+                    skipped_rows.insert(0, runline)
+                else:
+                    non_skipped_rows.append(runline)
+
+            ab_runlines = []
+            ab_runlines.extend(non_skipped_rows)
+            ab_runlines.extend(skipped_rows)
+
+        ab_reversed = True
+        for runline in ab_runlines:
+            ab_reversed = not ab_reversed
+            
+            if ab_reversed:
+                path.extend(list(reversed(runline)))
+            else:
+                path.extend(runline)
 
         return path
 
@@ -189,7 +216,7 @@ class TaskManager:
         start_dest = Destination(paddock)
         end_dest = Destination(paddock)
         job = Job(start_dest, end_dest, None, None)
-        return job.generate_working_path(end_dest, 10, 2)
+        return job.generate_working_path(end_dest, 15, 2, True)
 
 class Shed(LayableRenderObj):
     def __init__(self, game_surface: pg.Surface, rect: pg.Rect, rotation: float) -> None:        

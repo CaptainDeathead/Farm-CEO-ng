@@ -117,6 +117,13 @@ class FarmCEO:
         #self.background_render()
         #for i in range(9): self.shed.task_manager.test_make_job(self.paddock_manager.paddocks[i])
 
+        for i, point in enumerate(self.shed.task_manager.test_make_job(self.paddock_manager.paddocks[0])[1300:]):
+            c = pg.draw.circle(self.screen, (i%255, i**2%255, 0), (point[0] + PANEL_WIDTH, point[1]), 3)
+            pg.display.update(c)
+            pg.time.wait(100)
+
+        input()
+
     def enable_cheats(self) -> None:
         logging.warning("Cheats enabled! Money and XP set to 1,000,000,000,000")
         self.save_manager.set_money(1_000_000_000_000)
