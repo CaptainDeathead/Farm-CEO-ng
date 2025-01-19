@@ -52,7 +52,7 @@ class utils:
         return rect
 
     @staticmethod
-    def line_collides_mask(line: list[tuple, tuple], mask: pg.Mask, polygon_rect: pg.Rect) -> list[tuple[float, float]]:
+    def line_collides_mask(line: list[tuple, tuple], mask: pg.Mask, polygon_rect: pg.Rect) -> tuple[list[tuple[float, float]], list[tuple[float, float]]]:
         line_start = line[0]
         line_end = line[1]
 
@@ -73,12 +73,30 @@ class utils:
         x2, y2 = line_end
 
         collisions = []
+        curr_collision_index = -1
+        last_was_collision = not mask.get_at((x1, y1))
         while 1:
             if x1 == x2 and y1 == y2:
                 break
 
             if mask.get_at((x1, y1)):
-                collisions.append((x1, y1))
+                if not last_was_collision:
+                    curr_collision_index += 1
+                    collisions.append([])
+
+                collisions[curr_collision_index].append((x1, y1))
+
+                last_was_collision = True
+
+                #pg.draw.circle(pg.display.get_surface(), (0, 255, 0), (x1 + 620, y1), 3)
+                #pg.display.flip()
+                #pg.time.wait(1)
+            else:
+                last_was_collision = False
+
+                #pg.draw.circle(pg.display.get_surface(), (255, 0, 0), (x1 + 620, y1), 3)
+                #pg.display.flip()
+                #pg.time.wait(1)
             
             x1 += step_x
             y1 += step_y

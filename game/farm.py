@@ -9,6 +9,7 @@ from utils import utils, LayableRenderObj
 from data import *
 
 from copy import deepcopy
+from math import sqrt
 from typing import List, Dict, Sequence
 
 class Job:
@@ -24,27 +25,43 @@ class Job:
         self.vehicle = vehicle
         self.tool = tool
 
-    def join_line_endings(self, line_1_end: Tuple, line_2_start: Tuple, boundary: List[Tuple]) -> List[Tuple]:
-        line_1_index = boundary.index(line_1_end)
-        line_2_index = boundary.index(line_2_start)
+    def get_closest_point_on_boundary(self, point: Tuple, boundary: List[Tuple]) -> Tuple | None:
+        closest_dist = float('inf')
+        closest_point = None
 
-        if line_1_index > line_2_index:
+        for px, py in boundary:
+            dist = sqrt((point[0] - px) ** 2 + (point[1] - py) ** 2)
+
+            if dist < closest_dist:
+                closest_dist = dist
+                closest_point = (px, py)
+
+        return closest_point
+
+    def trace_collision_boundary(self, point_end: Tuple, point_start: Tuple, boundary: List[Tuple]) -> List[Tuple]:
+        point_end = self.get_closest_point_on_boundary(point_end, boundary)
+        point_start = self.get_closest_point_on_boundary(point_start, boundary)
+
+        point_1_index = boundary.index(point_end)
+        point_2_index = boundary.index(point_start)
+
+        if point_1_index > point_2_index:
             indexes_reversed = True
-            l1_index = line_2_index
-            l2_index = line_1_index
+            p1_index = point_2_index
+            p2_index = point_1_index
         else:
             indexes_reversed = False
-            l1_index = line_1_index
-            l2_index = line_2_index
+            p1_index = point_1_index
+            p2_index = point_2_index
 
-        dist_1 = l1_index - l2_index
-        dist_2 = l1_index + ((len(boundary) - 1) - l2_index)
+        dist_1 = p1_index - p2_index
+        dist_2 = p1_index + ((len(boundary) - 1) - p2_index)
 
         if dist_1 < dist_2:
-            path = boundary[l1_index:l2_index]
+            path = boundary[p1_index:p2_index]
         else:
-            path = boundary[l1_index::-1] # l1_index down to 0
-            path.extend(boundary[-1:l2_index-1:-1]) # Going to end of boundary from start so: end_index down to l2 index
+            path = boundary[p1_index::-1] # p1_index down to 0
+            path.extend(boundary[-1:p2_index-1:-1]) # Going to end of boundary from start so: end_index down to l2 index
 
         if indexes_reversed:
             return reversed(path)
@@ -124,7 +141,16 @@ class Job:
                 line_start = (x, collision_polygon_rect.y)
                 line_end = (x, collision_polygon_rect.y + collision_polygon_rect.h)
 
-                point_collisions = utils.line_collides_mask((line_start, line_end), collision_polygon_mask, collision_polygon_rect)[::10] # Every 10 pixels
+                point_collisions_list = utils.line_collides_mask((line_start, line_end), collision_polygon_mask, collision_polygon_rect)
+
+                point_collisions = []
+                for i, col_list in enumerate(point_collisions_list):
+                    point_collisions.extend(col_list)
+
+                    if i == len(point_collisions_list) - 1: break
+
+                    # Path around the first lap
+                    point_collisions.extend(self.trace_collision_boundary(col_list[-1], point_collisions_list[i+1][0], lap_1))
 
                 if DEBUG_PATH_GENERATION:
                     for point in point_collisions:
@@ -137,7 +163,11 @@ class Job:
                 line_start = (collision_polygon_rect.x, y)
                 line_end = (collision_polygon_rect.x + collision_polygon_rect.w, y)
 
-                point_collisions = utils.line_collides_mask((line_start, line_end), collision_polygon_mask, collision_polygon_rect)[::10] # Every 10 pixels
+                point_collisions_list = utils.line_collides_mask((line_start, line_end), collision_polygon_mask, collision_polygon_rect)[::10] # Every 10 pixels
+
+                point_collisions = []
+                for col_list in point_collisions_list:
+                    point_collisions.extend(col_list)
 
                 if DEBUG_PATH_GENERATION:
                     for point in point_collisions:
