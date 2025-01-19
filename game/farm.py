@@ -57,9 +57,6 @@ class Job:
         for i, point in enumerate(path):
             pg.draw.line(screen, (255, 0, 0), (path[i-1][0] + 620, path[i-1][1]), (point[0] + 620, point[1]))
             pg.display.flip()
-            pg.time.wait(1)
-
-        pg.display.flip()
 
     def generate_working_path(self, paddock_destination: Destination, working_width: float, outside_laps: int = 2) -> List[Sequence[float]]:
         """

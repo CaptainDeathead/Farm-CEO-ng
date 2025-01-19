@@ -54,6 +54,7 @@ CONSOLE_BUILD: bool = not BUILD
 # ---------- DEBUG ----------
 DEBUG_BOUNDARY_LOADING: bool = False
 DEBUG_PATH_GENERATION: bool = True
+DEBUG_MOUSE_EVENTS: bool = False
 
 # ---------- ABOUT ----------
 GAME_NAME: str = "Farm CEO"

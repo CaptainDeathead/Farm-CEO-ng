@@ -172,16 +172,21 @@ class Equipment:
 
         wrap_length = int(PANEL_WIDTH * 0.8)
 
-        self.title_font.align = pg.FONT_CENTER
-        self.body_font.align = pg.FONT_LEFT
+        title_font = pg.font.SysFont(None, 70)
+        selected_font = pg.font.SysFont(None, 55)
+        body_font = pg.font.SysFont(None, 50)
+        note_font = pg.font.SysFont(None, 40)
 
-        title_lbl = self.title_font.render(f"Select destination for new job:", True, UI_TEXT_COLOR, wraplength=wrap_length)
-        machine_info_lbl = self.body_font.render(f"\nVehicle: {self.selected_vehicle.full_name}\nTool: {tool.full_name}\n\n", True, UI_TEXT_COLOR, wraplength=wrap_length)
+        title_font.align = pg.FONT_CENTER
+        body_font.align = pg.FONT_LEFT
 
-        selected_lbl = self.title_font.render(f"Selected: {selected_destination.name}", True, UI_TEXT_COLOR, wraplength=wrap_length)
+        title_lbl = title_font.render(f"Select destination for new job:", True, UI_TEXT_COLOR, wraplength=wrap_length)
+        machine_info_lbl = body_font.render(f"\nVehicle: {self.selected_vehicle.full_name}\nTool: {tool.full_name}\n\n", True, UI_TEXT_COLOR, wraplength=wrap_length)
 
-        self.body_font.align = pg.FONT_CENTER
-        info_lbl = self.body_font.render(f"\nNote: Tap on the destination you want on the map to select it.", True, UI_TEXT_COLOR, wraplength=wrap_length)
+        selected_lbl = selected_font.render(f"Selected: {selected_destination.name}", True, UI_TEXT_COLOR, wraplength=wrap_length)
+
+        body_font.align = pg.FONT_CENTER
+        info_lbl = note_font.render(f"\nNote: Tap on the destination you want on the map to select it.", True, UI_TEXT_COLOR, wraplength=wrap_length)
 
         lbls_height = title_lbl.get_height() + machine_info_lbl.get_height() + selected_lbl.get_height() + info_lbl.get_height()
         lbls_surface = pg.Surface((PANEL_WIDTH, lbls_height), pg.SRCALPHA)
@@ -241,7 +246,7 @@ class Equipment:
             # Mouse was pressed on the button and the mouse is released now (these buttons are different because the scrolling can press them)
             if not self.in_scroll and self.events.mouse_pos[1] > NAVBAR_HEIGHT:
                 button_press = self.events.authority_mouse_just_released and button.global_rect.collidepoint(self.events.authority_mouse_start_press_location)
-                button.update(button_press, self.events.set_override)
+                button.update(button_press, lambda x: None)
 
         if self.in_scroll and self.events.authority_mouse_just_released:
             self.in_scroll = False
