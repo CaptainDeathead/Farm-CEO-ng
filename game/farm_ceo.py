@@ -121,7 +121,7 @@ class FarmCEO:
             for i, point in enumerate(self.shed.task_manager.test_make_job(self.paddock_manager.paddocks[pdk])):
                 c = pg.draw.circle(self.screen, (i%255, i**2%255, 0), (point[0] + PANEL_WIDTH, point[1]), 3)
                 pg.display.update(c)
-                pg.time.wait(1)
+                pg.time.wait(5)
 
         input()
 

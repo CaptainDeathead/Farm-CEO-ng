@@ -66,10 +66,9 @@ class Job:
             nx, ny = boundary[index+1]
             dist_2 += sqrt((nx - px) ** 2 + (ny - py) ** 2)
 
-        for px, py in boundary[-1:p2_index-1:-1]:
+        for px, py in boundary[-1:p2_index:-1]:
             index = boundary.index((px, py))
-
-            nx, ny = boundary[index + 1]
+            nx, ny = boundary[index - 1]
             dist_2 += sqrt((nx - px) ** 2 + (ny - py) ** 2)
 
         if dist_1 < dist_2:
@@ -89,6 +88,7 @@ class Job:
         for i, point in enumerate(path):
             pg.draw.line(screen, (255, 0, 0), (path[i-1][0] + 620, path[i-1][1]), (point[0] + 620, point[1]))
             pg.display.flip()
+            pg.time.wait(1)
 
     def generate_working_path(self, paddock_destination: Destination, working_width: float, outside_laps: int = 2, skiprow: bool = False) -> List[Sequence[float]]:
         """
@@ -126,6 +126,21 @@ class Job:
         boundary = paddock.boundary
 
         lap_1 = utils.shrink_polygon(boundary, working_width / 2)
+
+        # Find the closest point to the gate
+        closest_dist = float('inf')
+        closest_point_index = 0
+        for i, (px, py) in enumerate(lap_1):
+            dist = sqrt((paddock.gate[0] - px) ** 2 + (paddock.gate[1] - py) ** 2)
+
+            if dist < closest_dist:
+                closest_dist = dist
+                closest_point_index = i
+
+        new_lap_1 = lap_1[closest_point_index:]
+        new_lap_1.extend(lap_1[:closest_point_index])
+        lap_1 = new_lap_1
+
         self.draw_path(lap_1)
 
         path = []
