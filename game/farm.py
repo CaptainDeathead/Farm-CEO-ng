@@ -133,7 +133,24 @@ class Job:
 
         laps = [lap_1]
         for i in range(outside_laps - 1):
-            laps.append(utils.shrink_polygon(boundary, working_width * (i + 1)))
+            new_lap = utils.shrink_polygon(boundary, working_width * (i + 1))
+
+            closest_dist = float('inf')
+            closest_point_index = new_lap[0]
+            last_lap_point = laps[-1][-1]
+
+            for i, (px, py) in enumerate(new_lap):
+                dist = sqrt((last_lap_point[0] - px) ** 2 + (last_lap_point[1] - py) ** 2)
+
+                if dist < closest_dist:
+                    closest_dist = dist
+                    closest_point_index = i 
+            
+            finished_lap = new_lap[closest_point_index:]
+            finished_lap.extend(new_lap[:closest_point_index])
+
+            laps.append(finished_lap)
+
             path.extend(laps[-1])
             self.draw_path(laps[-1])
 
@@ -162,7 +179,7 @@ class Job:
                 for i, col_list in enumerate(point_collisions_list):
                     point_collisions.extend(col_list[::10]) # Every 10 px
 
-                    if i == len(point_collisions_list) - 1: break
+                    if i >= len(point_collisions_list) - 1: break
 
                     # Path around the first lap
                     point_collisions.extend(self.trace_collision_boundary(col_list[-1], point_collisions_list[i+1][0], lap_1))
@@ -184,7 +201,7 @@ class Job:
                 for col_list in point_collisions_list:
                     point_collisions.extend(col_list[::10]) # Every 10 px
 
-                    if i == len(point_collisions_list) - 1: break
+                    if i >= len(point_collisions_list) - 1: break
 
                     # Path around the first lap
                     point_collisions.extend(self.trace_collision_boundary(col_list[-1], point_collisions_list[i+1][0], lap_1))
