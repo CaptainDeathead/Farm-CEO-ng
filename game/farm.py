@@ -245,6 +245,7 @@ class Job:
             ab_runlines.extend(non_skipped_rows)
             ab_runlines.extend(skipped_rows)
 
+        # Go from inside laps, around the boundary to the first runline
         path.extend(self.trace_collision_boundary(path[-1], ab_runlines[0][0], lap_1))
 
         ab_reversed = True
@@ -273,6 +274,9 @@ class Job:
             # If its too far, it will follow the boundary
             if dist > working_width * 2:
                 path.extend(self.trace_collision_boundary(directed_runline[-1], directed_next_runline[0], lap_1))
+
+        # Go from last runline to gate around boundary
+        path.extend(self.trace_collision_boundary(path[-1], paddock.gate, lap_1))
 
         return path
 
