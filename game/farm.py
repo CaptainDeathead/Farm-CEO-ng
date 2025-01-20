@@ -245,6 +245,8 @@ class Job:
             ab_runlines.extend(non_skipped_rows)
             ab_runlines.extend(skipped_rows)
 
+        path.extend(self.trace_collision_boundary(path[-1], ab_runlines[0][0], lap_1))
+
         ab_reversed = True
         for i, runline in enumerate(ab_runlines):
             ab_reversed = not ab_reversed
