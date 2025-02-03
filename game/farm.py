@@ -5,18 +5,19 @@ from save_manager import SaveManager
 
 from machinary import Tractor, Header, Tool
 from pathfinding import TaskManager
+from destination import Destination
 from utils import utils, LayableRenderObj
 from data import *
 
 from copy import deepcopy
 from typing import List, Dict, Sequence
 
-
 class Shed(LayableRenderObj):
-    def __init__(self, game_surface: pg.Surface, rect: pg.Rect, rotation: float) -> None:        
+    def __init__(self, game_surface: pg.Surface, rect: pg.Rect, rotation: float, roads: List[Sequence[int]], scale: List[Sequence[int]]) -> None:        
         self.game_surface = game_surface
 
         self.rect = rect
+        self.scale = scale
 
         self.rotation = rotation
         self.color = pg.Color(175, 195, 255)
@@ -26,7 +27,10 @@ class Shed(LayableRenderObj):
         self.vehicles: List[Tractor | Header] = []
         self.tools: List[Tool] = []
 
-        self.task_manager = TaskManager(self.vehicles, self.tools)
+        self.roads = roads
+        self.scale_roads()
+
+        self.task_manager = TaskManager(self.vehicles, self.tools, self.roads, self.rect.center)
 
         # shading for roof
         large_shadow_map = ResourceManager.load_image("Lighting/shed_shadow_map.png", (1000, 1000)) # Already converted
@@ -34,6 +38,20 @@ class Shed(LayableRenderObj):
         self.shadow_map.set_alpha(128)
 
         self.rebuild()
+
+    def scale_roads(self) -> None:
+        new_roads = []
+        for road in self.roads:
+            new_roads.append([])
+            for point in self.roads[road]:
+                px, py = point
+                
+                px *= self.scale
+                py *= self.scale
+
+                new_roads[-1].append((px, py)) 
+
+        self.roads = new_roads
 
     def add_vehicle(self, save_attrs: Dict[str, any]) -> None:
         if save_attrs["header"]: vehicle_type = "Harvesters"
@@ -43,7 +61,7 @@ class Shed(LayableRenderObj):
         attrs.update(save_attrs)
 
         if attrs["header"]: vehicle = Header(self.game_surface, self.rect, attrs)
-        else: vehicle = Tractor(self.game_surface, self.rect, attrs)
+        else: vehicle = Tractor(self.game_surface, self.rect, attrs, self.task_tractor)
 
         self.vehicles.append(vehicle)
 
@@ -59,11 +77,28 @@ class Shed(LayableRenderObj):
         for vehicle in self.vehicles:
             if vehicle.vehicle_id == vehicle_id: return vehicle
 
-    def task_tractor(self, vehicle: Tractor) -> None:
-        ...
+    def task_tractor(self, tractor: Tractor, tool: Tool, destination: Destination, stage: int = -1) -> None:
+        path = self.task_manager.create_job(tractor, tool, tractor.destination, destination)
+
+        tractor.destination = destination
+        tractor.tool = tool
+        tool.destination = destination
+        tool.vehicle = tractor
+
+        if not tool.active:
+            tractor.tool.assign_vehicle(tractor)
+
+        tractor.set_path(path, stage)
     
-    def task_header(self, vehicle: Header) -> None:
-        ...
+    def task_header(self, header: Header, destination: Destination) -> None:
+        path = self.task_manager.create_job(header, None, header.destination, destination)
+        header.destination = destination
+        header.set_path(path)
+
+    def simulate(self, dt: float) -> None:
+        for vehicle in self.vehicles:
+            if vehicle.active:
+                vehicle.update(dt)
 
     def rebuild(self) -> None:
         self.surface.fill((0, 0, 0, 255))
@@ -80,3 +115,11 @@ class Shed(LayableRenderObj):
 
     def render2(self) -> None:
         utils.blit_centered(self.game_surface, self.surface, (self.rect.x, self.rect.y), (self.rect.w/2, self.rect.h/2), self.rotation)
+
+        if DEBUG_ROADS:
+            for road in self.roads:
+                for i, point in enumerate(road[:-1]):
+                    px, py = point
+                    nx, ny = road[i+1]
+
+                    pg.draw.line(self.game_surface, (255, 255, 0), (px, py), (nx, ny))

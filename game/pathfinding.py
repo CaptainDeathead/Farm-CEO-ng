@@ -13,14 +13,21 @@ class Job:
     def __init__(self,
                  start_location: Destination,
                  end_location: Destination,
+                 roads: List,
                  vehicle: Tractor | Header,
                  tool: Tool | None,
+                 shed_position: Sequence[int],
+                 job_id: int,
                  ) -> None:
         
         self.start_location = start_location
         self.end_location = end_location
+        self.roads = roads
         self.vehicle = vehicle
         self.tool = tool
+        self.shed_position = shed_position
+
+        self.job_id = job_id
 
     def get_closest_point_on_boundary(self, point: Tuple, boundary: List[Tuple]) -> Tuple | None:
         closest_dist = float('inf')
@@ -145,7 +152,7 @@ class Job:
 
         laps = [lap_1]
         for i in range(outside_laps - 1):
-            new_lap = utils.shrink_polygon(boundary, working_width * (i + 1))
+            new_lap = utils.shrink_polygon(boundary, working_width * (i + 1) + working_width / 2)
 
             closest_dist = float('inf')
             closest_point_index = new_lap[0]
@@ -277,20 +284,69 @@ class Job:
 
         return path
 
-    def generate_path(self) -> None:
+    def generate_transport_path(self, start_location_position: Sequence[float], end_location_position: Sequence[float], from_shed: bool) -> List[Sequence[float]]:
+        # CAUTION: Assumes if it is not coming from shed it is going to shed
+
+        sx, sy = start_location_position
+        tx, ty = end_location_position
+
+        path = []
+
+        if from_shed:
+            closest_dist = float('inf')
+            closest_road = None
+            closest_point = None
+            
+            for road in self.roads:
+                for px, py in road:
+                    dist = sqrt((tx - px) ** 2 + (ty - py) ** 2)
+
+                    if dist < closest_dist:
+                        closest_dist = dist
+                        closest_road = road
+                        closest_point = (px, py)
+
+            path = [point for point in closest_road[closest_road.index(closest_point):]]
+
+            if sqrt((sx - path[0][0]) ** 2 + (sy - path[0][1]) ** 2) > sqrt((tx - path[0][0]) ** 2 + (ty - path[0][1]) ** 2):
+                path = list(reversed(path))
+
+        else:
+            closest_dist = float('inf')
+            closest_road = None
+            closest_point = None
+
+            for road in self.roads:
+                for px, py in road:
+                    dist = sqrt((sx - px) ** 2  + (sy - py) ** 2)
+
+                    if dist < closest_dist:
+                        closest_dist = dist
+                        closest_road = road
+                        closest_point = (px, py)
+
+            path = [point for point in closest_road[closest_road.index(closest_point):]]
+
+            if sqrt((sx - path[0][0]) ** 2 + (sy - path[0][1]) ** 2) > sqrt((tx - path[0][0]) ** 2 + (ty - path[0][1]) ** 2):
+                path = list(reversed(path))
+
+        path.append((tx, ty))
+        return path
+
+    def generate_path(self) -> List[Tuple[float, float]]:
         if self.tool is None:
             # Header
             if self.start_location.is_paddock:
                 if self.end_location.is_paddock:
                     # Generate working
-                    ...
+                    return self.generate_working_path(self.end_location, self.vehicle.working_width, outside_laps=2, skiprow=True)
                 else:
                     # Go home
-                    ...
+                    return self.generate_transport_path(self.start_location.destination.gate, (0, 0), from_shed=False)
             else:
                 if self.end_location.is_paddock:
                     # Go to paddock
-                    ...
+                    return self.generate_transport_path((0, 0), self.end_location.destination.gate, from_shed=True)
 
         elif self.tool.tool_type == "Trailer":
             ...
@@ -299,21 +355,29 @@ class Job:
             if self.start_location.is_paddock:
                 if self.end_location.is_paddock:
                     # Generate working
-                    ...
+                    return self.generate_working_path(self.end_location, self.tool.working_width, outside_laps=2, skiprow=True)
                 else:
                     # Go home
-                    ...
+                    return self.generate_transport_path(self.start_location.destination.gate, self.shed_position, from_shed=False)
             else:
                 if self.end_location.is_paddock:
                     # Go to paddock
-                    ...
+                    return self.generate_transport_path((0, 0), self.end_location.destination.gate, from_shed=True)
 
 class TaskManager:
-    def __init__(self, vehicles: List, tools: List) -> None:
+    def __init__(self, vehicles: List, tools: List, roads: List, shed_position: Sequence[int]) -> None:
         self.vehicles = vehicles
         self.tools = tools
+        self.roads = roads
+        self.shed_position = shed_position
 
         self.jobs = []
+
+    def create_job(self, vehicle: Tractor | Header, tool: Tool | None, start_location: Destination, end_location: Destination) -> List[Tuple[float, float]]:
+        job = Job(start_location, end_location, self.roads, vehicle, tool, self.shed_position, len(self.jobs))
+        self.jobs.append(job)
+
+        return job.generate_path()
 
     def test_make_job(self, paddock) -> None:
         start_dest = Destination(paddock)

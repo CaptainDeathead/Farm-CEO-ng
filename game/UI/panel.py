@@ -5,7 +5,7 @@ from resource_manager import ResourceManager
 from events import Events
 
 from farm import Shed
-from sellpoints import SellpointManager
+from sellpoint_manager import SellpointManager
 
 from UI.pygame_gui import Button
 from UI.navbar import NavBar

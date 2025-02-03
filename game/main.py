@@ -47,7 +47,7 @@ class Window:
 
     TITLE: str = f"{GAME_NAME} ({BUILD_TYPE}) | Build: {BUILD} | Platform: {PLATFORM} | Version: v{GAME_VERSION}"
 
-    FPS: int = 60
+    FPS: int = TARGET_FPS
 
     def __init__(self) -> None:
         if BUILD:
@@ -67,6 +67,7 @@ class Window:
         logging.getLogger().addHandler(PygameConsoleHandler(self.console))
 
         self.delta_time = 0.0
+        self.frame_time = 0.0
         self.performance_monitor = PerformanceMonitor(self.screen, (0, 0))
 
         self.fps_font = pg.font.SysFont(None, 40)
@@ -96,12 +97,13 @@ class Window:
         pg.display.set_icon(self.farm_ceo.RESOURCE_MANAGER.load_image("game_icon.png", (100, 100)))
 
         while 1:
+            sleep(0 / 60)
             events = pg.event.get()
             self.events.process_events(events)
 
             self.farm_ceo.background_render()
 
-            self.farm_ceo.simulate()
+            self.farm_ceo.simulate(self.frame_time)
 
             self.farm_ceo.foreground_render()
             self.farm_ceo.ui_render()
@@ -116,6 +118,7 @@ class Window:
 
             pg.display.flip()
             self.delta_time = self.clock.tick(self.FPS)
+            self.frame_time = self.delta_time / 1000.0
 
 def main() -> None:
     window = Window()

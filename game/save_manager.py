@@ -263,7 +263,7 @@ class SaveManager:
                 "brand": tool.brand,
                 "model": tool.model,
                 "size": tool.size,
-                "sizePx": tool.size_px,
+                "sizePx": tool.working_width,
                 "hp": tool.hp,
                 "turningPoint": tool.turning_point,
                 "hitch": tool.hitch_y,

@@ -7,7 +7,7 @@ from resource_manager import ResourceManager
 from save_manager import SaveManager
 
 from paddock_manager import PaddockManager
-from sellpoints import SellpointManager
+from sellpoint_manager import SellpointManager
 from events import Events
 
 from UI.panel import Panel
@@ -87,7 +87,7 @@ class FarmCEO:
         self.map = Map(self.screen, self.RESOURCE_MANAGER.load_map("Green_Spring_cfg.json")) # map estimated to be almost screen size
         self.game_surface = pg.Surface((self.map.rect.w, self.map.rect.h), pg.SRCALPHA)
         
-        self.shed = Shed(self.game_surface, utils.scale_rect(pg.Rect(self.map.map_cfg["shed"]["rect"]), self.map.scale), self.map.map_cfg["shed"]["rotation"])
+        self.shed = Shed(self.game_surface, utils.scale_rect(pg.Rect(self.map.map_cfg["shed"]["rect"]), self.map.scale), self.map.map_cfg["shed"]["rotation"], self.map.map_cfg["roads"], self.map.scale)
 
         self.save_manager: SaveManager = SaveManager()
         self.save_manager.init(self.map.map_cfg, self.shed.vehicles, self.shed.tools, self.shed.add_vehicle, self.shed.add_tool)
@@ -114,16 +114,16 @@ class FarmCEO:
         self.popup = None
         
         # TODO: THIS IS JUST AN EXAMPLE
-        self.background_render()
+        #self.background_render()
         #for i in range(9): self.shed.task_manager.test_make_job(self.paddock_manager.paddocks[i])
 
-        for pdk in range(9):
-            for i, point in enumerate(self.shed.task_manager.test_make_job(self.paddock_manager.paddocks[pdk])):
-                c = pg.draw.circle(self.screen, (i%255, i**2%255, 0), (point[0] + PANEL_WIDTH, point[1]), 3)
-                pg.display.update(c)
-                pg.time.wait(5)
+        #for pdk in range(9):
+        #    for i, point in enumerate(self.shed.task_manager.test_make_job(self.paddock_manager.paddocks[pdk])):
+        #        c = pg.draw.circle(self.screen, (i%255, i**2%255, 0), (point[0] + PANEL_WIDTH, point[1]), 3)
+        #        pg.display.update(c)
+        #        pg.time.wait(5)
 
-        input()
+        #input()
 
     def enable_cheats(self) -> None:
         logging.warning("Cheats enabled! Money and XP set to 1,000,000,000,000")
@@ -147,12 +147,15 @@ class FarmCEO:
         self.map.render()
         self.paddock_manager.draw_paddock_numbers()
 
-    def simulate(self) -> None:
+        self.game_surface.fill((0, 0, 0, 0))
+
+    def simulate(self, dt: float) -> None:
         if time() - self.last_update_time >= 1:
             self.last_update_time = time()
             self.time += TIMESCALE
 
         self.paddock_manager.update(self.events.mouse_just_released)
+        self.shed.simulate(dt)
 
     def foreground_render(self) -> None:
         # Vehicles and trailers

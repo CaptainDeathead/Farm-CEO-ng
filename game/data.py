@@ -44,8 +44,21 @@ BASE_CROP_PRICES = {
 TIMESCALE = 24 # 144 mins every min = 2.4 min every second
 MINS_IN_DAY = TIMESCALE * 60
 
+JOB_TYPES = {
+    "transporting_to": 0,
+    "transporting_from": 1,
+    "travelling_to": 2,
+    "working": 3,
+    "travelling_from": 4
+}
+
+END_JOB_STAGES = [JOB_TYPES["transporting_from"], JOB_TYPES["travelling_from"]]
+
+MAX_TURN_SPEED: int = 8
+
 # ---------- CONFIG ----------
 BUILD: bool = False
+TARGET_FPS: int = 120
 SUPPORTED_PLATFORMS: Tuple[str] = ("android_x86_64", "android_v7a", "arm64-v8a", "Linux", "Windows")
 PLATFORM: str = "arm64-v8a"
 BUILD_TYPE: str = "Devlopment"
@@ -55,6 +68,7 @@ CONSOLE_BUILD: bool = not BUILD
 DEBUG_BOUNDARY_LOADING: bool = False
 DEBUG_PATH_GENERATION: bool = True
 DEBUG_PATH_MASK_COLLISION: bool = False
+DEBUG_ROADS: bool = True
 DEBUG_MOUSE_EVENTS: bool = False
 
 # ---------- ABOUT ----------

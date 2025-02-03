@@ -12,7 +12,7 @@ from UI.popups import TractorNewTaskPopup
 from utils import utils
 from farm import Shed
 from machinary import Tractor, Header, Tool
-from sellpoints import SellpointManager
+from sellpoint_manager import SellpointManager
 from destination import Destination
 from data import *
 
@@ -52,7 +52,6 @@ class Equipment:
         self.scrolling_last_frame = False
         self.in_scroll = False
 
-        self.selected_vehicle = None
         self.showing_destination_picker = False
 
         self.destination_exit_btn = None
@@ -60,6 +59,7 @@ class Equipment:
 
         self.selected_vehicle = None
         self.selected_tool = None
+        self.selected_destination = None
 
     def close_popup(self) -> None:
         self.set_popup(None)
@@ -77,11 +77,14 @@ class Equipment:
     def assign_task(self) -> None:
         self.showing_destination_picker = False
 
+        self.shed.task_tractor(self.selected_vehicle, self.selected_tool, self.selected_destination)
+
         self.draw()
         self.map_lighten()
         self.destroy_location_click_callback()
 
     def location_click_callback(self, destination: Destination) -> None:
+        self.selected_destination = destination
         self.rebuild_destination_picker(self.selected_tool, destination)
         self.draw()
 

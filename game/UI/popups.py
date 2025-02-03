@@ -31,7 +31,7 @@ class TractorNewTaskPopup(PopupType):
         self.sell_points = sell_points
         
         self.equipment_buttons = equipment_buttons
-        self.selected_tool_index = -1
+        self.selected_tool_index = 0
 
         self.draw_equipment_menu = draw_equipment_menu
         self.close_popup = close_popup

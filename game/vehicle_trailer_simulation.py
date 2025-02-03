@@ -85,7 +85,7 @@ class Vehicle:
     @property
     def position(self) -> pg.math.Vector2:
         return pg.math.Vector2((self.x, self.y))
-
+    
     @property
     def speed(self) -> float:
         return math.sqrt(self.velocity[0]**2 + self.velocity[1]**2)
@@ -119,8 +119,9 @@ class Vehicle:
 
         self.hitch.update_position(rotated_hitch[0], rotated_hitch[1])
 
-        pg.draw.circle(self.screen, (0, 0, 255), rotated_hitch, 3)
-        pg.draw.circle(self.screen, (0, 0, 255), self.position, 3)
+        pg.draw.circle(self.screen, (255, 255, 255), rotated_hitch, 3)
+        pg.draw.circle(self.screen, (255, 255, 255), self.position, 3)
+        pg.draw.circle(self.screen, (255, 255, 255), self.rect.center, 3)
 
 class Trailer:
     def __init__(self, screen: pg.Surface, vehicle: Vehicle, image: pg.Surface, pos: Tuple[float, float], hitch_offset_x: int, hitch_offset_y: int) -> None:
@@ -191,6 +192,9 @@ class Trailer:
         self.screen.blit(self.image, (self.x, self.y))
 
         #pg.draw.circle(self.screen, (0, 255, 0), rotated_hitch, 3)
+        pg.draw.circle(self.screen, (0, 255, 0), rotated_hitch, 3)
+        pg.draw.circle(self.screen, (0, 255, 255), self.position, 3)
+        pg.draw.circle(self.screen, (0, 255, 255), self.rect.center, 3)
 
 class Test:
     def __init__(self) -> None:

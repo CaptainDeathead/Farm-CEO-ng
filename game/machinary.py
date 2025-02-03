@@ -3,17 +3,21 @@ import logging
 
 from resource_manager import ResourceManager
 from vehicle_trailer_simulation import Vehicle, Trailer, Hitch
+from destination import Destination
+from utils import utils
+from data import *
 
-from math import atan2
-
+from math import atan2, sqrt, cos, sin, radians, degrees
 from typing import Dict, List, Sequence
 
 class Tractor(Vehicle):
     IS_VEHICLE: bool = True
+    PATH_POP_RADIUS: bool = 15
 
-    def __init__(self, game_surface: pg.Surface, shed_rect: pg.Rect, attrs: Dict[str, any]) -> None:
+    def __init__(self, game_surface: pg.Surface, shed_rect: pg.Rect, attrs: Dict[str, any], task_tractor: object) -> None:
         self.surface = game_surface
         self.shed_rect = shed_rect
+        self.task_tractor = task_tractor
         
         self.attrs = attrs
         self.brand = attrs["brand"]
@@ -34,9 +38,15 @@ class Tractor(Vehicle):
 
         self.string_task = "No task assigned"
         self.paddock: int = -1
+
         self.path: List[Sequence[float]] = []
 
         self.active = False
+        self.stage = 2
+        self.destination = Destination(None)
+        self.max_speed = 20
+        self.curr_speed = 0
+
         self.tool: Tool = None
 
         self.desired_rotation: float = 0.0
@@ -49,29 +59,69 @@ class Tractor(Vehicle):
         return f"{self.brand} {self.model}"
 
     def follow_path(self) -> None:
+        if len(self.path) == 0:
+            self.stage += 1
+
+            if self.stage - 1 in END_JOB_STAGES:
+                self.active = False
+                logging.debug(f"Vehicle: {self.vehicle_id} has completed their task.")
+                return
+            else:
+                logging.debug(f"Vehicle: {self.vehicle_id} moving on to next path stage ({self.stage})...")
+
+                if self.stage == JOB_TYPES["travelling_from"]:
+                    # Go to shed
+                    self.task_tractor(self, self.tool, Destination(None), self.stage)
+                else:
+                    self.task_tractor(self, self.tool, self.destination, self.stage)
+
         px, py = self.path[0]
 
-        self.desired_rotation = atan2(py, px)
-        rotate_difference = self.rotation - self.desired_rotation
+        dist = sqrt((px - self.rect.centerx) ** 2 + (py - self.rect.centery) ** 2)
+        if dist < self.PATH_POP_RADIUS:
+            self.path.pop(0)
+            self.follow_path()
+            return
+
+        self.desired_rotation = (degrees(atan2(-(py - self.rect.centery), px - self.rect.centerx)) + 360) % 360 - 90
         
-        if rotate_difference < self.rotation:
-            self.desired_rotation -= rotate_difference
-        else:
-            self.desired_rotation += rotate_difference
+    def set_path(self, new_path: List[Sequence[float]], stage: int) -> None:
+        if stage == -1:
+            # Default to travelling -> working -> etc...
+            stage = 2
 
-        self.desired_rotation %= 360
-        self.path.pop(0)
-
-    def set_path(self, new_path: List[Sequence[float]]) -> None:
-        logging.info(f"Setting new path for vehicle: {self.vehicle_id}.")
+        logging.info(f"Setting new path for vehicle: {self.vehicle_id}...")
         self.path = new_path
+        self.active = True
+        self.tool.active = True
+        self.stage = stage
+    
+    def calculate_movement(self, dt: float) -> None:
+        turn_amount = utils.angle_difference(self.rotation, self.desired_rotation)
 
-    def update(self) -> None:
+        self.curr_speed = self.max_speed
+
+        self.rotation += max(-MAX_TURN_SPEED, min(MAX_TURN_SPEED, turn_amount)) * dt * 10
+        self.rotation %= 360
+
+        direction = [cos(radians(-self.rotation-90)), sin(radians(-self.rotation-90))]
+
+        self.velocity[0] = direction[0] * self.curr_speed
+        self.velocity[1] = direction[1] * self.curr_speed
+
+    def update(self, dt: float) -> None:
         if self.active:
             self.follow_path()
-            self.tool.update()
+            self.calculate_movement(dt)
 
-            self.draw()
+            if len(self.path) > 0:
+                for point in self.path:
+                    pg.draw.circle(self.surface, (255, 0, 0), point, 3)
+
+                pg.draw.line(self.surface, (0, 0, 255), self.path[0], self.rect.center)
+
+            self.tool.update(dt)
+            self.draw(dt)
 
 class Header(Vehicle):
     IS_VEHICLE: bool = True
@@ -95,16 +145,21 @@ class Header(Vehicle):
         self.job_id = attrs["jobId"]
         self.completion_amount = attrs["completionAmount"]
         self.working_backwards = attrs["workingBackwards"]
+        self.size = attrs["size"]
 
         self.string_task = "No task assigned"
         self.paddock: int = -1
         self.path: List[Sequence[float, float]] = []
 
         self.active = False
+        self.destination = Destination(None)
+
         self.desired_rotation: float = 0.0
 
         image = ResourceManager.load_image(self.anims['pipeIn'])
         super().__init__(self.surface, image, (shed_rect.x, shed_rect.y + 10), 0, 0)
+
+        self.working_width = self.image.get_width()
 
     @property
     def full_name(self) -> str:
@@ -141,7 +196,6 @@ class Tool(Trailer):
         self.model = attrs["model"]
         self.tool_type = attrs["toolType"]
         self.size = attrs["size"]
-        self.size_px = attrs["sizePx"]
         self.hp = attrs["hp"]
         self.turning_point = attrs["turningPoint"]
         self.hitch_y = attrs["hitch"]
@@ -160,6 +214,8 @@ class Tool(Trailer):
         else:
             self.set_animation(self.anims["default"]) # anims['default'] key returns the name of the key to the default image
 
+        self.working_width = self.master_image.get_width()
+
         self.string_task = "No task assigned"
         self.paddock: int = -1
         self.path: List[Sequence[float]]
@@ -168,6 +224,8 @@ class Tool(Trailer):
         self.fill_type = -1
 
         self.active = False
+        self.destination = Destination(None)
+
         self.vehicle: Tractor | Header = None
 
         self.desired_rotation: float = 0.0
@@ -183,12 +241,11 @@ class Tool(Trailer):
         return -1
 
     def set_animation(self, anim_name: str) -> None:
-        self.master_image = ResourceManager.load_image(self.anims[anim_name])
+        self.master_image = pg.transform.scale2x(ResourceManager.load_image(self.anims[anim_name]))
 
     def assign_vehicle(self, vehicle: Tractor | Header) -> None:
-        self.vehicle_unloaded = vehicle
-        super().__init__(self.surface, self.vehicle_unloaded, self.master_image, (self.shed_rect.x, self.shed_rect.y + 10), 0, self.hitch_y)
+        super().__init__(self.surface, vehicle, self.master_image, (self.shed_rect.x, self.shed_rect.y + 10), 0, -self.master_image.get_height() / 2 + 5)
 
-    def update(self) -> None:
+    def update(self, dt: float) -> None:
         if self.active:
-            ...
+            self.draw(dt * 16)

@@ -1,8 +1,9 @@
 import pygame as pg
-from shapely.geometry import Polygon
 
+from shapely.geometry import Polygon
 from data import *
 
+from math import atan2, degrees
 from typing import Tuple
 
 class utils:
@@ -127,6 +128,24 @@ class utils:
             lines = [(points[0], points[-1])]
                 
         return lines
+
+    @staticmethod
+    def angle_between_lines(v1: Tuple[float, float], v2: Tuple[float, float]) -> float:
+        x1, y1 = v1
+        x2, y2 = v2
+
+        dot_product = x1 * x2 + y1 * y2
+        determinant = x1 * y2 - y1 * x2
+
+        angle = atan2(determinant, dot_product)
+
+        return degrees(angle) 
+
+    @staticmethod
+    def angle_difference(angle_1: float, angle_2: float) -> float:
+        diff = angle_2 - angle_1
+        diff = (diff + 180) % 360 - 180
+        return diff
 
 class LayableRenderObj:
     def render0(self) -> None: ...
