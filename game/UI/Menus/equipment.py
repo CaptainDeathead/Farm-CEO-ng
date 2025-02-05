@@ -65,6 +65,8 @@ class Equipment:
 
         self.location_callback_has_happened = False
 
+        self.shed.set_equipment_draw(self.draw)
+
     def close_popup(self) -> None:
         self.set_popup(None)
 
@@ -140,7 +142,7 @@ class Equipment:
         self.fill_all_paddocks(excluded_paddocks)
 
         self.map_darken()
-        self.draw()
+        self.draw()       
 
     def trigger_vehicle_popup(self, vehicle_id: int) -> None:
         self.selected_vehicle = self.shed.get_vehicle(vehicle_id)
@@ -323,7 +325,9 @@ class Equipment:
         self.scrolling_last_frame = pg.mouse.get_pressed()[0]
         return False
 
-    def draw(self) -> None:
+    def draw(self, rebuild: bool = False) -> None:
+        if rebuild: self.rebuild()
+
         if not self.showing_destination_picker:
             self.rendered_surface.fill(UI_BACKGROUND_COLOR)
             self.rendered_surface.blit(self.scrollable_surface, (0, self.scroll_y))

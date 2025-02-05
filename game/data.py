@@ -44,6 +44,13 @@ TOOL_STATES = {
 
 FIELD_TOOLS = ["Cultivators", "Seeders", "Spreaders", "Sprayers"]
 
+TOOL_ACTIVE_NAMES = {
+    "Cultivators": "cultivating",
+    "Seeders": "seeding",
+    "Spreaders": "spreading",
+    "Sprayers": "spraying"
+}
+
 CROP_TYPES = ["wheat", "barley", "oat", "canola", "--"] # The "--" must be the last index and its for when there is not crop type in a machine
 
 CROP_IDS = {

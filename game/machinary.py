@@ -14,10 +14,11 @@ class Tractor(Vehicle):
     IS_VEHICLE: bool = True
     PATH_POP_RADIUS: bool = 15
 
-    def __init__(self, game_surface: pg.Surface, shed_rect: pg.Rect, attrs: Dict[str, any], task_tractor: object) -> None:
+    def __init__(self, game_surface: pg.Surface, shed_rect: pg.Rect, attrs: Dict[str, any], task_tractor: object, equipment_draw: object) -> None:
         self.surface = game_surface
         self.shed_rect = shed_rect
         self.task_tractor = task_tractor
+        self.equipment_draw = equipment_draw
         
         self.attrs = attrs
         self.brand = attrs["brand"]
@@ -63,26 +64,43 @@ class Tractor(Vehicle):
         if self.paddock == -1: return "--"
         return str(self.paddock + 1).capitalize() # (Currently its the paddock index, not the num)
 
+    def set_equipment_draw(self, equipment_draw: object) -> None:
+        self.equipment_draw = equipment_draw
+
     def follow_path(self) -> None:
         if len(self.path) == 0:
             self.stage += 1
 
             if self.stage - 1 in END_JOB_STAGES:
                 self.active = False
+                self.string_task = "No task assigned"
+                self.equipment_draw(rebuild=True)
+
                 logging.debug(f"Vehicle: {self.vehicle_id} has completed their task.")
                 return
             else:
                 logging.debug(f"Vehicle: {self.vehicle_id} moving on to next path stage ({self.stage})...")
 
                 if self.stage == JOB_TYPES["working"]:
+                    self.string_task = f"{TOOL_ACTIVE_NAMES[self.tool.tool_type]}...".capitalize()
+                    self.equipment_draw(rebuild=True)
+
                     self.curr_speed = 20
                 else:
                     self.curr_speed = 40
 
                 if self.stage == JOB_TYPES["travelling_from"]:
                     # Go to shed
+                    self.string_task = "Travelling to shed..."
+                    self.equipment_draw(rebuild=True)
+
                     self.task_tractor(self, self.tool, Destination(None), self.stage)
                 else:
+                    # TODO: Call update_machine_info with the correct information
+                    if self.stage == JOB_TYPES["travelling_to"]:
+                        self.string_task = f"Travelling to {self.destination.get_name()}..."
+                        self.equipment_draw(rebuild=True)
+
                     self.task_tractor(self, self.tool, self.destination, self.stage)
 
         px, py = self.path[0]
@@ -101,16 +119,20 @@ class Tractor(Vehicle):
 
         self.desired_rotation = (degrees(atan2(-(py - self.rect.centery), px - self.rect.centerx)) + 360) % 360 - 90
         
-    def set_path(self, new_path: List[Sequence[float]], stage: int) -> None:
+    def set_path(self, new_path: List[Sequence[float]], stage: int, paddock: int = -1) -> None:
         if stage == -1:
             # Default to travelling -> working -> etc...
             stage = 2
+
+            self.string_task = f"Travelling to {self.destination.get_name()}..."
+            self.equipment_draw(rebuild=True)
 
         logging.info(f"Setting new path for vehicle: {self.vehicle_id}...")
         self.path = new_path
         self.active = True
         self.tool.active = True
         self.stage = stage
+        self.paddock = paddock
     
     def calculate_movement(self, dt: float) -> None:
         turn_amount = utils.angle_difference(self.rotation, self.desired_rotation)
@@ -183,6 +205,9 @@ class Header(Vehicle):
     def paddock_text(self) -> str:
         if self.paddock == -1: return "--"
         return str(self.paddock + 1).capitalize() # (Currently its the paddock index, not the num)
+
+    def set_equipment_draw(self, equipment_draw: object) -> None:
+        ...
 
     def follow_path(self) -> None:
         px, py = self.path[0]

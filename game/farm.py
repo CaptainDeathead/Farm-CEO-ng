@@ -1,4 +1,5 @@
 import pygame as pg
+import logging
 
 from resource_manager import ResourceManager
 from save_manager import SaveManager
@@ -30,6 +31,7 @@ class Shed(LayableRenderObj):
         self.roads = roads
         self.scale_roads()
 
+        self.equipment_draw = lambda **args: logging.warning("equipment_draw called before it was initialized in the shed!")
         self.task_manager = TaskManager(self.vehicles, self.tools, self.roads, self.rect.center)
 
         # shading for roof
@@ -38,6 +40,17 @@ class Shed(LayableRenderObj):
         self.shadow_map.set_alpha(128)
 
         self.rebuild()
+
+    def set_equipment_draw(self, equipment_draw: object) -> None:
+        # Should be called from equipment.py at __init__
+        self.equipment_draw = equipment_draw
+
+        logging.debug("Recieved equipment_draw, setting it in every vehicle...")
+
+        for vehicle in self.vehicles:
+            vehicle.set_equipment_draw(self.equipment_draw)
+
+        logging.info("equipment_draw has been set.")
 
     def scale_roads(self) -> None:
         new_roads = []
@@ -61,7 +74,7 @@ class Shed(LayableRenderObj):
         attrs.update(save_attrs)
 
         if attrs["header"]: vehicle = Header(self.game_surface, self.rect, attrs)
-        else: vehicle = Tractor(self.game_surface, self.rect, attrs, self.task_tractor)
+        else: vehicle = Tractor(self.game_surface, self.rect, attrs, self.task_tractor, self.equipment_draw)
 
         self.vehicles.append(vehicle)
 
@@ -88,7 +101,10 @@ class Shed(LayableRenderObj):
         if not tool.active:
             tractor.tool.assign_vehicle(tractor)
 
-        tractor.set_path(path, stage)
+        if destination.is_paddock: paddock = int(destination.destination.num) - 1 # its an index
+        else: paddock = -1
+
+        tractor.set_path(path, stage, paddock)
     
     def task_header(self, header: Header, destination: Destination) -> None:
         path = self.task_manager.create_job(header, None, header.destination, destination)
