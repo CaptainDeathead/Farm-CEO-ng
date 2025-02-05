@@ -104,7 +104,9 @@ class FarmCEO:
             "map_lighten": self.map.disable_dark_overlay,
             "map_darken": self.map.enable_dark_overlay,
             "set_location_click_callback": self.paddock_manager.set_location_click_callback,
-            "destroy_location_click_callback": self.paddock_manager.destroy_location_click_callback
+            "destroy_location_click_callback": self.paddock_manager.destroy_location_click_callback,
+            "fill_all_paddocks": self.paddock_manager.fill_all_paddocks,
+            "get_paddocks": self.paddock_manager.get_paddocks
         }
 
         self.panel = Panel(self.screen, events, self.set_popup, self.shed, self.sellpoint_manager, equipment_map_funcs)

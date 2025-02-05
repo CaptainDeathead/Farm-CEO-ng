@@ -15,14 +15,31 @@ UI_ACTIVE_COLOR: Tuple[int, int, int] = (67*2, 200, 160)
 UI_TEXT_COLOR: Tuple[int, int, int] = (255, 255, 255)
 UI_TOOL_BUTTON_COLOR: Tuple[int, int, int] = (150, 0, 255)
 
+STATE_NAMES = {
+    0: "Harvested",
+    1: "Tilled",
+    2: "Growing 1",
+    3: "Growing 2",
+    4: "Growing 3",
+    5: "Ready to harvest",
+    6: "Blank"
+}
+
 STATE_COLORS = {
-    0: (200, 0, 200), # 0: Harvested.   1: Cultervated.   2: Growing 3.   3: Growing 2.   4: Growing 1.   5: Ready To Harvest.   6: Blank.
+    0: (200, 0, 200), # 0: Harvested.   1: Cultivated.   2: Growing 1.   3: Growing 2.   4: Growing 3.   5: Ready To Harvest.   6: Blank.
     1: (150, 150, 150),
     2: (0, 100, 0),
     3: (0, 200, 0),
     4: (0, 255, 0),
     5: (200, 200, 0),
     6: (0, 0, 0)
+}
+
+TOOL_STATES = {
+    "Cultivators": (1),
+    "Seeders": (2),
+    "Spreaders": (0, 1, 2, 3, 4),
+    "Sprayers": (0, 2, 3, 4)
 }
 
 CROP_TYPES = ["wheat", "barley", "oat", "canola"]

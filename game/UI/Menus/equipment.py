@@ -37,6 +37,8 @@ class Equipment:
         self.map_lighten = map_funcs["map_lighten"]
         self.set_location_click_callback = map_funcs["set_location_click_callback"]
         self.destroy_location_click_callback = map_funcs["destroy_location_click_callback"]
+        self.fill_all_paddocks = map_funcs["fill_all_paddocks"]
+        self.get_paddocks = map_funcs["get_paddocks"]
 
         self.rendered_surface = pg.Surface((self.rect.w, self.rect.h), pg.SRCALPHA)
         self.scrollable_surface = pg.Surface((self.rect.w, self.rect.h), pg.SRCALPHA)
@@ -71,6 +73,7 @@ class Equipment:
         self.showing_destination_picker = False
 
         self.draw()
+        self.fill_all_paddocks()
         self.map_lighten()
         self.destroy_location_click_callback()
 
@@ -80,6 +83,7 @@ class Equipment:
         self.shed.task_tractor(self.selected_vehicle, self.selected_tool, self.selected_destination)
 
         self.draw()
+        self.fill_all_paddocks()
         self.map_lighten()
         self.destroy_location_click_callback()
 
@@ -88,6 +92,18 @@ class Equipment:
         self.rebuild_destination_picker(self.selected_tool, destination)
         self.draw()
 
+    def get_excluded_paddocks(self, tool_type: str) -> List[int]:
+        tool_state = TOOL_STATES[tool_type]
+        desired_paddock_state = tool_state - 1
+
+        excluded_paddocks = []
+
+        for p, paddock in enumerate(self.get_paddocks()):
+            if paddock.state != desired_paddock_state:
+                excluded_paddocks.append(p)
+
+        return excluded_paddocks
+
     def show_destination_picker(self, tool_index: int) -> None:
         self.selected_tool = self.shed.tools[tool_index]
         self.showing_destination_picker = True
@@ -95,6 +111,10 @@ class Equipment:
         self.set_location_click_callback(self.location_click_callback)
 
         self.rebuild_destination_picker(self.selected_tool, Destination(None))
+        
+        excluded_paddocks = self.get_excluded_paddocks(self.selected_tool.tool_type)
+        self.fill_all_paddocks(excluded_paddocks)
+
         self.map_darken()
         self.draw()
 

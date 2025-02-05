@@ -26,6 +26,9 @@ class PaddockManager:
 
         self.location_callback = None
 
+    def get_paddocks(self) -> List[Paddock]:
+        return self.paddocks
+
     def parse_paddocks(self, paddocks: Dict[str, any]) -> List[Paddock]:
         pdk_list = []
         for paddock in paddocks:
@@ -124,9 +127,12 @@ class PaddockManager:
         paddock.state = state
         paddock.fill(STATE_COLORS[paddock.state])
 
-    def fill_all_paddocks(self) -> None:
-        for paddock in self.paddocks:
-            self.load_paddock_state(paddock)
+    def fill_all_paddocks(self, exclude_paddocks: List[int] = []) -> None:
+        for i, paddock in enumerate(self.paddocks):
+            if i in exclude_paddocks:
+                self.fill_paddock(paddock, (0, 0, 0))
+            else:
+                self.load_paddock_state(paddock)
 
     def init_paddocks(self) -> None:
         logging.debug("Initializing paddocks... (This may take some time)")

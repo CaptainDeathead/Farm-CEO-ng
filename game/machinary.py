@@ -44,8 +44,8 @@ class Tractor(Vehicle):
         self.active = False
         self.stage = 2
         self.destination = Destination(None)
-        self.max_speed = 20
-        self.curr_speed = 0
+        self.max_speed = 40
+        self.curr_speed = self.max_speed
 
         self.tool: Tool = None
 
@@ -69,6 +69,11 @@ class Tractor(Vehicle):
             else:
                 logging.debug(f"Vehicle: {self.vehicle_id} moving on to next path stage ({self.stage})...")
 
+                if self.stage == JOB_TYPES["working"]:
+                    self.curr_speed = 20
+                else:
+                    self.curr_speed = 40
+
                 if self.stage == JOB_TYPES["travelling_from"]:
                     # Go to shed
                     self.task_tractor(self, self.tool, Destination(None), self.stage)
@@ -77,8 +82,14 @@ class Tractor(Vehicle):
 
         px, py = self.path[0]
 
+        multiplier = 1
+
+        # If the vehicle is travelling
+        if self.curr_speed == 40:
+            multiplier = 2
+
         dist = sqrt((px - self.rect.centerx) ** 2 + (py - self.rect.centery) ** 2)
-        if dist < self.PATH_POP_RADIUS:
+        if dist < self.PATH_POP_RADIUS * multiplier:
             self.path.pop(0)
             self.follow_path()
             return
@@ -98,8 +109,6 @@ class Tractor(Vehicle):
     
     def calculate_movement(self, dt: float) -> None:
         turn_amount = utils.angle_difference(self.rotation, self.desired_rotation)
-
-        self.curr_speed = self.max_speed
 
         self.rotation += max(-MAX_TURN_SPEED, min(MAX_TURN_SPEED, turn_amount)) * dt * 10
         self.rotation %= 360
