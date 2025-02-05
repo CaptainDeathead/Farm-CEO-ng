@@ -87,7 +87,7 @@ class Equipment:
     def assign_task(self) -> None:
         if self.selected_destination is None: return
 
-        logging.info(f"Assigning vehicle: {self.selected_vehicle}, with tool: {self.selected_tool} a task at {self.selected_destination}...")
+        logging.info(f"Assigning vehicle: {self.selected_vehicle.full_name}, with tool: {self.selected_tool.full_name} a task at: {self.selected_destination.get_name()}...")
 
         self.showing_destination_picker = False
         self.shed.task_tractor(self.selected_vehicle, self.selected_tool, self.selected_destination)
@@ -187,7 +187,7 @@ class Equipment:
             self.scrollable_surface.blit(self.body_font.render(f"Task: {vehicle.string_task}", True, UI_TEXT_COLOR), (60, y + 50))
             self.scrollable_surface.blit(self.body_font.render(f"Fuel: {vehicle.fuel}L", True, UI_TEXT_COLOR), (60, y + 80))
 
-            pdk_lbl = self.body_font.render(f"Paddock: {vehicle.paddock}", True, UI_TEXT_COLOR)
+            pdk_lbl = self.body_font.render(f"Paddock: {vehicle.paddock_text}", True, UI_TEXT_COLOR)
             self.scrollable_surface.blit(pdk_lbl, (PANEL_WIDTH - 60 - pdk_lbl.get_width(), y + 80))
 
             y += y_inc
@@ -205,9 +205,9 @@ class Equipment:
             self.scrollable_surface.blit(name_lbl, (center - name_lbl.get_width()/2, y + 10))
             
             self.scrollable_surface.blit(self.body_font.render(f"Task: {tool.string_task}", True, UI_TEXT_COLOR), (60, y + 50))
-            self.scrollable_surface.blit(self.body_font.render(f"Fill ({tool.fill_type}): {tool.fill}T", True, UI_TEXT_COLOR), (60, y + 80))
+            self.scrollable_surface.blit(self.body_font.render(f"Fill ({CROP_TYPES[tool.fill_type]}): {tool.fill}T", True, UI_TEXT_COLOR), (60, y + 80))
 
-            pdk_lbl = self.body_font.render(f"Paddock: {tool.paddock}", True, UI_TEXT_COLOR)
+            pdk_lbl = self.body_font.render(f"Paddock: {tool.paddock_text}", True, UI_TEXT_COLOR)
             self.scrollable_surface.blit(pdk_lbl, (PANEL_WIDTH - 60 - pdk_lbl.get_width(), y + 80))
 
             y += y_inc

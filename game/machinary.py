@@ -58,6 +58,11 @@ class Tractor(Vehicle):
     def full_name(self) -> str:
         return f"{self.brand} {self.model}"
 
+    @property
+    def paddock_text(self) -> str:
+        if self.paddock == -1: return "--"
+        return str(self.paddock + 1).capitalize() # (Currently its the paddock index, not the num)
+
     def follow_path(self) -> None:
         if len(self.path) == 0:
             self.stage += 1
@@ -174,6 +179,11 @@ class Header(Vehicle):
     def full_name(self) -> str:
         return f"{self.brand} {self.model}"
 
+    @property
+    def paddock_text(self) -> str:
+        if self.paddock == -1: return "--"
+        return str(self.paddock + 1).capitalize() # (Currently its the paddock index, not the num)
+
     def follow_path(self) -> None:
         px, py = self.path[0]
 
@@ -242,6 +252,11 @@ class Tool(Trailer):
     @property
     def full_name(self) -> str:
         return f"{self.brand} {self.model}"
+
+    @property
+    def paddock_text(self) -> str:
+        if self.paddock == -1: return "--"
+        return str(self.paddock + 1).capitalize() # (Currently its the paddock index, not the num)
 
     def get_vehicle_id(self) -> None:
         if self.vehicle is not None:
