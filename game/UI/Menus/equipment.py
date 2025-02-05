@@ -71,22 +71,29 @@ class Equipment:
         self.rebuild()
         self.draw()
 
+    def reset_map(self) -> None:
+        logging.info("Unhiding all paddocks and removing map transparency...")
+
+        self.fill_all_paddocks()
+        self.map_lighten()
+
     def cancel_task_assign(self) -> None:
         self.showing_destination_picker = False
 
         self.draw()
-        self.fill_all_paddocks()
-        self.map_lighten()
+        self.reset_map()
         self.destroy_location_click_callback()
 
     def assign_task(self) -> None:
-        self.showing_destination_picker = False
+        if self.selected_destination is None: return
 
+        logging.info(f"Assigning vehicle: {self.selected_vehicle}, with tool: {self.selected_tool} a task at {self.selected_destination}...")
+
+        self.showing_destination_picker = False
         self.shed.task_tractor(self.selected_vehicle, self.selected_tool, self.selected_destination)
 
         self.draw()
-        self.fill_all_paddocks()
-        self.map_lighten()
+        self.reset_map()
         self.destroy_location_click_callback()
 
     def location_click_callback(self, destination: Destination) -> None:
@@ -96,6 +103,13 @@ class Equipment:
             return
 
         self.selected_destination = destination
+
+        if self.selected_destination.is_paddock:
+            paddock_index = int(self.selected_destination.destination.num) - 1
+            if paddock_index in self.get_excluded_paddocks(self.selected_tool.tool_type):
+                # The paddock is not the state the tool requires
+                return
+
         self.rebuild_destination_picker(self.selected_tool, destination)
         self.draw()
 
@@ -112,13 +126,14 @@ class Equipment:
         return excluded_paddocks
 
     def show_destination_picker(self, tool_index: int) -> None:
+        logging.info("Entering destination selection mode. Darkening map and hiding un-necessary paddocks...")
+
         self.selected_tool = self.shed.tools[tool_index]
         self.showing_destination_picker = True
 
         self.location_callback_has_happened = False
 
         self.set_location_click_callback(self.location_click_callback)
-
         self.rebuild_destination_picker(self.selected_tool, Destination(None))
         
         excluded_paddocks = self.get_excluded_paddocks(self.selected_tool.tool_type)

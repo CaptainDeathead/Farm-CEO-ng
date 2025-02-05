@@ -42,6 +42,8 @@ TOOL_STATES = {
     "Sprayers": (0, 2, 3, 4)
 }
 
+FIELD_TOOLS = ["Cultivators", "Seeders", "Spreaders", "Sprayers"]
+
 CROP_TYPES = ["wheat", "barley", "oat", "canola"]
 
 CROP_IDS = {
