@@ -63,6 +63,8 @@ class Equipment:
         self.selected_tool = None
         self.selected_destination = None
 
+        self.location_callback_has_happened = False
+
     def close_popup(self) -> None:
         self.set_popup(None)
 
@@ -88,6 +90,11 @@ class Equipment:
         self.destroy_location_click_callback()
 
     def location_click_callback(self, destination: Destination) -> None:
+        # Check if the callback has happened before because when clicking a paddock it doesnt use the mouse override, thus clicking whatever is behind the popup (a paddock)
+        if not self.location_callback_has_happened:
+            self.location_callback_has_happened = True
+            return
+
         self.selected_destination = destination
         self.rebuild_destination_picker(self.selected_tool, destination)
         self.draw()
@@ -107,6 +114,8 @@ class Equipment:
     def show_destination_picker(self, tool_index: int) -> None:
         self.selected_tool = self.shed.tools[tool_index]
         self.showing_destination_picker = True
+
+        self.location_callback_has_happened = False
 
         self.set_location_click_callback(self.location_click_callback)
 
