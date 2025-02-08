@@ -73,7 +73,12 @@ class Tractor(Vehicle):
 
             if self.stage - 1 in END_JOB_STAGES:
                 self.active = False
+                self.tool.active = False
+                self.paddock = -1
+                self.tool.paddock = -1
+
                 self.string_task = "No task assigned"
+                self.tool.string_task = self.string_task
                 self.equipment_draw(rebuild=True)
 
                 logging.debug(f"Vehicle: {self.vehicle_id} has completed their task.")
@@ -83,6 +88,7 @@ class Tractor(Vehicle):
 
                 if self.stage == JOB_TYPES["working"]:
                     self.string_task = f"{TOOL_ACTIVE_NAMES[self.tool.tool_type]}...".capitalize()
+                    self.tool.string_task = self.string_task
                     self.equipment_draw(rebuild=True)
 
                     self.curr_speed = 20
@@ -92,6 +98,7 @@ class Tractor(Vehicle):
                 if self.stage == JOB_TYPES["travelling_from"]:
                     # Go to shed
                     self.string_task = "Travelling to shed..."
+                    self.tool.string_task = self.string_task
                     self.equipment_draw(rebuild=True)
 
                     self.task_tractor(self, self.tool, Destination(None), self.stage)
@@ -99,6 +106,7 @@ class Tractor(Vehicle):
                     # TODO: Call update_machine_info with the correct information
                     if self.stage == JOB_TYPES["travelling_to"]:
                         self.string_task = f"Travelling to {self.destination.get_name()}..."
+                        self.tool.string_task = self.string_task
                         self.equipment_draw(rebuild=True)
 
                     self.task_tractor(self, self.tool, self.destination, self.stage)
@@ -125,6 +133,7 @@ class Tractor(Vehicle):
             stage = 2
 
             self.string_task = f"Travelling to {self.destination.get_name()}..."
+            self.tool.string_task = self.string_task
             self.equipment_draw(rebuild=True)
 
         logging.info(f"Setting new path for vehicle: {self.vehicle_id}...")
@@ -133,6 +142,7 @@ class Tractor(Vehicle):
         self.tool.active = True
         self.stage = stage
         self.paddock = paddock
+        self.tool.paddock = paddock
     
     def calculate_movement(self, dt: float) -> None:
         turn_amount = utils.angle_difference(self.rotation, self.desired_rotation)

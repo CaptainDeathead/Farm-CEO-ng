@@ -5,6 +5,7 @@ import logging
 from time import sleep
 from events import Events
 from farm_ceo import FarmCEO
+from log_config import setup_logging
 
 from data import *
 
@@ -18,6 +19,8 @@ pg.init()
 logging.basicConfig()
 logging.root.setLevel(logging.NOTSET)
 logging.basicConfig(level=logging.NOTSET)
+
+setup_logging()
 
 class SpoofedConsole:
     def update(self, *args) -> None:
