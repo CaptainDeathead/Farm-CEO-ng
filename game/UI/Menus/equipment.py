@@ -7,7 +7,7 @@ from paddock_manager import PaddockManager
 from events import Events
 
 from UI.pygame_gui import Button
-from UI.popups import TractorNewTaskPopup
+from UI.popups import TractorNewTaskPopup, SelectCropPopup
 
 from utils import utils
 from farm import Shed
@@ -86,8 +86,13 @@ class Equipment:
         self.reset_map()
         self.destroy_location_click_callback()
 
-    def assign_task(self) -> None:
+    def assign_task(self, done_additional_popup: bool = False) -> None:
         if self.selected_destination is None: return
+
+        if self.selected_tool.tool_type == "Seeders" and not done_additional_popup:
+            logging.debug("Selected tool is a seeder. Opening crop selection popup...")
+            self.set_popup(SelectCropPopup(self.events, self.sellpoint_manager))
+            return
 
         logging.info(f"Assigning vehicle: {self.selected_vehicle.full_name}, with tool: {self.selected_tool.full_name} a task at: {self.selected_destination.get_name()}...")
 
@@ -149,6 +154,7 @@ class Equipment:
 
         if self.selected_vehicle.active == True:
             ... # TODO: Error vehicle already active popup
+            return
         elif isinstance(self.selected_vehicle, Tractor):
             popup = TractorNewTaskPopup(self.events, self.selected_vehicle.full_name, self.shed, self.sellpoint_manager.sellpoints, self.equipment_buttons, self.draw,
                                         lambda: self.close_popup(), self.show_destination_picker)
@@ -177,7 +183,7 @@ class Equipment:
         # Vehicles
         for vehicle in self.shed.vehicles:
             button = Button(self.scrollable_surface, x, y, self.BUTTON_WIDTH, button_height, self.rect,
-                       UI_MAIN_COLOR, UI_ACTIVE_COLOR, UI_TEXT_COLOR, "", 20, (20, 20, 20, 20), 0, 0, command=lambda vehicle=vehicle: self.trigger_vehicle_popup(vehicle.vehicle_id), authority=True)
+                       UI_MAIN_COLOR, pg.Color(255, 100, 0), UI_TEXT_COLOR, "", 20, (20, 20, 20, 20), 0, 0, command=lambda vehicle=vehicle: self.trigger_vehicle_popup(vehicle.vehicle_id), authority=True)
             
             button.draw()
             self.equipment_buttons.append(button)

@@ -67,11 +67,13 @@ class Events:
                     self.authority_mouse_just_pressed = True
                     self.authority_mouse_start_press_location = self.mouse_pos
 
-
             elif event.type == pg.MOUSEBUTTONUP:
                 if event.button == 1:
                     self.set_override(False)
-                    self.mouse_just_released = True
+
+                    if not self.override_requires_authority:
+                        self.mouse_just_released = True
+
                     self.authority_mouse_just_released = True
 
                 if DEBUG_MOUSE_EVENTS: self.log_mouse_events()

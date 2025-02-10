@@ -6,13 +6,14 @@ from sellpoints import SellPoint
 from data import *
 
 from random import uniform
-from typing import Dict
+from typing import List, Dict
 
 class SellpointManager:
     def __init__(self, game_surface: pg.Surface, map_scale: float, sellpoints_dict: Dict[str, Dict]) -> None:
         self.game_surface = game_surface
         self.map_scale = map_scale
         self.sellpoints = []
+        self.silo = None
 
         self._save_sellpoints_on_load = False # Does not need to be reset if it becomes true because it should only be used on game load
 
@@ -49,6 +50,8 @@ class SellpointManager:
             sellpoint = SellPoint(self.game_surface, position, rotation, self.map_scale, name, silo, contents, prices)
             self.sellpoints.append(sellpoint)
 
+            if sellpoint.silo: self.silo = sellpoint
+
         if self._save_sellpoints_on_load:
             logging.debug("Sellpoint prices have been generated. Sending updated sellpoints to save_manager...")
             packed_sellpoints = self.pack_sellpoints()
@@ -68,3 +71,23 @@ class SellpointManager:
             }
 
         return sellpoints_dict
+
+    def get_stored_ammount(self, crop_type: str) -> float:
+        return self.silo.contents[crop_type]
+
+    def get_stored_crops(self) -> List[str]:
+        stored_crops = []
+
+        for crop, ammount in self.silo.contents.items():
+            if ammount > 0: stored_crops.append(crop)
+
+        return stored_crops
+
+    def store_crop(self, crop_type: str, ammount: float) -> None:
+        self.silo.contents[crop_type] += ammount
+
+    def take_crop(self, crop_type: str, desired_ammount: float) -> float:
+        ammount = min(self.silo.contents[crop_type], desired_ammount)
+        self.silo.contents[crop_type] -= ammount
+
+        return ammount
