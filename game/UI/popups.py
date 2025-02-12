@@ -140,11 +140,18 @@ class SelectCropPopup(PopupType):
     WIDTH = 900
     HEIGHT = 500
 
-    def __init__(self, events: Events, sellpoint_manager: SellpointManager) -> None:
+    def __init__(self, events: Events, sellpoint_manager: SellpointManager, close_popup: object, remove_destination_picker: object, set_tool_fill: object,
+                 assign_task: callable) -> None:
         self.parent_surface = pg.display.get_surface()
         self.surface = pg.Surface((self.WIDTH, self.HEIGHT), pg.SRCALPHA)
+
         self.events = events
         self.sellpoint_manager = sellpoint_manager
+
+        self.close_popup = close_popup
+        self.remove_destination_picker = remove_destination_picker
+        self.set_tool_fill = set_tool_fill
+        self.assign_task = assign_task
 
         self.widget_rect = pg.Rect(0, Popup.BANNER_HEIGHT, self.WIDTH, self.HEIGHT - Popup.BANNER_HEIGHT * 2)
         self.widget = Widget(self.parent_surface, self.widget_rect)
@@ -155,6 +162,9 @@ class SelectCropPopup(PopupType):
 
         self.x = PANEL_WIDTH + 20
         self.y = self.parent_surface.get_height() / 2 - self.HEIGHT / 2
+
+        self.widget_global_rect = pg.Rect(self.x, self.y + Popup.BANNER_HEIGHT, self.widget_rect.w, self.widget_rect.h)
+        self.global_rect = pg.Rect(self.x, self.y, self.rect.w, self.rect.h)
 
         btn_width = 350
         btn_height = 75
@@ -167,21 +177,38 @@ class SelectCropPopup(PopupType):
                    for crop_type in sellpoint_manager.get_stored_crops()
         ]
 
-        self.crop_selection_dropdown = DropDown(self.widget.surface, self.WIDTH / 2 - btn_width / 2, 20, btn_width, btn_height,
-                                                pg.Rect(self.x, self.y + Popup.BANNER_HEIGHT, self.widget_rect.w, self.widget_rect.h), self.crop_selection_buttons, UI_BACKGROUND_COLOR, lambda: None)
+        if len(self.crop_selection_buttons) == 0:
+            # TODO: NO CROPS OWNED SCREEN, MAYBE TAKE USER TO CROP BUY MENU
+            self.crop_selection_buttons.append(
+                Button(self.widget.surface, dropdown_pos[0], dropdown_pos[1], btn_width, btn_height, pg.Rect(0, 0, self.WIDTH, self.HEIGHT), UI_MAIN_COLOR, UI_ACTIVE_COLOR, UI_TEXT_COLOR,
+                   f"NO CROP (N/A))", 40, (20, 20, 20, 20), 0, 0, True, authority=True)
+            )
 
-        self.popup = Popup(self.parent_surface, pg.Rect(0, 0, self.WIDTH, self.HEIGHT), self.rect, 20, f"New Task - Select Crop Type", self.widget, (63, 72, 204), (255, 255, 255),
+            self.submit = self.cancel
+
+        self.crop_selection_dropdown = DropDown(self.widget.surface, self.WIDTH / 2 - btn_width / 2, 20, btn_width, btn_height,
+                                                self.widget_global_rect, self.crop_selection_buttons, UI_BACKGROUND_COLOR, lambda: None)
+
+        self.popup = Popup(self.parent_surface, self.rect, self.global_rect, 20, f"New Task - Select Crop Type", self.widget, (63, 72, 204), (255, 255, 255),
                            self.cancel, self.submit, self.events)
 
         self.popup.draw()
         self.draw()
 
     def cancel(self) -> None:
-        ...
+        self.close_popup()
+        self.remove_destination_picker()
 
     def submit(self) -> None:
-        print(self.crop_selection_dropdown.get_selected_text())
-        ...
+        self.close_popup()
+        self.remove_destination_picker()
+
+        crop_type = self.crop_selection_dropdown.get_selected_text().split(" ")[0].lower()
+        crop_ammount = self.sellpoint_manager.get_stored_ammount(crop_type)
+        crop_index = CROP_TYPES.index(crop_type)
+
+        self.set_tool_fill(crop_index, crop_ammount)
+        self.assign_task(done_additional_popup=True)
 
     def draw(self) -> None:
         self.surface.blit(self.popup.surface, (0, 0))
@@ -190,5 +217,7 @@ class SelectCropPopup(PopupType):
     def update(self) -> None:
         self.crop_selection_dropdown.update(self.events.authority_mouse_just_released)
         self.crop_selection_dropdown.draw()
+
+        self.popup.update()
 
         self.draw()

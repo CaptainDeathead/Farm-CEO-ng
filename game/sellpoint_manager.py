@@ -9,6 +9,14 @@ from random import uniform
 from typing import List, Dict
 
 class SellpointManager:
+    # TODO: Change this on release to a more *unlockable* state
+    STARTING_SILO_STORAGE = {
+        "wheat": 5.0,
+        "barley": 4.0,
+        "canola": 3.0,
+        "oat": 2.0
+    }
+
     def __init__(self, game_surface: pg.Surface, map_scale: float, sellpoints_dict: Dict[str, Dict]) -> None:
         self.game_surface = game_surface
         self.map_scale = map_scale
@@ -23,6 +31,8 @@ class SellpointManager:
         new_prices = {}
 
         for crop in CROP_TYPES:
+            if crop == "--": continue
+
             price_randomness = uniform(0.85, 1.15)
             price = BASE_CROP_PRICES[CROP_IDS[crop]] * price_randomness
 
@@ -41,11 +51,18 @@ class SellpointManager:
             contents = sellpoints[sellpoint_id].get("contents", {})
             prices = sellpoints[sellpoint_id].get("prices", {})
 
-            if prices == {} and not silo:
-                logging.warning("Sellpoint prices not found. Generating...")
-                prices = self.generate_prices()
+            if prices == {}:
+                if silo:
+                    if contents == {}:
+                        logging.warning("Silo contents not found. Generating...")
+                        contents = self.STARTING_SILO_STORAGE
 
-                self._save_sellpoints_on_load = True
+                        self._save_sellpoints_on_load = True
+                else:
+                    logging.warning("Sellpoint prices not found. Generating...")
+                    prices = self.generate_prices()
+
+                    self._save_sellpoints_on_load = True
 
             sellpoint = SellPoint(self.game_surface, position, rotation, self.map_scale, name, silo, contents, prices)
             self.sellpoints.append(sellpoint)

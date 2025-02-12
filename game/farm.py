@@ -74,7 +74,7 @@ class Shed(LayableRenderObj):
         attrs.update(save_attrs)
 
         if attrs["header"]: vehicle = Header(self.game_surface, self.rect, attrs)
-        else: vehicle = Tractor(self.game_surface, self.rect, attrs, self.task_tractor, self.equipment_draw)
+        else: vehicle = Tractor(self.game_surface, self.rect, attrs, self.scale, self.task_tractor, self.equipment_draw)
 
         self.vehicles.append(vehicle)
 
@@ -82,7 +82,7 @@ class Shed(LayableRenderObj):
         attrs = deepcopy(SaveManager().STATIC_TOOLS_DICT)
         attrs.update(save_attrs)
 
-        tool = Tool(self.game_surface, self.rect, attrs)
+        tool = Tool(self.game_surface, self.rect, attrs, self.scale)
 
         self.tools.append(tool)
 

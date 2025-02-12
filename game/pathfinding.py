@@ -355,7 +355,7 @@ class Job:
             if self.start_location.is_paddock:
                 if self.end_location.is_paddock:
                     # Generate working
-                    return self.generate_working_path(self.end_location, self.tool.working_width, outside_laps=2, skiprow=True)
+                    return self.generate_working_path(self.end_location, self.tool.working_width, outside_laps=1, skiprow=True)
                 else:
                     # Go home
                     return self.generate_transport_path(self.start_location.destination.gate, self.shed_position, from_shed=False)

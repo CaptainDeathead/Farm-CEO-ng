@@ -79,6 +79,13 @@ class Equipment:
         self.fill_all_paddocks()
         self.map_lighten()
 
+    def remove_destination_picker(self) -> None:
+        self.showing_destination_picker = False
+
+        self.draw()
+        self.reset_map()
+        self.destroy_location_click_callback()
+
     def cancel_task_assign(self) -> None:
         self.showing_destination_picker = False
 
@@ -91,17 +98,13 @@ class Equipment:
 
         if self.selected_tool.tool_type == "Seeders" and not done_additional_popup:
             logging.debug("Selected tool is a seeder. Opening crop selection popup...")
-            self.set_popup(SelectCropPopup(self.events, self.sellpoint_manager))
+            self.set_popup(SelectCropPopup(self.events, self.sellpoint_manager, self.close_popup, self.remove_destination_picker, self.selected_tool.set_fill, self.assign_task))
             return
 
         logging.info(f"Assigning vehicle: {self.selected_vehicle.full_name}, with tool: {self.selected_tool.full_name} a task at: {self.selected_destination.get_name()}...")
 
-        self.showing_destination_picker = False
         self.shed.task_tractor(self.selected_vehicle, self.selected_tool, self.selected_destination)
-
-        self.draw()
-        self.reset_map()
-        self.destroy_location_click_callback()
+        self.remove_destination_picker()
 
     def location_click_callback(self, destination: Destination) -> None:
         # Check if the callback has happened before because when clicking a paddock it doesnt use the mouse override, thus clicking whatever is behind the popup (a paddock)
@@ -168,6 +171,7 @@ class Equipment:
 
         self.rendered_surface.fill(UI_BACKGROUND_COLOR)
         self.equipment_buttons = []
+        self.og_equipment_button_rects = []
 
         center = PANEL_WIDTH / 2
 
@@ -213,7 +217,7 @@ class Equipment:
             self.scrollable_surface.blit(name_lbl, (center - name_lbl.get_width()/2, y + 10))
             
             self.scrollable_surface.blit(self.body_font.render(f"Task: {tool.string_task}", True, UI_TEXT_COLOR), (60, y + 50))
-            self.scrollable_surface.blit(self.body_font.render(f"Fill ({CROP_TYPES[tool.fill_type]}): {tool.fill}T", True, UI_TEXT_COLOR), (60, y + 80))
+            self.scrollable_surface.blit(self.body_font.render(f"Fill ({tool.get_fill_type_str}): {tool.fill}T", True, UI_TEXT_COLOR), (60, y + 80))
 
             pdk_lbl = self.body_font.render(f"Paddock: {tool.paddock_text}", True, UI_TEXT_COLOR)
             self.scrollable_surface.blit(pdk_lbl, (PANEL_WIDTH - 60 - pdk_lbl.get_width(), y + 80))

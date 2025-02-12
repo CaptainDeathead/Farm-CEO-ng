@@ -14,9 +14,11 @@ class Tractor(Vehicle):
     IS_VEHICLE: bool = True
     PATH_POP_RADIUS: bool = 15
 
-    def __init__(self, game_surface: pg.Surface, shed_rect: pg.Rect, attrs: Dict[str, any], task_tractor: object, equipment_draw: object) -> None:
+    def __init__(self, game_surface: pg.Surface, shed_rect: pg.Rect, attrs: Dict[str, any], scale: float, task_tractor: object, equipment_draw: object) -> None:
         self.surface = game_surface
         self.shed_rect = shed_rect
+        self.scale = scale
+
         self.task_tractor = task_tractor
         self.equipment_draw = equipment_draw
         
@@ -52,7 +54,7 @@ class Tractor(Vehicle):
 
         self.desired_rotation: float = 0.0
 
-        image = ResourceManager.load_image(self.anims['normal'])
+        image = pg.transform.scale_by(ResourceManager.load_image(self.anims['normal']), self.scale*VEHICLE_SCALE)
         super().__init__(self.surface, image, (shed_rect.x, shed_rect.y + 10), 0, self.hitch_y)
 
     @property
@@ -241,9 +243,10 @@ class Header(Vehicle):
 class Tool(Trailer):
     IS_VEHICLE: bool = False
 
-    def __init__(self, game_surface: pg.Surface, shed_rect: pg.Rect, attrs: Dict[str, any]) -> None:
+    def __init__(self, game_surface: pg.Surface, shed_rect: pg.Rect, attrs: Dict[str, any], scale: float) -> None:
         self.surface = game_surface
         self.shed_rect = shed_rect
+        self.scale = scale
 
         self.attrs = attrs
         self.brand = attrs["brand"]
@@ -293,14 +296,30 @@ class Tool(Trailer):
         if self.paddock == -1: return "--"
         return str(self.paddock + 1).capitalize() # (Currently its the paddock index, not the num)
 
+    @property
+    def get_fill_type_str(self) -> str:
+        if self.fill_type == -1: return "--"
+        return CROP_TYPES[self.fill_type]
+
     def get_vehicle_id(self) -> None:
         if self.vehicle is not None:
             return self.vehicle.vehicle_id
 
         return -1
 
+    def set_fill(self, fill_type: int, fill_ammount: float) -> None:
+        crop_name = CROP_TYPES[fill_type]
+
+        logging.debug(f"Filling {self.full_name} with {fill_ammount}T of {crop_name}...")
+
+        if self.fill > 0:
+            logging.warning(f"While filling {self.full_name} it already has {round(self.fill, 1)} tons of {CROP_TYPES[self.fill_type]} which will be discarded!")
+
+        self.fill_type = fill_type
+        self.fill = fill_ammount
+
     def set_animation(self, anim_name: str) -> None:
-        self.master_image = pg.transform.scale2x(ResourceManager.load_image(self.anims[anim_name]))
+        self.master_image = pg.transform.scale_by(ResourceManager.load_image(self.anims[anim_name]), self.scale*TOOL_SCALE)
 
     def assign_vehicle(self, vehicle: Tractor | Header) -> None:
         super().__init__(self.surface, vehicle, self.master_image, (self.shed_rect.x, self.shed_rect.y + 10), 0, -self.master_image.get_height() / 2 + 5)

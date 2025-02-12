@@ -15,6 +15,10 @@ UI_ACTIVE_COLOR: Tuple[int, int, int] = (67*2, 200, 160)
 UI_TEXT_COLOR: Tuple[int, int, int] = (255, 255, 255)
 UI_TOOL_BUTTON_COLOR: Tuple[int, int, int] = (150, 0, 255)
 
+MACHINARY_SCALE = 0.75
+VEHICLE_SCALE: float = 0.75*MACHINARY_SCALE # Base value 0.75
+TOOL_SCALE: float = 1.25*MACHINARY_SCALE # Base value 1.25
+
 STATE_NAMES = {
     0: "Harvested",
     1: "Tilled",
@@ -51,7 +55,7 @@ TOOL_ACTIVE_NAMES = {
     "Sprayers": "spraying"
 }
 
-CROP_TYPES = ["wheat", "barley", "oat", "canola", "--"] # The "--" must be the last index and its for when there is not crop type in a machine
+CROP_TYPES = ["wheat", "barley", "oat", "canola"]
 
 CROP_IDS = {
     "wheat": 0,

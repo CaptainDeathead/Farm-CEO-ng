@@ -6,6 +6,7 @@ from time import sleep
 from events import Events
 from farm_ceo import FarmCEO
 from log_config import setup_logging
+from crash_handler import CrashHandler
 
 from data import *
 
@@ -125,7 +126,7 @@ class Window:
 
 def main() -> None:
     window = Window()
-    window.main()
+    CrashHandler(window.main)
 
 if __name__ == "__main__":
     main()
