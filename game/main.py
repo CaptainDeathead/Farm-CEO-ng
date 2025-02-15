@@ -58,7 +58,7 @@ class Window:
             self.setup_android()
             sleep(1)
 
-        self.screen: pg.Surface = pg.display.set_mode((self.WIDTH, self.HEIGHT), pg.DOUBLEBUF, display=int(not BUILD))
+        self.screen: pg.Surface = pg.display.set_mode((self.WIDTH, self.HEIGHT), pg.DOUBLEBUF | pg.HWSURFACE, display=int(not BUILD))
         self.clock: pg.time.Clock = pg.time.Clock()
         self.events: Events = Events()
 
@@ -101,7 +101,6 @@ class Window:
         pg.display.set_icon(self.farm_ceo.RESOURCE_MANAGER.load_image("game_icon.png", (100, 100)))
 
         while 1:
-            sleep(0 / 60)
             events = pg.event.get()
             self.events.process_events(events)
 

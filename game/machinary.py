@@ -92,6 +92,7 @@ class Tractor(Vehicle):
                     self.string_task = f"{TOOL_ACTIVE_NAMES[self.tool.tool_type]}...".capitalize()
                     self.tool.string_task = self.string_task
                     self.equipment_draw(rebuild=True)
+                    self.tool.set_working_animation()
 
                     self.curr_speed = 20
                 else:
@@ -318,12 +319,33 @@ class Tool(Trailer):
         self.fill_type = fill_type
         self.fill = fill_ammount
 
+    def reload_vt_sim(self) -> None:
+        logging.debug(f"Reloading vehicle_trailer_simulation for tool {self.full_name}...")
+        super().__init__(self.surface, self.vehicle, self.master_image, (self.shed_rect.x, self.shed_rect.y + 10), 0, -self.master_image.get_height() / 2 + 5)
+
     def set_animation(self, anim_name: str) -> None:
-        self.master_image = pg.transform.scale_by(ResourceManager.load_image(self.anims[anim_name]), self.scale*TOOL_SCALE)
+        anim = self.anims.get(anim_name, self.anims['default'])
+        self.master_image = pg.transform.scale_by(ResourceManager.load_image(anim), self.scale*TOOL_SCALE)
+
+    def set_working_animation(self, reload_vt: bool = True) -> None:
+        logging.info(f"Setting working animation for tool: {self.full_name}...")
+
+        if "on" in self.anims: self.set_animation("on")
+        elif "unfolded" in self.anims: self.set_animation("unfolded")
+
+        if reload_vt: self.reload_vt_sim()
 
     def assign_vehicle(self, vehicle: Tractor | Header) -> None:
         super().__init__(self.surface, vehicle, self.master_image, (self.shed_rect.x, self.shed_rect.y + 10), 0, -self.master_image.get_height() / 2 + 5)
 
+        self.set_working_animation(reload_vt=False)
+        self.working_width = self.master_image.get_width()
+
+        if self.tool_type == "Trailer":
+            self.set_animation("full")
+        else:
+            self.set_animation(self.anims["default"]) # anims['default'] key returns the name of the key to the default image
+
     def update(self, dt: float) -> None:
         if self.active:
-            self.draw(dt * 16)
+            self.draw(dt * 14)

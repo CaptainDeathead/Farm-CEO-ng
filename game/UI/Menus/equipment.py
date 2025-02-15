@@ -124,13 +124,13 @@ class Equipment:
         self.draw()
 
     def get_excluded_paddocks(self, tool_type: str) -> List[int]:
-        tool_state = TOOL_STATES[tool_type]
-        desired_paddock_state = tool_state - 1
+        tool_states = TOOL_STATES[tool_type]
+        desired_paddock_states = [tool_state - 1 for tool_state in tool_states]
 
         excluded_paddocks = []
 
         for p, paddock in enumerate(self.get_paddocks()):
-            if paddock.state != desired_paddock_state:
+            if paddock.state not in desired_paddock_states:
                 excluded_paddocks.append(p)
 
         return excluded_paddocks
