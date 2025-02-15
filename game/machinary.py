@@ -147,7 +147,7 @@ class Tractor(Vehicle):
         self.paddock = paddock
         self.tool.paddock = paddock
     
-    def calculate_movement(self, dt: float) -> None:
+    def calculate_movement(self, dt: float) -> float:
         turn_amount = utils.angle_difference(self.rotation, self.desired_rotation)
 
         self.rotation += max(-MAX_TURN_SPEED, min(MAX_TURN_SPEED, turn_amount)) * dt * 10
@@ -158,19 +158,32 @@ class Tractor(Vehicle):
         self.velocity[0] = direction[0] * self.curr_speed
         self.velocity[1] = direction[1] * self.curr_speed
 
+        return sqrt(self.velocity[0]**2 + self.velocity[1]**2)
+
     def update(self, dt: float) -> None:
-        if self.active:
-            self.follow_path()
-            self.calculate_movement(dt)
+        if not self.active: return
 
-            if len(self.path) > 0:
-                for point in self.path:
-                    pg.draw.circle(self.surface, (255, 0, 0), point, 3)
+        self.follow_path()
 
-                pg.draw.line(self.surface, (0, 0, 255), self.path[0], self.rect.center)
+        if len(self.path) > 0:
+            for point in self.path:
+                pg.draw.circle(self.surface, (255, 0, 0), point, 3)
 
-            self.tool.update(dt)
-            self.draw(dt)
+            pg.draw.line(self.surface, (0, 0, 255), self.path[0], self.rect.center)
+
+        required_dt = 1/TARGET_FPS
+        remaining_dt = dt
+        while remaining_dt > 0:
+            if remaining_dt < required_dt: remaining_dt = required_dt
+
+            self.calculate_movement(required_dt)
+            self.simulate(required_dt)
+            self.tool.simulate(required_dt * 2)
+
+            remaining_dt -= required_dt
+
+        self.tool.update()
+        self.draw()
 
 class Header(Vehicle):
     IS_VEHICLE: bool = True
@@ -321,7 +334,7 @@ class Tool(Trailer):
 
     def reload_vt_sim(self) -> None:
         logging.debug(f"Reloading vehicle_trailer_simulation for tool {self.full_name}...")
-        super().__init__(self.surface, self.vehicle, self.master_image, (self.shed_rect.x, self.shed_rect.y + 10), 0, -self.master_image.get_height() / 2 + 5)
+        super().__init__(self.surface, self.vehicle, self.master_image, (self.shed_rect.x, self.shed_rect.y + 10), 0, -self.master_image.get_height() / 2 + 9)
 
     def set_animation(self, anim_name: str) -> None:
         anim = self.anims.get(anim_name, self.anims['default'])
@@ -336,7 +349,7 @@ class Tool(Trailer):
         if reload_vt: self.reload_vt_sim()
 
     def assign_vehicle(self, vehicle: Tractor | Header) -> None:
-        super().__init__(self.surface, vehicle, self.master_image, (self.shed_rect.x, self.shed_rect.y + 10), 0, -self.master_image.get_height() / 2 + 5)
+        super().__init__(self.surface, vehicle, self.master_image, (self.shed_rect.x, self.shed_rect.y + 10), 0, -self.master_image.get_height() / 2 + 9)
 
         self.set_working_animation(reload_vt=False)
         self.working_width = self.master_image.get_width()
@@ -346,6 +359,6 @@ class Tool(Trailer):
         else:
             self.set_animation(self.anims["default"]) # anims['default'] key returns the name of the key to the default image
 
-    def update(self, dt: float) -> None:
+    def update(self) -> None:
         if self.active:
-            self.draw(dt * 14)
+            self.draw()

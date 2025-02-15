@@ -40,8 +40,8 @@ STATE_COLORS = {
 }
 
 TOOL_STATES = {
-    "Cultivators": (1),
-    "Seeders": (2),
+    "Cultivators": (1,),
+    "Seeders": (2,),
     "Spreaders": (0, 1, 2, 3, 4),
     "Sprayers": (0, 2, 3, 4)
 }
