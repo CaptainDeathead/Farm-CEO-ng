@@ -86,7 +86,9 @@ class Job:
         else:
             return path
 
-    def draw_path(self, path) -> None:
+    def draw_path(self, path: List[Sequence[float]]) -> None:
+        if not DEBUG_PATH_GENERATION: return
+
         screen = pg.display.get_surface()
         
         for i, point in enumerate(path):
@@ -94,7 +96,8 @@ class Job:
             pg.display.flip()
             pg.time.wait(1)
 
-    def generate_working_path(self, paddock_destination: Destination, working_width: float, outside_laps: int = 2, skiprow: bool = False) -> List[Sequence[float]]:
+    def generate_working_path(self, paddock_destination: Destination, working_width: float, outside_laps: int = 2, skiprow: bool = False,
+                              use_collsion_polygon: bool = False) -> List[Sequence[float]]:
         """
         How does this work?
 
@@ -173,7 +176,11 @@ class Job:
             path.extend(laps[-1])
             self.draw_path(laps[-1])
 
-        collision_polygon = utils.shrink_polygon(laps[-1], working_width / 2)
+        if use_collsion_polygon:
+            collision_polygon = utils.shrink_polygon(laps[-1], working_width / 2)
+        else:
+            collision_polygon = lap_1
+
         self.draw_path(collision_polygon)
 
         # A/B Runlines
@@ -355,7 +362,7 @@ class Job:
             if self.start_location.is_paddock:
                 if self.end_location.is_paddock:
                     # Generate working
-                    return self.generate_working_path(self.end_location, self.tool.working_width, outside_laps=1, skiprow=True)
+                    return self.generate_working_path(self.end_location, self.tool.working_width, outside_laps=2, skiprow=True)
                 else:
                     # Go home
                     return self.generate_transport_path(self.start_location.destination.gate, self.shed_position, from_shed=False)

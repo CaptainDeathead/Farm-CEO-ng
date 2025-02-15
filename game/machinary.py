@@ -66,6 +66,9 @@ class Tractor(Vehicle):
         if self.paddock == -1: return "--"
         return str(self.paddock + 1).capitalize() # (Currently its the paddock index, not the num)
 
+    @property
+    def working(self) -> bool: return self.stage == JOB_TYPES["working"]
+
     def set_equipment_draw(self, equipment_draw: object) -> None:
         self.equipment_draw = equipment_draw
 
@@ -88,7 +91,7 @@ class Tractor(Vehicle):
             else:
                 logging.debug(f"Vehicle: {self.vehicle_id} moving on to next path stage ({self.stage})...")
 
-                if self.stage == JOB_TYPES["working"]:
+                if self.working:
                     self.string_task = f"{TOOL_ACTIVE_NAMES[self.tool.tool_type]}...".capitalize()
                     self.tool.string_task = self.string_task
                     self.equipment_draw(rebuild=True)
@@ -165,7 +168,7 @@ class Tractor(Vehicle):
 
         self.follow_path()
 
-        if len(self.path) > 0:
+        if len(self.path) > 0 and DEBUG_PATHS:
             for point in self.path:
                 pg.draw.circle(self.surface, (255, 0, 0), point, 3)
 
@@ -294,6 +297,9 @@ class Tool(Trailer):
         self.fill = 0
         self.fill_type = -1
 
+        self.last_paint_left = (0, 0)
+        self.last_paint_right = (0, 0)
+
         self.active = False
         self.destination = Destination(None)
 
@@ -315,11 +321,20 @@ class Tool(Trailer):
         if self.fill_type == -1: return "--"
         return CROP_TYPES[self.fill_type]
 
+    @property
+    def working(self) -> bool: return self.vehicle.working
+
     def get_vehicle_id(self) -> None:
         if self.vehicle is not None:
             return self.vehicle.vehicle_id
 
         return -1
+
+    def get_output_state(self) -> None:
+        if self.tool_type in ("Spreaders", "Sprayers"):
+            return self.destination.destination.state
+        
+        return TOOL_STATES[self.tool_type][0] + 1
 
     def set_fill(self, fill_type: int, fill_ammount: float) -> None:
         crop_name = CROP_TYPES[fill_type]
@@ -359,6 +374,40 @@ class Tool(Trailer):
         else:
             self.set_animation(self.anims["default"]) # anims['default'] key returns the name of the key to the default image
 
+    def paint(self) -> None:
+        paint_rect = pg.Rect(0, 0, self.working_width, PAINT_RECT_HEIGHT)
+        paint_rect_surf = pg.Surface((paint_rect.w, paint_rect.w), pg.SRCALPHA)
+
+        pg.draw.rect(paint_rect_surf, (255, 255, 255), paint_rect)
+        paint_rect_surf = pg.transform.rotate(paint_rect_surf, self.rotation)
+
+        self.destination.destination.paint(paint_rect_surf, self.position, STATE_COLORS[self.get_output_state()])
+
+    def check_paint(self) -> None: 
+        half_width = self.master_image.get_width() / 2
+        half_height = self.master_image.get_height() / 2
+
+        local_center = self.master_image.get_rect().center
+        center = (local_center[0] + self.x, local_center[1] + self.y)
+
+        left_paint = utils.rotate_point_centered(center, (center[0] - half_width, center[1] + half_height), -radians(self.rotation))
+        right_paint = utils.rotate_point_centered(center, (center[0] + half_width, center[1] + half_height), -radians(self.rotation))
+
+        pg.draw.circle(pg.display.get_surface(), (255, 0, 0), (PANEL_WIDTH + left_paint[0], left_paint[1]), 3)
+        pg.draw.circle(pg.display.get_surface(), (0, 0, 255), (PANEL_WIDTH + right_paint[0], right_paint[1]), 3)
+
+        last_paint_left_dist = sqrt((left_paint[0] - self.last_paint_left[0])**2 + (left_paint[1] - self.last_paint_left[1])**2)
+        last_paint_right_dist = sqrt((right_paint[0] - self.last_paint_right[0])**2 + (right_paint[1] - self.last_paint_right[1])**2)
+
+        if last_paint_left_dist >= PAINT_RECT_DIST or last_paint_right_dist >= PAINT_RECT_DIST:
+            self.paint()
+
+            self.last_paint_left = left_paint
+            self.last_paint_right = right_paint
+
     def update(self) -> None:
         if self.active:
+            if self.working:
+                self.check_paint()
+
             self.draw()

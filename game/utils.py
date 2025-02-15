@@ -3,7 +3,7 @@ import pygame as pg
 from shapely.geometry import Polygon
 from data import *
 
-from math import atan2, degrees
+from math import atan2, degrees, cos, sin
 from typing import Tuple
 
 class utils:
@@ -27,6 +27,22 @@ class utils:
 
         # rotate and blit the image
         surf.blit(rotated_image, rotated_image_rect)
+
+    
+    @staticmethod
+    # https://stackoverflow.com/questions/34372480/rotate-point-about-another-point-in-degrees-python
+    def rotate_point_centered(origin: Tuple[float, float], point: Tuple[float, float], angle: float) -> Tuple[int, int]:
+        """
+        Rotate a point counterclockwise by a given angle around a given origin.
+        The angle should be given in radians.
+        """
+        ox, oy = origin
+        px, py = point
+
+        qx = ox + cos(angle) * (px - ox) - sin(angle) * (py - oy)
+        qy = oy + sin(angle) * (px - ox) + cos(angle) * (py - oy)
+
+        return qx, qy
 
     @staticmethod
     def scale_rect(rect: pg.Rect, scale: float) -> pg.Rect:

@@ -101,7 +101,7 @@ class Window:
         pg.display.set_icon(self.farm_ceo.RESOURCE_MANAGER.load_image("game_icon.png", (100, 100)))
 
         while 1:
-            sleep(0.016*2)
+            #sleep(0.016*2)
             events = pg.event.get()
             self.events.process_events(events)
 

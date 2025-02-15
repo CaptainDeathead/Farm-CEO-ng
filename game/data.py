@@ -85,10 +85,12 @@ JOB_TYPES = {
 END_JOB_STAGES = [JOB_TYPES["transporting_from"], JOB_TYPES["travelling_from"]]
 
 MAX_TURN_SPEED: int = 8
+PAINT_RECT_HEIGHT: int = 4
+PAINT_RECT_DIST: int = 2
 
 # ---------- CONFIG ----------
 BUILD: bool = False
-TARGET_FPS: int = 120
+TARGET_FPS: int = 1200
 SUPPORTED_PLATFORMS: Tuple[str] = ("android_x86_64", "android_v7a", "arm64-v8a", "Linux", "Windows")
 PLATFORM: str = "arm64-v8a"
 BUILD_TYPE: str = "Devlopment"
@@ -96,8 +98,9 @@ CONSOLE_BUILD: bool = not BUILD
 
 # ---------- DEBUG ----------
 DEBUG_BOUNDARY_LOADING: bool = False
-DEBUG_PATH_GENERATION: bool = True
+DEBUG_PATH_GENERATION: bool = False
 DEBUG_PATH_MASK_COLLISION: bool = False
+DEBUG_PATHS: bool = False
 DEBUG_ROADS: bool = True
 DEBUG_MOUSE_EVENTS: bool = False
 

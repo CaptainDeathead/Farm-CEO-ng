@@ -5,10 +5,11 @@ from typing import Dict, List, Tuple
 from data import PANEL_WIDTH
 
 class Paddock:
-    def __init__(self, attrs: Dict[int, any], num: int, scale: float) -> None:
+    def __init__(self, attrs: Dict[int, any], num: int, scale: float, map_paddocks_surf: pg.Surface) -> None:
         self.attrs = attrs
         self.num = num
         self.scale = scale
+        self.map_paddocks_surf = map_paddocks_surf
         self.state: int = attrs.get("state", randint(0, 5))
         self.owned_by: str = attrs["owned_by"]
         self.hectares: int = attrs["hectares"]
@@ -63,7 +64,9 @@ class Paddock:
             if coord[1] < min_y: min_y = coord[1]
             if coord[1] > max_y: max_y = coord[1]
 
-        width, height = max_x - min_x, max_y - min_y
+        buffer = 2 # Just a bit more room in case calculation isnt the most accurate
+
+        width, height = max_x - min_x + buffer, max_y - min_y + buffer
         surface = pg.Surface((width, height), pg.SRCALPHA)
         rect = pg.Rect(min_x, min_y, width, height)
 
@@ -72,8 +75,27 @@ class Paddock:
     def localise_boundary(self) -> list[tuple]:
         return [(coord[0] - self.rect.x, coord[1] - self.rect.y) for coord in self.boundary]
 
+    def draw_to_map(self) -> None:
+        self.map_paddocks_surf.blit(self.surface, self.rect)
+
     def fill(self, color: pg.Color) -> None:
         pg.draw.polygon(self.surface, color, self.localised_boundary)
+        self.draw_to_map()
+
+    def paint(self, surface: pg.Surface, pos: Tuple[int, int], color: pg.Color) -> None:
+        local_pos = (pos[0] - self.rect.x, pos[1] - self.rect.y)
+        surface_mask = pg.mask.from_surface(surface)
+
+        collision_mask = self.mask.overlap_mask(surface_mask, local_pos)
+        collision_mask.to_surface(self.surface, setcolor=color, unsetcolor=(0, 0, 0, 0))
+
+        self.draw_to_map()
+
+    def paint_rect(self, rect: pg.Rect, color: pg.Color) -> None:
+        rect_surface = pg.Surface((rect.w, rect.h))
+        rect_surface.fill((255, 255, 255))
+
+        self.paint(rect_surface, (rect.x, rect.y), color)
 
     def update(self, mouse_pos: tuple[int, int]) -> bool:
         # Need to check if it lies in the mask rect first or an error will occur

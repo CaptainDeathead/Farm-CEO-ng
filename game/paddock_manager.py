@@ -32,7 +32,7 @@ class PaddockManager:
     def parse_paddocks(self, paddocks: Dict[str, any]) -> List[Paddock]:
         pdk_list = []
         for paddock in paddocks:
-            pdk_list.append(Paddock(paddocks[paddock], paddock, self.scale))
+            pdk_list.append(Paddock(paddocks[paddock], paddock, self.scale, self.map_paddocks_surf))
         
         return pdk_list
 
@@ -114,12 +114,8 @@ class PaddockManager:
                 surface.set_at((nx, ny), (255, 0, 0))
                 pg.display.flip()
 
-    def fill_paddock(self, paddock: Paddock, color: pg.Color) -> None:
-        boundary = paddock.boundary
-        pg.draw.polygon(self.map_paddocks_surf, color, boundary)
-
     def load_paddock_state(self, paddock: Paddock) -> None:
-        self.fill_paddock(paddock, STATE_COLORS[paddock.state])
+        paddock.fill(STATE_COLORS[paddock.state])
 
     def set_paddock_state(self, paddock_number: int, state: int) -> None:
         paddock = self.paddocks[paddock_number-1]
@@ -130,7 +126,7 @@ class PaddockManager:
     def fill_all_paddocks(self, exclude_paddocks: List[int] = []) -> None:
         for i, paddock in enumerate(self.paddocks):
             if i in exclude_paddocks:
-                self.fill_paddock(paddock, (0, 0, 0))
+                paddock.fill((0, 0, 0))
             else:
                 self.load_paddock_state(paddock)
 
