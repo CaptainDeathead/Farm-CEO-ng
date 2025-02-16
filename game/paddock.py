@@ -26,6 +26,7 @@ class Paddock:
         self.gate = (int(gx * scale), int(gy * scale))
 
         self.boundary: List[Tuple] = attrs.get("boundary", [])
+        self.is_painting: bool = False
 
     def init_collision(self) -> None:
         self.surface, self.rect = self.create_surface()
@@ -34,6 +35,8 @@ class Paddock:
         # Fill the paddock red so the mask can see the red pixels
         self.fill(pg.Color(255, 0, 0))
         self.mask = pg.mask.from_surface(self.surface)
+
+        self.paint_surface = pg.Surface(self.rect.size, pg.SRCALPHA)
 
     def __dict__(self) -> Dict[str, any]:
         return {
@@ -75,21 +78,30 @@ class Paddock:
     def localise_boundary(self) -> list[tuple]:
         return [(coord[0] - self.rect.x, coord[1] - self.rect.y) for coord in self.boundary]
 
-    def draw_to_map(self) -> None:
-        self.map_paddocks_surf.blit(self.surface, self.rect)
+    def draw_to_map(self, draw_normal_surface: bool = True, draw_paint_surface: bool = False) -> None:
+        if draw_normal_surface:
+            self.map_paddocks_surf.blit(self.surface, self.rect)
+
+        if draw_paint_surface:
+            self.map_paddocks_surf.blit(self.paint_surface, self.rect)
 
     def fill(self, color: pg.Color) -> None:
         pg.draw.polygon(self.surface, color, self.localised_boundary)
         self.draw_to_map()
+
+    def reset_paint(self) -> None:
+        # Note: this only changes the variable is_painting! to reset the paint on the surface you need to fill this paddock after calling this func
+        self.is_painting = False
 
     def paint(self, surface: pg.Surface, pos: Tuple[int, int], color: pg.Color) -> None:
         local_pos = (pos[0] - self.rect.x, pos[1] - self.rect.y)
         surface_mask = pg.mask.from_surface(surface)
 
         collision_mask = self.mask.overlap_mask(surface_mask, local_pos)
-        collision_mask.to_surface(self.surface, setcolor=color, unsetcolor=(0, 0, 0, 0))
+        self.paint_surface.blit(collision_mask.to_surface(setcolor=color, unsetcolor=(0, 0, 0, 0)), (0, 0))
 
-        self.draw_to_map()
+        self.draw_to_map(draw_normal_surface=False, draw_paint_surface=True)
+        self.is_painting = True
 
     def paint_rect(self, rect: pg.Rect, color: pg.Color) -> None:
         rect_surface = pg.Surface((rect.w, rect.h))

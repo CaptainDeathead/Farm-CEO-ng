@@ -334,7 +334,7 @@ class Tool(Trailer):
         if self.tool_type in ("Spreaders", "Sprayers"):
             return self.destination.destination.state
         
-        return TOOL_STATES[self.tool_type][0] + 1
+        return TOOL_STATES[self.tool_type][0]
 
     def set_fill(self, fill_type: int, fill_ammount: float) -> None:
         crop_name = CROP_TYPES[fill_type]
@@ -375,13 +375,8 @@ class Tool(Trailer):
             self.set_animation(self.anims["default"]) # anims['default'] key returns the name of the key to the default image
 
     def paint(self) -> None:
-        paint_rect = pg.Rect(0, 0, self.working_width, PAINT_RECT_HEIGHT)
-        paint_rect_surf = pg.Surface((paint_rect.w, paint_rect.w), pg.SRCALPHA)
-
-        pg.draw.rect(paint_rect_surf, (255, 255, 255), paint_rect)
-        paint_rect_surf = pg.transform.rotate(paint_rect_surf, self.rotation)
-
-        self.destination.destination.paint(paint_rect_surf, self.position, STATE_COLORS[self.get_output_state()])
+        paint_surf = pg.transform.rotate(self.master_image, self.rotation)
+        self.destination.destination.paint(paint_surf, self.position, STATE_COLORS[self.get_output_state()])
 
     def check_paint(self) -> None: 
         half_width = self.master_image.get_width() / 2

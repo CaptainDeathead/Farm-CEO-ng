@@ -32,9 +32,9 @@ STATE_NAMES = {
 STATE_COLORS = {
     0: (200, 0, 200), # 0: Harvested.   1: Cultivated.   2: Growing 1.   3: Growing 2.   4: Growing 3.   5: Ready To Harvest.   6: Blank.
     1: (150, 150, 150),
-    2: (0, 100, 0),
+    2: (0, 255, 0),
     3: (0, 200, 0),
-    4: (0, 255, 0),
+    4: (0, 100, 0),
     5: (200, 200, 0),
     6: (0, 0, 0)
 }
