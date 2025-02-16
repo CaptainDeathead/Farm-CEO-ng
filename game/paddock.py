@@ -2,7 +2,7 @@ import pygame as pg
 
 from random import randint
 from typing import Dict, List, Tuple
-from data import PANEL_WIDTH
+from data import PANEL_WIDTH, STATE_COLORS
 
 class Paddock:
     def __init__(self, attrs: Dict[int, any], num: int, scale: float, map_paddocks_surf: pg.Surface) -> None:
@@ -89,9 +89,13 @@ class Paddock:
         pg.draw.polygon(self.surface, color, self.localised_boundary)
         self.draw_to_map()
 
+    def load_state(self) -> None:
+        self.fill(STATE_COLORS[self.state])
+
     def reset_paint(self) -> None:
         # Note: this only changes the variable is_painting! to reset the paint on the surface you need to fill this paddock after calling this func
         self.is_painting = False
+        self.paint_surface = pg.Surface(self.rect.size, pg.SRCALPHA)
 
     def paint(self, surface: pg.Surface, pos: Tuple[int, int], color: pg.Color) -> None:
         local_pos = (pos[0] - self.rect.x, pos[1] - self.rect.y)

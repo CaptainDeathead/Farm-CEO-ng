@@ -101,6 +101,12 @@ class Tractor(Vehicle):
                 else:
                     self.curr_speed = 40
 
+                    if self.stage - 1 == JOB_TYPES["working"]:
+                        # was just working, sort out paddock now
+                        self.destination.destination.state = self.tool.get_output_state()
+                        self.destination.destination.reset_paint()
+                        self.destination.destination.load_state()
+
                 if self.stage == JOB_TYPES["travelling_from"]:
                     # Go to shed
                     self.string_task = "Travelling to shed..."

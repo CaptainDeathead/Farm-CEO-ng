@@ -114,9 +114,6 @@ class PaddockManager:
                 surface.set_at((nx, ny), (255, 0, 0))
                 pg.display.flip()
 
-    def load_paddock_state(self, paddock: Paddock) -> None:
-        paddock.fill(STATE_COLORS[paddock.state])
-
     def set_paddock_state(self, paddock_number: int, state: int) -> None:
         paddock = self.paddocks[paddock_number-1]
 
@@ -128,7 +125,7 @@ class PaddockManager:
             if i in exclude_paddocks:
                 paddock.fill((0, 0, 0))
             else:
-                self.load_paddock_state(paddock)
+                paddock.load_state()
 
     def init_paddocks(self) -> None:
         logging.debug("Initializing paddocks... (This may take some time)")
@@ -137,7 +134,7 @@ class PaddockManager:
             self.locate_paddock_boundary(paddock)
             paddock.init_collision()
 
-            self.load_paddock_state(paddock)
+            paddock.load_state()
 
         save_manager = SaveManager()
         save_manager.set_paddocks(self.paddocks)
