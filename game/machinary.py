@@ -103,9 +103,8 @@ class Tractor(Vehicle):
 
                     if self.stage - 1 == JOB_TYPES["working"]:
                         # was just working, sort out paddock now
-                        self.destination.destination.state = self.tool.get_output_state()
                         self.destination.destination.reset_paint()
-                        self.destination.destination.load_state()
+                        self.destination.destination.set_state(self.tool.get_output_state())
 
                 if self.stage == JOB_TYPES["travelling_from"]:
                     # Go to shed

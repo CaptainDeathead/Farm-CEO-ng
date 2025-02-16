@@ -47,3 +47,4 @@ class CrashHandler:
                     return
 
             clock.tick(30)
+            pg.display.flip()

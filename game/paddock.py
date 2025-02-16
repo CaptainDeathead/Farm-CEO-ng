@@ -28,6 +28,8 @@ class Paddock:
         self.boundary: List[Tuple] = attrs.get("boundary", [])
         self.is_painting: bool = False
 
+        self.state_changed = False
+
     def init_collision(self) -> None:
         self.surface, self.rect = self.create_surface()
         self.localised_boundary = self.localise_boundary()
@@ -91,6 +93,11 @@ class Paddock:
 
     def load_state(self) -> None:
         self.fill(STATE_COLORS[self.state])
+
+    def set_state(self, state: int) -> None:
+        self.state = state
+        self.load_state()
+        self.state_changed = True
 
     def reset_paint(self) -> None:
         # Note: this only changes the variable is_painting! to reset the paint on the surface you need to fill this paddock after calling this func

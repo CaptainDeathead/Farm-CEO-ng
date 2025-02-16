@@ -160,6 +160,13 @@ class PaddockManager:
         self.location_callback = None
 
     def update(self, mouse_just_released: bool) -> None:
+        for paddock in self.paddocks:
+            if paddock.state_changed:
+                logging.info(f"Paddock {paddock.num} state change detected, updating save_manager dict...")
+                paddock.state_changed = False
+                SaveManager().set_paddocks(self.paddocks)
+                break
+
         if mouse_just_released and self.location_callback is not None:
             paddock_clicked = self.check_paddock_clicks()
 

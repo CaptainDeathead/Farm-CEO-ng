@@ -1,6 +1,7 @@
 import pygame as pg
 import logging
 
+from save_manager import SaveManager
 from data import *
 from typing import Tuple, List
 
@@ -55,8 +56,16 @@ class Events:
 
         for event in events:
             if event.type == pg.QUIT:
+                logging.info("Farm CEO is closing (pg.QUIT event recieved)...")
+                SaveManager().save_game()
+
                 pg.quit()
                 exit()
+
+            elif event.type == pg.ACTIVEEVENT:
+                if event.state == 2 and event.gain == 0: # Lost focus
+                    logging.info("Farm CEO is no longer in focus (pg.ACTIVEEVENT event recieved)...")
+                    SaveManager().save_game()
 
             elif event.type == pg.MOUSEBUTTONDOWN:
                 if event.button == 1:

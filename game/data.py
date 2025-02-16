@@ -90,7 +90,7 @@ PAINT_RECT_DIST: int = 2
 
 # ---------- CONFIG ----------
 BUILD: bool = False
-TARGET_FPS: int = 1200
+TARGET_FPS: int = 120
 SUPPORTED_PLATFORMS: Tuple[str] = ("android_x86_64", "android_v7a", "arm64-v8a", "Linux", "Windows")
 PLATFORM: str = "arm64-v8a"
 BUILD_TYPE: str = "Devlopment"
