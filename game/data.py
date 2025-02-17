@@ -88,6 +88,14 @@ MAX_TURN_SPEED: int = 8
 PAINT_RECT_HEIGHT: int = 4
 PAINT_RECT_DIST: int = 2
 
+EQUIPMENT_RATES = {
+    # Less is more
+    "Seeders": 10000,
+    "Spreaders": 10000,
+    "Sprayers": 10000,
+    "Headers": 1000
+}
+
 # ---------- CONFIG ----------
 BUILD: bool = False
 TARGET_FPS: int = 120

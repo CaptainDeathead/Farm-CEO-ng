@@ -7,6 +7,7 @@ from destination import Destination
 from utils import utils
 from data import *
 
+from time import time
 from math import atan2, sqrt, cos, sin, radians, degrees
 from typing import Dict, List, Sequence
 
@@ -72,6 +73,14 @@ class Tractor(Vehicle):
     def set_equipment_draw(self, equipment_draw: object) -> None:
         self.equipment_draw = equipment_draw
 
+    def set_string_task(self, text: str) -> None:
+        self.string_task = text
+
+        if self.tool is not None:
+            self.tool.string_task = text
+
+        self.equipment_draw(rebuild=True)
+
     def follow_path(self) -> None:
         if len(self.path) == 0:
             self.stage += 1
@@ -82,9 +91,7 @@ class Tractor(Vehicle):
                 self.paddock = -1
                 self.tool.paddock = -1
 
-                self.string_task = "No task assigned"
-                self.tool.string_task = self.string_task
-                self.equipment_draw(rebuild=True)
+                self.set_string_task("No task assigned")
 
                 logging.debug(f"Vehicle: {self.vehicle_id} has completed their task.")
                 return
@@ -92,9 +99,7 @@ class Tractor(Vehicle):
                 logging.debug(f"Vehicle: {self.vehicle_id} moving on to next path stage ({self.stage})...")
 
                 if self.working:
-                    self.string_task = f"{TOOL_ACTIVE_NAMES[self.tool.tool_type]}...".capitalize()
-                    self.tool.string_task = self.string_task
-                    self.equipment_draw(rebuild=True)
+                    self.set_string_task(f"{TOOL_ACTIVE_NAMES[self.tool.tool_type]}...".capitalize())
                     self.tool.set_working_animation()
 
                     self.curr_speed = 20
@@ -108,17 +113,13 @@ class Tractor(Vehicle):
 
                 if self.stage == JOB_TYPES["travelling_from"]:
                     # Go to shed
-                    self.string_task = "Travelling to shed..."
-                    self.tool.string_task = self.string_task
-                    self.equipment_draw(rebuild=True)
+                    self.set_string_task("Travelling to shed...")
 
                     self.task_tractor(self, self.tool, Destination(None), self.stage)
                 else:
                     # TODO: Call update_machine_info with the correct information
                     if self.stage == JOB_TYPES["travelling_to"]:
-                        self.string_task = f"Travelling to {self.destination.get_name()}..."
-                        self.tool.string_task = self.string_task
-                        self.equipment_draw(rebuild=True)
+                        self.set_string_task(f"Travelling to {self.destination.get_name()}...")
 
                     self.task_tractor(self, self.tool, self.destination, self.stage)
 
@@ -143,9 +144,7 @@ class Tractor(Vehicle):
             # Default to travelling -> working -> etc...
             stage = 2
 
-            self.string_task = f"Travelling to {self.destination.get_name()}..."
-            self.tool.string_task = self.string_task
-            self.equipment_draw(rebuild=True)
+            self.set_string_task(f"Travelling to {self.destination.get_name()}...")
 
         logging.info(f"Setting new path for vehicle: {self.vehicle_id}...")
         self.path = new_path
@@ -301,6 +300,7 @@ class Tool(Trailer):
 
         self.fill = 0
         self.fill_type = -1
+        self.last_fill = 0
 
         self.last_paint_left = (0, 0)
         self.last_paint_right = (0, 0)
@@ -341,16 +341,23 @@ class Tool(Trailer):
         
         return TOOL_STATES[self.tool_type][0]
 
-    def set_fill(self, fill_type: int, fill_ammount: float) -> None:
+    def set_fill(self, fill_type: int, fill_amount: float) -> Tuple[int, float]:
+        """Returns how much crop was stored in it already and the type"""
+
         crop_name = CROP_TYPES[fill_type]
 
-        logging.debug(f"Filling {self.full_name} with {fill_ammount}T of {crop_name}...")
+        logging.debug(f"Filling {self.full_name} with {fill_amount}T of {crop_name}...")
 
         if self.fill > 0:
-            logging.warning(f"While filling {self.full_name} it already has {round(self.fill, 1)} tons of {CROP_TYPES[self.fill_type]} which will be discarded!")
+            logging.warning(f"While filling {self.full_name} it already has {round(self.fill, 1)} tons of {CROP_TYPES[self.fill_type]} which should be stored back in the silo!")
+
+        original_fill_type = self.fill_type
+        original_fill = self.fill
 
         self.fill_type = fill_type
-        self.fill = fill_ammount
+        self.fill = fill_amount
+
+        return original_fill_type, original_fill
 
     def reload_vt_sim(self) -> None:
         logging.debug(f"Reloading vehicle_trailer_simulation for tool {self.full_name}...")
@@ -405,9 +412,27 @@ class Tool(Trailer):
             self.last_paint_left = left_paint
             self.last_paint_right = right_paint
 
+    def check_fill(self) -> None:
+        if time() - self.last_fill < 1: return
+
+        last_fill_amount = self.fill
+        self.fill -= self.working_width / EQUIPMENT_RATES[self.tool_type] # Tons to kilos
+
+        if round(last_fill_amount, 1) > round(self.fill, 1):
+            # Equipment menu will need a rebuild as the rounding ticks over
+            self.vehicle.equipment_draw(rebuild=True)
+
+        self.last_fill = time()
+
+        if self.fill <= 0:
+            self.request_fill()
+
     def update(self) -> None:
         if self.active:
             if self.working:
                 self.check_paint()
+
+                if self.tool_type in EQUIPMENT_RATES:
+                    self.check_fill()
 
             self.draw()

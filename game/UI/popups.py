@@ -207,7 +207,11 @@ class SelectCropPopup(PopupType):
         crop_ammount = self.sellpoint_manager.get_stored_ammount(crop_type)
         crop_index = CROP_TYPES.index(crop_type)
 
-        self.set_tool_fill(crop_index, crop_ammount)
+        old_crop_type, old_amount = self.set_tool_fill(crop_index, crop_ammount)
+
+        if old_amount > 0:
+            self.sellpoint_manager.silo.contents[CROP_TYPES[old_crop_type]] += old_amount
+
         self.assign_task(done_additional_popup=True)
 
     def draw(self) -> None:
