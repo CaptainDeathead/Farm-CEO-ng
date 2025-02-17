@@ -65,6 +65,7 @@ class Equipment:
 
         self.location_callback_has_happened = False
 
+        self.active = False
         self.shed.set_equipment_draw(self.draw)
 
     def close_popup(self) -> None:
@@ -336,10 +337,11 @@ class Equipment:
         return False
 
     def draw(self, rebuild: bool = False) -> None:
-        if rebuild: self.rebuild()
-
         if not self.showing_destination_picker:
+            if rebuild: self.rebuild()
+
             self.rendered_surface.fill(UI_BACKGROUND_COLOR)
             self.rendered_surface.blit(self.scrollable_surface, (0, self.scroll_y))
 
-        self.parent_surface.blit(self.rendered_surface, self.rect)
+        if self.active:
+            self.parent_surface.blit(self.rendered_surface, self.rect)

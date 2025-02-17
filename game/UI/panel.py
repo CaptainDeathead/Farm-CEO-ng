@@ -48,11 +48,20 @@ class Panel:
         self.shop.rebuild()
         self.equipment.rebuild()
 
+    def reset_actives(self) -> None:
+        self.shop.active = False
+        self.equipment.active = False
+
     def draw_shop(self, force: bool = False) -> None:
+        self.reset_actives()
+        self.shop.active = True
+
         redraw_shop = self.shop.update()
         if redraw_shop or force: self.shop.draw()
 
     def draw_equipment(self, force: bool = False) -> None:
+        self.equipment.active = True
+
         redraw_equipment = self.equipment.update()
         if redraw_equipment or force: self.equipment.draw()
 
