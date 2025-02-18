@@ -298,8 +298,8 @@ class Tool(Trailer):
         self.paddock: int = -1
         self.path: List[Sequence[float]]
 
-        self.fill = 0
-        self.fill_type = -1
+        self.fill = attrs.get("fill", 0)
+        self.fill_type = attrs.get("fillType", -1)
         self.last_fill = 0
 
         self.last_paint_left = (0, 0)
