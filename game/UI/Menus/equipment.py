@@ -18,6 +18,11 @@ from data import *
 
 from typing import List
 
+class HeaderTool:
+    def __init__(self, **args) -> None:
+        self.tool_type = "Headers"
+        self.full_name = "Header Front"
+
 class Equipment:
     BUTTON_WIDTH = PANEL_WIDTH - 40
 
@@ -107,6 +112,14 @@ class Equipment:
         self.shed.task_tractor(self.selected_vehicle, self.selected_tool, self.selected_destination)
         self.remove_destination_picker()
 
+    def assign_header_task(self, **args) -> None:
+        if self.selected_destination is None: return
+
+        logging.info(f"Assigning header: {self.selected_vehicle.full_name} a task at: {self.selected_destination.get_name()}...")
+
+        self.shed.task_header(self.selected_vehicle, self.selected_destination)
+        self.remove_destination_picker()
+
     def location_click_callback(self, destination: Destination) -> None:
         # Check if the callback has happened before because when clicking a paddock it doesnt use the mouse override, thus clicking whatever is behind the popup (a paddock)
         if not self.location_callback_has_happened:
@@ -139,9 +152,12 @@ class Equipment:
     def show_destination_picker(self, tool_index: int) -> None:
         logging.info("Entering destination selection mode. Darkening map and hiding un-necessary paddocks...")
 
-        self.selected_tool = self.shed.tools[tool_index]
-        self.showing_destination_picker = True
+        if tool_index == -1:
+            self.selected_tool = HeaderTool()
+        else:
+            self.selected_tool = self.shed.tools[tool_index]
 
+        self.showing_destination_picker = True
         self.location_callback_has_happened = False
 
         self.set_location_click_callback(self.location_click_callback)
@@ -163,7 +179,9 @@ class Equipment:
             popup = TractorNewTaskPopup(self.events, self.selected_vehicle.full_name, self.shed, self.sellpoint_manager.sellpoints, self.equipment_buttons, self.draw,
                                         lambda: self.close_popup(), self.show_destination_picker)
         else:
-            ... # TODO: popup_type = HeaderNewTaskPopup
+            self.show_destination_picker(-1)
+            self.location_callback_has_happened = True # This can be true since no popup ever happened
+            return
 
         self.set_popup(popup)
 
@@ -198,7 +216,13 @@ class Equipment:
             self.scrollable_surface.blit(name_lbl, (center - name_lbl.get_width()/2, y + 10))
             
             self.scrollable_surface.blit(self.body_font.render(f"Task: {vehicle.string_task}", True, UI_TEXT_COLOR), (60, y + 50))
-            self.scrollable_surface.blit(self.body_font.render(f"Fuel: {vehicle.fuel}L", True, UI_TEXT_COLOR), (60, y + 80))
+
+            fuel_lbl = self.body_font.render(f"Fuel: {vehicle.fuel}L", True, UI_TEXT_COLOR)
+            self.scrollable_surface.blit(fuel_lbl, (60, y + 80))
+
+            if isinstance(vehicle, Header):
+                fill_lbl = self.body_font.render(f"Fill ({vehicle.get_fill_type_str.capitalize()[0]}): {round(vehicle.fill, 1)}T", True, UI_TEXT_COLOR)
+                self.scrollable_surface.blit(fill_lbl, (60 + fuel_lbl.width + 20, y + 80))
 
             pdk_lbl = self.body_font.render(f"Paddock: {vehicle.paddock_text}", True, UI_TEXT_COLOR)
             self.scrollable_surface.blit(pdk_lbl, (PANEL_WIDTH - 60 - pdk_lbl.get_width(), y + 80))
@@ -218,7 +242,7 @@ class Equipment:
             self.scrollable_surface.blit(name_lbl, (center - name_lbl.get_width()/2, y + 10))
             
             self.scrollable_surface.blit(self.body_font.render(f"Task: {tool.string_task}", True, UI_TEXT_COLOR), (60, y + 50))
-            self.scrollable_surface.blit(self.body_font.render(f"Fill ({tool.get_fill_type_str}): {round(tool.fill, 1)}T", True, UI_TEXT_COLOR), (60, y + 80))
+            self.scrollable_surface.blit(self.body_font.render(f"Fill ({tool.get_fill_type_str.capitalize()}): {round(tool.fill, 1)}T", True, UI_TEXT_COLOR), (60, y + 80))
 
             pdk_lbl = self.body_font.render(f"Paddock: {tool.paddock_text}", True, UI_TEXT_COLOR)
             self.scrollable_surface.blit(pdk_lbl, (PANEL_WIDTH - 60 - pdk_lbl.get_width(), y + 80))
@@ -227,7 +251,7 @@ class Equipment:
 
         self.max_y = y
 
-    def rebuild_destination_picker(self, tool: Tool, selected_destination: Destination) -> None:
+    def rebuild_destination_picker(self, tool: Tool | None, selected_destination: Destination) -> None:
         self.rendered_surface.fill(UI_BACKGROUND_COLOR)
 
         wrap_length = int(PANEL_WIDTH * 0.8)
@@ -241,7 +265,11 @@ class Equipment:
         body_font.align = pg.FONT_LEFT
 
         title_lbl = title_font.render(f"Select destination for new job:", True, UI_TEXT_COLOR, wraplength=wrap_length)
-        machine_info_lbl = body_font.render(f"\nVehicle: {self.selected_vehicle.full_name}\nTool: {tool.full_name}\n\n", True, UI_TEXT_COLOR, wraplength=wrap_length)
+        if isinstance(tool, HeaderTool):
+            # Header
+            machine_info_lbl = body_font.render(f"\nVehicle: {self.selected_vehicle.full_name}\n\n", True, UI_TEXT_COLOR, wraplength=wrap_length)
+        else:
+            machine_info_lbl = body_font.render(f"\nVehicle: {self.selected_vehicle.full_name}\nTool: {tool.full_name}\n\n", True, UI_TEXT_COLOR, wraplength=wrap_length)
 
         selected_lbl = selected_font.render(f"Selected: {selected_destination.name}", True, UI_TEXT_COLOR, wraplength=wrap_length)
 
@@ -273,11 +301,16 @@ class Equipment:
         exit_img = ResourceManager.load_image("Icons/cross.png")
         submit_img = ResourceManager.load_image("Icons/tick.png")
 
+        if isinstance(tool, HeaderTool):
+            submit_func = self.assign_header_task
+        else:
+            submit_func = self.assign_task
+
         self.destination_exit_btn = Button(self.rendered_surface, PANEL_WIDTH / 2 - btn_width / 2 - btn_width / 1.5, btn_y, btn_width, btn_width, self.rect, (0, 0, 0), (0, 0, 0), (0, 0, 0),
                                "", 10, (0, 0, 0, 0), 0, 0, True, self.cancel_task_assign, exit_img)
         
         self.destination_submit_btn = Button(self.rendered_surface, PANEL_WIDTH / 2 - btn_width / 2 + btn_width / 1.5, btn_y, btn_width, btn_width, self.rect, (0, 0, 0), (0, 0, 0), (0, 0, 0),
-                                 "", 10, (0, 0, 0, 0), 0, 0, True, self.assign_task, submit_img)
+                                 "", 10, (0, 0, 0, 0), 0, 0, True, submit_func, submit_img)
 
         self.destination_exit_btn.draw()
         self.destination_submit_btn.draw()

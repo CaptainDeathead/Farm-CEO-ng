@@ -194,10 +194,15 @@ class Tractor(Vehicle):
 
 class Header(Vehicle):
     IS_VEHICLE: bool = True
+    PATH_POP_RADIUS: bool = 15
 
-    def __init__(self, game_surface: pg.Surface, shed_rect: pg.Rect, attrs: Dict[str, any]) -> None:
+    def __init__(self, game_surface: pg.Surface, shed_rect: pg.Rect, attrs: Dict[str, any], scale: float, task_header: object, equipment_draw: object) -> None:
         self.surface = game_surface
         self.shed_rect = shed_rect
+        self.scale = scale
+
+        self.task_header = task_header
+        self.equipment_draw = equipment_draw
         
         self.attrs = attrs
         self.brand = attrs["brand"]
@@ -215,13 +220,22 @@ class Header(Vehicle):
         self.completion_amount = attrs["completionAmount"]
         self.working_backwards = attrs["workingBackwards"]
         self.size = attrs["size"]
+        self.storage = attrs["storage"]
 
         self.string_task = "No task assigned"
         self.paddock: int = -1
         self.path: List[Sequence[float, float]] = []
 
         self.active = False
+        self.stage = 2
         self.destination = Destination(None)
+        self.max_speed = 40
+        self.curr_speed = self.max_speed
+
+        self.last_fill = 0
+
+        self.last_paint_left = (0, 0)
+        self.last_paint_right = (0, 0)
 
         self.desired_rotation: float = 0.0
 
@@ -239,27 +253,170 @@ class Header(Vehicle):
         if self.paddock == -1: return "--"
         return str(self.paddock + 1).capitalize() # (Currently its the paddock index, not the num)
 
+    @property
+    def get_fill_type_str(self) -> str:
+        if self.fill_type == -1: return "--"
+        return CROP_TYPES[self.fill_type]
+
+    @property
+    def working(self) -> bool: return self.stage == JOB_TYPES["working"]
+
+    def get_output_state(self) -> int:
+        return 0
+
     def set_equipment_draw(self, equipment_draw: object) -> None:
-        ...
+        self.equipment_draw = equipment_draw
+
+    def set_string_task(self, text: str) -> None:
+        self.string_task = text
+        self.equipment_draw(rebuild=True)
 
     def follow_path(self) -> None:
+        if len(self.path) == 0:
+            self.stage += 1
+
+            if self.stage - 1 in END_JOB_STAGES:
+                self.active = False
+                self.paddock = -1
+
+                self.set_string_task("No task assigned")
+
+                logging.debug(f"Vehicle: {self.vehicle_id} has completed their task.")
+                return
+            else:
+                logging.debug(f"Vehicle: {self.vehicle_id} moving on to next path stage ({self.stage})...")
+
+                if self.working:
+                    self.set_string_task(f"{TOOL_ACTIVE_NAMES['Headers']}...".capitalize())
+                    self.curr_speed = 20
+                else:
+                    self.curr_speed = 40
+
+                    if self.stage - 1 == JOB_TYPES["working"]:
+                        # was just working, sort out paddock now
+                        self.destination.destination.reset_paint()
+                        self.destination.destination.set_state(self.get_output_state())
+
+                if self.stage == JOB_TYPES["travelling_from"]:
+                    # Go to shed
+                    self.set_string_task("Travelling to shed...")
+
+                    self.task_header(self, Destination(None), self.stage)
+                else:
+                    # TODO: Call update_machine_info with the correct information
+                    if self.stage == JOB_TYPES["travelling_to"]:
+                        self.set_string_task(f"Travelling to {self.destination.get_name()}...")
+
+                    self.task_header(self, self.destination, self.stage)
+
         px, py = self.path[0]
 
-        self.desired_rotation = atan2(py, px)
-        rotate_difference = self.rotation - self.desired_rotation
-        
-        if rotate_difference < self.rotation:
-            self.desired_rotation -= rotate_difference
-        else:
-            self.desired_rotation += rotate_difference
+        multiplier = 1
 
-        self.desired_rotation %= 360
-        self.path.pop(0)
+        # If the vehicle is travelling
+        if self.curr_speed == 40:
+            multiplier = 2
 
-    def update(self) -> None:
-        if self.active:
+        dist = sqrt((px - self.rect.centerx) ** 2 + (py - self.rect.centery) ** 2)
+        if dist < self.PATH_POP_RADIUS * multiplier:
+            self.path.pop(0)
             self.follow_path()
-            self.draw()
+            return
+
+        self.desired_rotation = (degrees(atan2(-(py - self.rect.centery), px - self.rect.centerx)) + 360) % 360 - 90
+        
+    def set_path(self, new_path: List[Sequence[float]], stage: int, paddock: int = -1) -> None:
+        if stage == -1:
+            # Default to travelling -> working -> etc...
+            stage = 2
+            self.set_string_task(f"Travelling to {self.destination.get_name()}...")
+
+        logging.info(f"Setting new path for vehicle: {self.vehicle_id}...")
+        self.path = new_path
+        self.active = True
+        self.stage = stage
+        self.paddock = paddock
+    
+    def calculate_movement(self, dt: float) -> float:
+        turn_amount = utils.angle_difference(self.rotation, self.desired_rotation)
+
+        self.rotation += max(-MAX_TURN_SPEED, min(MAX_TURN_SPEED, turn_amount)) * dt * 10
+        self.rotation %= 360
+
+        direction = [cos(radians(-self.rotation-90)), sin(radians(-self.rotation-90))]
+
+        self.velocity[0] = direction[0] * self.curr_speed
+        self.velocity[1] = direction[1] * self.curr_speed
+
+        return sqrt(self.velocity[0]**2 + self.velocity[1]**2)
+
+    def paint(self) -> None:
+        paint_surf = self.image
+        self.destination.destination.paint(paint_surf, self.rect.topleft, STATE_COLORS[self.get_output_state()])
+
+    def check_paint(self) -> None: 
+        half_width = self.image.get_width() / 2
+        half_height = self.image.get_height() / 2
+
+        local_center = self.image.get_rect().center
+        center = (local_center[0] + self.x, local_center[1] + self.y)
+
+        left_paint = utils.rotate_point_centered(center, (center[0] - half_width, center[1] - half_height), -radians(self.rotation))
+        right_paint = utils.rotate_point_centered(center, (center[0] + half_width, center[1] - half_height), -radians(self.rotation))
+
+        pg.draw.circle(pg.display.get_surface(), (255, 0, 0), (PANEL_WIDTH + left_paint[0], left_paint[1]), 3)
+        pg.draw.circle(pg.display.get_surface(), (0, 0, 255), (PANEL_WIDTH + right_paint[0], right_paint[1]), 3)
+
+        last_paint_left_dist = sqrt((left_paint[0] - self.last_paint_left[0])**2 + (left_paint[1] - self.last_paint_left[1])**2)
+        last_paint_right_dist = sqrt((right_paint[0] - self.last_paint_right[0])**2 + (right_paint[1] - self.last_paint_right[1])**2)
+
+        if last_paint_left_dist >= PAINT_RECT_DIST or last_paint_right_dist >= PAINT_RECT_DIST:
+            self.paint()
+
+            self.last_paint_left = left_paint
+            self.last_paint_right = right_paint
+
+    def check_fill(self) -> None:
+        if time() - self.last_fill < 1: return
+
+        last_fill_amount = self.fill
+        self.fill += self.working_width / EQUIPMENT_RATES["Headers"]
+
+        if round(last_fill_amount, 1) < round(self.fill, 1):
+            # Equipment menu will need a rebuild as the rounding ticks over
+            self.equipment_draw(rebuild=True)
+
+        self.last_fill = time()
+
+        if self.fill >= self.storage * 1000: # Tons to kilos
+            self.request_fill()
+
+    def update(self, dt: float) -> None:
+        if not self.active: return
+
+        self.follow_path()
+
+        if len(self.path) > 0 and DEBUG_PATHS:
+            for point in self.path:
+                pg.draw.circle(self.surface, (255, 0, 0), point, 3)
+
+            pg.draw.line(self.surface, (0, 0, 255), self.path[0], self.rect.center)
+
+        required_dt = 1/TARGET_FPS
+        remaining_dt = dt
+        while remaining_dt > 0:
+            if remaining_dt < required_dt: remaining_dt = required_dt
+
+            if self.working:
+                self.check_paint()
+                self.check_fill()
+
+            self.calculate_movement(required_dt)
+            self.simulate(required_dt)
+
+            remaining_dt -= required_dt
+
+        self.draw()
 
 class Tool(Trailer):
     IS_VEHICLE: bool = False

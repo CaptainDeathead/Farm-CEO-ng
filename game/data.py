@@ -43,7 +43,8 @@ TOOL_STATES = {
     "Cultivators": (1,),
     "Seeders": (2,),
     "Spreaders": (0, 1, 2, 3, 4),
-    "Sprayers": (0, 2, 3, 4)
+    "Sprayers": (0, 2, 3, 4),
+    "Headers": (6,)
 }
 
 FIELD_TOOLS = ["Cultivators", "Seeders", "Spreaders", "Sprayers"]
@@ -52,7 +53,8 @@ TOOL_ACTIVE_NAMES = {
     "Cultivators": "cultivating",
     "Seeders": "seeding",
     "Spreaders": "spreading",
-    "Sprayers": "spraying"
+    "Sprayers": "spraying",
+    "Headers": "harvesting"
 }
 
 CROP_TYPES = ["wheat", "barley", "oat", "canola"]

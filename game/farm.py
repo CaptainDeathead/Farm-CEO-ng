@@ -73,7 +73,7 @@ class Shed(LayableRenderObj):
         attrs = deepcopy(SaveManager().STATIC_VEHICLES_DICT[vehicle_type][save_attrs["brand"]][save_attrs["model"]])
         attrs.update(save_attrs)
 
-        if attrs["header"]: vehicle = Header(self.game_surface, self.rect, attrs)
+        if attrs["header"]: vehicle = Header(self.game_surface, self.rect, attrs, self.scale, self.task_header, self.equipment_draw)
         else: vehicle = Tractor(self.game_surface, self.rect, attrs, self.scale, self.task_tractor, self.equipment_draw)
 
         self.vehicles.append(vehicle)
@@ -106,10 +106,15 @@ class Shed(LayableRenderObj):
 
         tractor.set_path(path, stage, paddock)
     
-    def task_header(self, header: Header, destination: Destination) -> None:
+    def task_header(self, header: Header, destination: Destination, stage: int = -1) -> None:
         path = self.task_manager.create_job(header, None, header.destination, destination)
+
         header.destination = destination
-        header.set_path(path)
+
+        if destination.is_paddock: paddock = int(destination.destination.num) - 1 # its an index
+        else: paddock = -1
+
+        header.set_path(path, stage, paddock)
 
     def simulate(self, dt: float) -> None:
         for vehicle in self.vehicles:
