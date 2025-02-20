@@ -92,15 +92,15 @@ PAINT_RECT_DIST: int = 2
 
 EQUIPMENT_RATES = {
     # Less is more
-    "Seeders": 10000,
-    "Spreaders": 10000,
-    "Sprayers": 10000,
-    "Headers": 1000
+    "Seeders": 100_000,
+    "Spreaders": 100_000,
+    "Sprayers": 100_000,
+    "Headers": 50_000
 }
 
 # ---------- CONFIG ----------
 BUILD: bool = False
-TARGET_FPS: int = 120
+TARGET_FPS: int = 1200
 SUPPORTED_PLATFORMS: Tuple[str] = ("android_x86_64", "android_v7a", "arm64-v8a", "Linux", "Windows")
 PLATFORM: str = "arm64-v8a"
 BUILD_TYPE: str = "Devlopment"

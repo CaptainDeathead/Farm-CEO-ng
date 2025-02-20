@@ -29,6 +29,7 @@ class Paddock:
         self.is_painting: bool = False
 
         self.state_changed = False
+        self.last_collision_count = 0
 
     def init_collision(self) -> None:
         self.surface, self.rect = self.create_surface()
@@ -39,6 +40,7 @@ class Paddock:
         self.mask = pg.mask.from_surface(self.surface)
 
         self.paint_surface = pg.Surface(self.rect.size, pg.SRCALPHA)
+        self.paint_mask = pg.mask.from_surface(self.paint_surface)
 
     def __dict__(self) -> Dict[str, any]:
         return {
@@ -101,18 +103,27 @@ class Paddock:
 
     def reset_paint(self) -> None:
         # Note: this only changes the variable is_painting! to reset the paint on the surface you need to fill this paddock after calling this func
-        self.is_painting = False
         self.paint_surface = pg.Surface(self.rect.size, pg.SRCALPHA)
+        self.paint_mask = pg.mask.from_surface(self.paint_surface)
 
-    def paint(self, surface: pg.Surface, pos: Tuple[int, int], color: pg.Color) -> None:
+        self.last_collision_count = 0
+        self.is_painting = False
+
+    def paint(self, surface: pg.Surface, pos: Tuple[int, int], color: pg.Color) -> int:
         local_pos = (pos[0] - self.rect.x, pos[1] - self.rect.y)
         surface_mask = pg.mask.from_surface(surface)
 
         collision_mask = self.mask.overlap_mask(surface_mask, local_pos)
         self.paint_surface.blit(collision_mask.to_surface(setcolor=color, unsetcolor=(0, 0, 0, 0)), (0, 0))
 
+        old_count = self.paint_mask.count()
+        self.paint_mask = pg.mask.from_surface(self.paint_surface)
+        new_count = self.paint_mask.count() - old_count
+
         self.draw_to_map(draw_normal_surface=False, draw_paint_surface=True)
         self.is_painting = True
+
+        return new_count
 
     def paint_rect(self, rect: pg.Rect, color: pg.Color) -> None:
         rect_surface = pg.Surface((rect.w, rect.h))

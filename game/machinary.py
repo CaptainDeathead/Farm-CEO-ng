@@ -350,9 +350,9 @@ class Header(Vehicle):
 
         return sqrt(self.velocity[0]**2 + self.velocity[1]**2)
 
-    def paint(self) -> None:
+    def paint(self) -> int:
         paint_surf = self.image
-        self.destination.destination.paint(paint_surf, self.rect.topleft, STATE_COLORS[self.get_output_state()])
+        return self.destination.destination.paint(paint_surf, self.rect.topleft, STATE_COLORS[self.get_output_state()])
 
     def check_paint(self) -> None: 
         half_width = self.image.get_width() / 2
@@ -371,24 +371,21 @@ class Header(Vehicle):
         last_paint_right_dist = sqrt((right_paint[0] - self.last_paint_right[0])**2 + (right_paint[1] - self.last_paint_right[1])**2)
 
         if last_paint_left_dist >= PAINT_RECT_DIST or last_paint_right_dist >= PAINT_RECT_DIST:
-            self.paint()
+            fill_amount = self.paint()
+            self.increment_fill(fill_amount)
 
             self.last_paint_left = left_paint
             self.last_paint_right = right_paint
 
-    def check_fill(self) -> None:
-        if time() - self.last_fill < 1: return
-
+    def increment_fill(self, fill_amount: int) -> None:
         last_fill_amount = self.fill
-        self.fill += self.working_width / EQUIPMENT_RATES["Headers"]
+        self.fill += fill_amount / EQUIPMENT_RATES["Headers"]
 
         if round(last_fill_amount, 1) < round(self.fill, 1):
             # Equipment menu will need a rebuild as the rounding ticks over
             self.equipment_draw(rebuild=True)
 
-        self.last_fill = time()
-
-        if self.fill >= self.storage * 1000: # Tons to kilos
+        if self.fill >= self.storage:
             self.request_fill()
 
     def update(self, dt: float) -> None:
@@ -409,7 +406,7 @@ class Header(Vehicle):
 
             if self.working:
                 self.check_paint()
-                self.check_fill()
+                #self.check_fill()
 
             self.calculate_movement(required_dt)
             self.simulate(required_dt)
@@ -543,9 +540,9 @@ class Tool(Trailer):
         else:
             self.set_animation(self.anims["default"]) # anims['default'] key returns the name of the key to the default image
 
-    def paint(self) -> None:
+    def paint(self) -> int:
         paint_surf = pg.transform.rotate(self.master_image, self.rotation)
-        self.destination.destination.paint(paint_surf, self.position, STATE_COLORS[self.get_output_state()])
+        return self.destination.destination.paint(paint_surf, self.position, STATE_COLORS[self.get_output_state()])
 
     def check_paint(self) -> None: 
         half_width = self.master_image.get_width() / 2
@@ -564,22 +561,19 @@ class Tool(Trailer):
         last_paint_right_dist = sqrt((right_paint[0] - self.last_paint_right[0])**2 + (right_paint[1] - self.last_paint_right[1])**2)
 
         if last_paint_left_dist >= PAINT_RECT_DIST or last_paint_right_dist >= PAINT_RECT_DIST:
-            self.paint()
+            fill_amount = self.paint()
+            self.increment_fill(fill_amount)
 
             self.last_paint_left = left_paint
             self.last_paint_right = right_paint
 
-    def check_fill(self) -> None:
-        if time() - self.last_fill < 1: return
-
+    def increment_fill(self, fill_amount: int) -> None:
         last_fill_amount = self.fill
-        self.fill -= self.working_width / EQUIPMENT_RATES[self.tool_type] # Tons to kilos
+        self.fill -= fill_amount / EQUIPMENT_RATES[self.tool_type] # Tons to kilos
 
         if round(last_fill_amount, 1) > round(self.fill, 1):
             # Equipment menu will need a rebuild as the rounding ticks over
             self.vehicle.equipment_draw(rebuild=True)
-
-        self.last_fill = time()
 
         if self.fill <= 0:
             self.request_fill()
@@ -588,8 +582,5 @@ class Tool(Trailer):
         if self.active:
             if self.working:
                 self.check_paint()
-
-                if self.tool_type in EQUIPMENT_RATES:
-                    self.check_fill()
 
             self.draw()
