@@ -195,6 +195,7 @@ class Equipment:
         center = PANEL_WIDTH / 2
 
         button_height = 130
+        header_button_height = button_height + 30
         button_spacing = 20
 
         y_inc = button_height + button_spacing
@@ -205,7 +206,14 @@ class Equipment:
 
         # Vehicles
         for vehicle in self.shed.vehicles:
-            button = Button(self.scrollable_surface, x, y, self.BUTTON_WIDTH, button_height, self.rect,
+            if isinstance(vehicle, Header):
+                bh = header_button_height
+                y_inc = bh + button_spacing
+            else:
+                bh = button_height
+                y_inc = bh + button_spacing
+
+            button = Button(self.scrollable_surface, x, y, self.BUTTON_WIDTH, bh, self.rect,
                        UI_MAIN_COLOR, pg.Color(255, 100, 0), UI_TEXT_COLOR, "", 20, (20, 20, 20, 20), 0, 0, command=lambda vehicle=vehicle: self.trigger_vehicle_popup(vehicle.vehicle_id), authority=True)
             
             button.draw()
@@ -221,8 +229,8 @@ class Equipment:
             self.scrollable_surface.blit(fuel_lbl, (60, y + 80))
 
             if isinstance(vehicle, Header):
-                fill_lbl = self.body_font.render(f"Fill ({vehicle.get_fill_type_str.capitalize()[0]}): {round(vehicle.fill, 1)}T", True, UI_TEXT_COLOR)
-                self.scrollable_surface.blit(fill_lbl, (60 + fuel_lbl.width + 20, y + 80))
+                fill_lbl = self.body_font.render(f"Fill ({vehicle.get_fill_type_str.capitalize()}): {round(vehicle.fill, 1)}T", True, UI_TEXT_COLOR)
+                self.scrollable_surface.blit(fill_lbl, (60, y + 110))
 
             pdk_lbl = self.body_font.render(f"Paddock: {vehicle.paddock_text}", True, UI_TEXT_COLOR)
             self.scrollable_surface.blit(pdk_lbl, (PANEL_WIDTH - 60 - pdk_lbl.get_width(), y + 80))

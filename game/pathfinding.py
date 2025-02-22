@@ -29,6 +29,8 @@ class Job:
 
         self.job_id = job_id
 
+        self.lap_1 = []
+
     def get_closest_point_on_boundary(self, point: Tuple, boundary: List[Tuple]) -> Tuple | None:
         closest_dist = float('inf')
         closest_point = None
@@ -133,6 +135,7 @@ class Job:
         boundary = paddock.boundary
 
         lap_1 = utils.shrink_polygon(boundary, working_width / 2)
+        self.lap_1 = lap_1
 
         # Find the closest point to the gate
         closest_dist = float('inf')
@@ -380,11 +383,11 @@ class TaskManager:
 
         self.jobs = []
 
-    def create_job(self, vehicle: Tractor | Header, tool: Tool | None, start_location: Destination, end_location: Destination) -> List[Tuple[float, float]]:
+    def create_job(self, vehicle: Tractor | Header, tool: Tool | None, start_location: Destination, end_location: Destination) -> Job:
         job = Job(start_location, end_location, self.roads, vehicle, tool, self.shed_position, len(self.jobs))
         self.jobs.append(job)
 
-        return job.generate_path()
+        return job
 
     def test_make_job(self, paddock) -> None:
         start_dest = Destination(paddock)

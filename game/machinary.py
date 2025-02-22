@@ -195,6 +195,7 @@ class Tractor(Vehicle):
 class Header(Vehicle):
     IS_VEHICLE: bool = True
     PATH_POP_RADIUS: bool = 15
+    UNLOAD_INTERVAL: float = 0.5
 
     def __init__(self, game_surface: pg.Surface, shed_rect: pg.Rect, attrs: Dict[str, any], scale: float, task_header: object, equipment_draw: object) -> None:
         self.surface = game_surface
@@ -244,6 +245,16 @@ class Header(Vehicle):
 
         self.working_width = self.image.get_width()
 
+        self.waiting_for_unloading_vehicle_assign = False
+        self.waiting_for_unloading_vehicle = False
+        self.unloading_vehicle = None
+        self.unloading = False
+        self.last_unload = time()
+        self.waiting = False
+
+        self.completed_path = []
+        self.job = None
+
     @property
     def full_name(self) -> str:
         return f"{self.brand} {self.model}"
@@ -271,43 +282,82 @@ class Header(Vehicle):
         self.string_task = text
         self.equipment_draw(rebuild=True)
 
+    def set_job(self, job) -> None:
+        """job is of type `pathfinding.Job`"""
+
+        self.job = job
+
+    def unload(self) -> None:
+        if time() - self.last_unload < self.UNLOAD_INTERVAL: return
+
+        self.last_unload = time()
+        self.fill = max(self.fill - self.UNLOAD_RATE, 0)
+
+        if self.fill == 0:
+            self.unloading = False
+            self.waiting = False
+            self.unloading_vehicle.resume()
+            logging.debug(f"{self.full_name} is now empty. Resuming task...")
+
+    def on_unloading_vehicle_arrive(self, unloading_vehicle: Vehicle) -> None:
+        logging.debug(f"{self.full_name} unloading vehicle has arrived. Begginning unloading sequence...")
+        self.unloading_vehicle = unloading_vehicle
+
+        self.waiting_for_unloading_vehicle = False
+        self.unloading = True
+
+    def on_unloading_vehicle_assign(self) -> List[Sequence[float]]:
+        """Returns a path to the header"""
+
+        logging.debug(f"{self.full_name} unloading vehicle has been assigned. Waiting for it's arrival...")
+        self.waiting_for_unloading_vehicle_assign = False
+        self.waiting_for_unloading_vehicle = True
+
+        return self.job.trace_collision_boundary(self.position, self.destination.destination.gate, self.job.lap_1)
+
     def follow_path(self) -> None:
+        if self.waiting_for_unloading_vehicle or self.waiting_for_unloading_vehicle_assign: return
+        if self.unloading:
+            self.unload()
+            return
+
         if len(self.path) == 0:
             self.stage += 1
 
             if self.stage - 1 in END_JOB_STAGES:
                 self.active = False
                 self.paddock = -1
+                self.completed_path = []
 
                 self.set_string_task("No task assigned")
 
                 logging.debug(f"Vehicle: {self.vehicle_id} has completed their task.")
                 return
+
+            logging.debug(f"Vehicle: {self.vehicle_id} moving on to next path stage ({self.stage})...")
+
+            if self.working:
+                self.set_string_task(f"{TOOL_ACTIVE_NAMES['Headers']}...".capitalize())
+                self.curr_speed = 20
             else:
-                logging.debug(f"Vehicle: {self.vehicle_id} moving on to next path stage ({self.stage})...")
+                self.curr_speed = 40
 
-                if self.working:
-                    self.set_string_task(f"{TOOL_ACTIVE_NAMES['Headers']}...".capitalize())
-                    self.curr_speed = 20
-                else:
-                    self.curr_speed = 40
+                if self.stage - 1 == JOB_TYPES["working"]:
+                    # was just working, sort out paddock now
+                    self.destination.destination.reset_paint()
+                    self.destination.destination.set_state(self.get_output_state())
 
-                    if self.stage - 1 == JOB_TYPES["working"]:
-                        # was just working, sort out paddock now
-                        self.destination.destination.reset_paint()
-                        self.destination.destination.set_state(self.get_output_state())
+            if self.stage == JOB_TYPES["travelling_from"]:
+                # Go to shed
+                self.set_string_task("Travelling to shed...")
 
-                if self.stage == JOB_TYPES["travelling_from"]:
-                    # Go to shed
-                    self.set_string_task("Travelling to shed...")
+                self.task_header(self, Destination(None), self.stage)
+            else:
+                # TODO: Call update_machine_info with the correct information
+                if self.stage == JOB_TYPES["travelling_to"]:
+                    self.set_string_task(f"Travelling to {self.destination.get_name()}...")
 
-                    self.task_header(self, Destination(None), self.stage)
-                else:
-                    # TODO: Call update_machine_info with the correct information
-                    if self.stage == JOB_TYPES["travelling_to"]:
-                        self.set_string_task(f"Travelling to {self.destination.get_name()}...")
-
-                    self.task_header(self, self.destination, self.stage)
+                self.task_header(self, self.destination, self.stage)
 
         px, py = self.path[0]
 
@@ -319,25 +369,31 @@ class Header(Vehicle):
 
         dist = sqrt((px - self.rect.centerx) ** 2 + (py - self.rect.centery) ** 2)
         if dist < self.PATH_POP_RADIUS * multiplier:
+            self.completed_path.append(self.path[0])
             self.path.pop(0)
             self.follow_path()
             return
 
         self.desired_rotation = (degrees(atan2(-(py - self.rect.centery), px - self.rect.centerx)) + 360) % 360 - 90
         
-    def set_path(self, new_path: List[Sequence[float]], stage: int, paddock: int = -1) -> None:
+    def set_path(self, job, new_path: List[Sequence[float]], stage: int, paddock: int = -1) -> None:
         if stage == -1:
             # Default to travelling -> working -> etc...
             stage = 2
             self.set_string_task(f"Travelling to {self.destination.get_name()}...")
 
         logging.info(f"Setting new path for vehicle: {self.vehicle_id}...")
+        self.set_job(job)
         self.path = new_path
         self.active = True
         self.stage = stage
         self.paddock = paddock
     
     def calculate_movement(self, dt: float) -> float:
+        if self.waiting:
+            self.velocity = [0, 0]
+            return 0
+
         turn_amount = utils.angle_difference(self.rotation, self.desired_rotation)
 
         self.rotation += max(-MAX_TURN_SPEED, min(MAX_TURN_SPEED, turn_amount)) * dt * 10
@@ -355,6 +411,8 @@ class Header(Vehicle):
         return self.destination.destination.paint(paint_surf, self.rect.topleft, STATE_COLORS[self.get_output_state()])
 
     def check_paint(self) -> None: 
+        if self.waiting: return
+
         half_width = self.image.get_width() / 2
         half_height = self.image.get_height() / 2
 
@@ -377,6 +435,12 @@ class Header(Vehicle):
             self.last_paint_left = left_paint
             self.last_paint_right = right_paint
 
+    def request_unload(self) -> None:
+        logging.info(f"Header {self.full_name} is requesting unload...")
+        self.waiting_for_unloading_vehicle_assign = True
+        self.waiting = True
+        self.original_image = ResourceManager.load_image(self.anims['pipeOut'])
+
     def increment_fill(self, fill_amount: int) -> None:
         last_fill_amount = self.fill
         self.fill += fill_amount / EQUIPMENT_RATES["Headers"]
@@ -386,7 +450,7 @@ class Header(Vehicle):
             self.equipment_draw(rebuild=True)
 
         if self.fill >= self.storage:
-            self.request_fill()
+            self.request_unload()
 
     def update(self, dt: float) -> None:
         if not self.active: return
@@ -406,9 +470,9 @@ class Header(Vehicle):
 
             if self.working:
                 self.check_paint()
-                #self.check_fill()
 
             self.calculate_movement(required_dt)
+
             self.simulate(required_dt)
 
             remaining_dt -= required_dt
@@ -539,6 +603,11 @@ class Tool(Trailer):
             self.set_animation("full")
         else:
             self.set_animation(self.anims["default"]) # anims['default'] key returns the name of the key to the default image
+
+    def request_fill(self) -> None:
+        logging.info(f"Tool {self.full_name} is requesting fill...")
+
+        logging.error("Error when requesting fill! Unimplemented!")
 
     def paint(self) -> int:
         paint_surf = pg.transform.rotate(self.master_image, self.rotation)

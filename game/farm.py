@@ -107,14 +107,15 @@ class Shed(LayableRenderObj):
         tractor.set_path(path, stage, paddock)
     
     def task_header(self, header: Header, destination: Destination, stage: int = -1) -> None:
-        path = self.task_manager.create_job(header, None, header.destination, destination)
+        job = self.task_manager.create_job(header, None, header.destination, destination)
+        path = job.generate_path()
 
         header.destination = destination
 
         if destination.is_paddock: paddock = int(destination.destination.num) - 1 # its an index
         else: paddock = -1
 
-        header.set_path(path, stage, paddock)
+        header.set_path(job, path, stage, paddock)
 
     def simulate(self, dt: float) -> None:
         for vehicle in self.vehicles:
