@@ -162,8 +162,10 @@ class Tractor(Vehicle):
 
         direction = [cos(radians(-self.rotation-90)), sin(radians(-self.rotation-90))]
 
-        self.velocity[0] = direction[0] * self.curr_speed
-        self.velocity[1] = direction[1] * self.curr_speed
+        actual_speed = self.curr_speed * self.scale
+
+        self.velocity[0] = direction[0] * actual_speed
+        self.velocity[1] = direction[1] * actual_speed
 
         return sqrt(self.velocity[0]**2 + self.velocity[1]**2)
 
@@ -401,8 +403,10 @@ class Header(Vehicle):
 
         direction = [cos(radians(-self.rotation-90)), sin(radians(-self.rotation-90))]
 
-        self.velocity[0] = direction[0] * self.curr_speed
-        self.velocity[1] = direction[1] * self.curr_speed
+        actual_speed = self.curr_speed * self.scale
+
+        self.velocity[0] = direction[0] * actual_speed
+        self.velocity[1] = direction[1] * actual_speed
 
         return sqrt(self.velocity[0]**2 + self.velocity[1]**2)
 
