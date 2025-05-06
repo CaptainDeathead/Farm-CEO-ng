@@ -15,14 +15,48 @@ UI_ACTIVE_COLOR: Tuple[int, int, int] = (67*2, 200, 160)
 UI_TEXT_COLOR: Tuple[int, int, int] = (255, 255, 255)
 UI_TOOL_BUTTON_COLOR: Tuple[int, int, int] = (150, 0, 255)
 
+MACHINARY_SCALE = 0.75
+VEHICLE_SCALE: float = 0.75*MACHINARY_SCALE # Base value 0.75
+TOOL_SCALE: float = 1.25*MACHINARY_SCALE # Base value 1.25
+
+STATE_NAMES = {
+    0: "Harvested",
+    1: "Tilled",
+    2: "Growing 1",
+    3: "Growing 2",
+    4: "Growing 3",
+    5: "Ready to harvest",
+    6: "Blank"
+}
+
 STATE_COLORS = {
-    0: (200, 0, 200), # 0: Harvested.   1: Cultervated.   2: Growing 3.   3: Growing 2.   4: Growing 1.   5: Ready To Harvest.   6: Blank.
+    0: (200, 0, 200), # 0: Harvested.   1: Cultivated.   2: Growing 1.   3: Growing 2.   4: Growing 3.   5: Ready To Harvest.   6: Blank.
     1: (150, 150, 150),
-    2: (0, 100, 0),
+    2: (0, 255, 0),
     3: (0, 200, 0),
-    4: (0, 255, 0),
+    4: (0, 100, 0),
     5: (200, 200, 0),
     6: (0, 0, 0)
+}
+
+TOOL_STATES = {
+    "Cultivators": (1,),
+    "Seeders": (2,),
+    "Spreaders": (0, 1, 2, 3, 4),
+    "Sprayers": (0, 2, 3, 4),
+    "Trailers": (6,),
+    "Headers": (6,)
+}
+
+FIELD_TOOLS = ["Cultivators", "Seeders", "Spreaders", "Sprayers"]
+
+TOOL_ACTIVE_NAMES = {
+    "Cultivators": "cultivating",
+    "Seeders": "seeding",
+    "Spreaders": "spreading",
+    "Sprayers": "spraying",
+    "Headers": "harvesting",
+    "Trailers": "delivering",
 }
 
 CROP_TYPES = ["wheat", "barley", "oat", "canola"]
@@ -44,8 +78,40 @@ BASE_CROP_PRICES = {
 TIMESCALE = 24 # 144 mins every min = 2.4 min every second
 MINS_IN_DAY = TIMESCALE * 60
 
+JOB_TYPES = {
+    "transporting_to": 0,
+    "transporting_from": 1,
+    "travelling_to": 2,
+    "working": 3,
+    "travelling_from": 4
+}
+
+END_JOB_STAGES = [JOB_TYPES["transporting_from"], JOB_TYPES["travelling_from"]]
+
+MAX_TURN_SPEED: int = 8
+PAINT_RECT_HEIGHT: int = 4
+PAINT_RECT_DIST: int = 2
+
+EQUIPMENT_RATES = {
+    # Less is more
+    "Seeders": 100_000,
+    "Spreaders": 100_000,
+    "Sprayers": 100_000,
+    "Headers": 50_000
+}
+
+FILL_TOOLS = {
+    "Seeders": True,
+    "Spreaders": True,
+    "Sprayers": True,
+    "Headers": True,
+    "Trailers": False, # dont want its fill changing while its in a paddock
+    "Cultivators": False
+}
+
 # ---------- CONFIG ----------
 BUILD: bool = False
+TARGET_FPS: int = 1200
 SUPPORTED_PLATFORMS: Tuple[str] = ("android_x86_64", "android_v7a", "arm64-v8a", "Linux", "Windows")
 PLATFORM: str = "arm64-v8a"
 BUILD_TYPE: str = "Devlopment"
@@ -53,7 +119,11 @@ CONSOLE_BUILD: bool = not BUILD
 
 # ---------- DEBUG ----------
 DEBUG_BOUNDARY_LOADING: bool = False
-DEBUG_PATH_GENERATION: bool = True
+DEBUG_PATH_GENERATION: bool = False
+DEBUG_PATH_MASK_COLLISION: bool = False
+DEBUG_PATHS: bool = True
+DEBUG_ROADS: bool = True
+DEBUG_MOUSE_EVENTS: bool = False
 
 # ---------- ABOUT ----------
 GAME_NAME: str = "Farm CEO"

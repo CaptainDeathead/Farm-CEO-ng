@@ -146,7 +146,7 @@ class DropDown:
 
             button.x = 0
             button.y = self.segment_height * i
-            button.global_rect = pg.Rect(x, self.parent_rect.y + y + segment_height * i, width, segment_height)
+            button.global_rect = pg.Rect(self.parent_rect.x + x + button.x, self.parent_rect.y + button.y + y, width, segment_height)
 
             button.command = lambda text=button.text: self.select_button(text)
 
@@ -160,7 +160,7 @@ class DropDown:
         self.selected_button = Button(self.buttons[0].screen, self.buttons[0].x, self.buttons[0].y, self.buttons[0].width, self.buttons[0].height,
                                       self.buttons[0].parent_rect, self.buttons[0].color, self.buttons[0].selectedColor, self.buttons[0].textColor,
                                       self.buttons[0].text, self.buttons[0].size, self.buttons[0].radius, 0, 0, True, self.toggle_drop)
-        
+
         self.selected_button.global_rect = buttons[0].global_rect
 
         self.just_changed = False
@@ -197,7 +197,8 @@ class DropDown:
         self.rebuild()
 
     def rebuild(self) -> None:
-        #pg.draw.rect(self.rendered_surface, self.bg_color, (0, 0, self.rect.w, self.rect.h), border_radius=10)
+        radius = self.selected_button.radius
+        pg.draw.rect(self.rendered_surface, self.selected_button.color, (0, 0, self.rect.w, self.rect.h), 0, -1, radius[0], radius[1], radius[2], radius[3])
 
         for button in self.buttons:
             button.draw()
@@ -207,17 +208,24 @@ class DropDown:
         self.draw()
 
     def update(self, pressed: bool = False, set_override: callable = lambda x: None) -> None:
-        for button in self.buttons:
-            button.update(pressed, set_override)
+        selected_button_was_hidden = self.selected_button.hidden
+        self.selected_button.update(pressed, set_override)
+
+        if pressed and self.selected_button.global_rect.collidepoint(pg.mouse.get_pos()):
+            # Pressed selected button
+            if not selected_button_was_hidden: pressed = False
+
+        if self.dropped:
+            for button in self.buttons:
+                draw = button.update(pressed, set_override)
+                if draw: button.draw()
 
         if self.just_changed:
             self.just_changed = False
             pressed = False
 
-        self.selected_button.update(pressed, set_override)
-
     def draw(self) -> None:
-        self.screen.fill(pg.Color(0, 0, 0, 0), self.rect)
+        self.screen.fill(self.bg_color, self.rect)
 
         if self.dropped:
             self.screen.blit(self.rendered_surface, (self.rect.x, self.rect.y))

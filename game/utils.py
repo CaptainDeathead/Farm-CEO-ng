@@ -1,6 +1,9 @@
 import pygame as pg
-import pyclipper
 
+from shapely.geometry import Polygon
+from data import *
+
+from math import atan2, degrees, cos, sin
 from typing import Tuple
 
 class utils:
@@ -25,16 +28,30 @@ class utils:
         # rotate and blit the image
         surf.blit(rotated_image, rotated_image_rect)
 
+    
+    @staticmethod
+    # https://stackoverflow.com/questions/34372480/rotate-point-about-another-point-in-degrees-python
+    def rotate_point_centered(origin: Tuple[float, float], point: Tuple[float, float], angle: float) -> Tuple[int, int]:
+        """
+        Rotate a point counterclockwise by a given angle around a given origin.
+        The angle should be given in radians.
+        """
+        ox, oy = origin
+        px, py = point
+
+        qx = ox + cos(angle) * (px - ox) - sin(angle) * (py - oy)
+        qy = oy + sin(angle) * (px - ox) + cos(angle) * (py - oy)
+
+        return qx, qy
+
     @staticmethod
     def scale_rect(rect: pg.Rect, scale: float) -> pg.Rect:
         return pg.Rect(rect.x * scale, rect.y * scale, rect.w * scale, rect.h * scale)
 
     @staticmethod
     def shrink_polygon(polygon: list[tuple[int, int]], shrink: int) -> list[tuple[int, int]]:
-        offset = pyclipper.PyclipperOffset()
-        offset.AddPath(polygon, pyclipper.JT_MITER, pyclipper.ET_CLOSEDPOLYGON)
-
-        return offset.Execute(-shrink)[0]
+        poly = Polygon(polygon)
+        return list(poly.buffer(-shrink).exterior.coords)
 
     @staticmethod
     def get_polygon_rect(polygon: list[tuple[int, int]]) -> pg.Rect:
@@ -54,7 +71,7 @@ class utils:
         return rect
 
     @staticmethod
-    def line_collides_mask(line: list[tuple, tuple], mask: pg.Mask, polygon_rect: pg.Rect) -> list[tuple[float, float]]:
+    def line_collides_mask(line: list[tuple, tuple], mask: pg.Mask, polygon_rect: pg.Rect) -> tuple[list[tuple[float, float]], list[tuple[float, float]]]:
         line_start = line[0]
         line_end = line[1]
 
@@ -75,12 +92,32 @@ class utils:
         x2, y2 = line_end
 
         collisions = []
+        curr_collision_index = -1
+        last_was_collision = not mask.get_at((x1, y1))
         while 1:
             if x1 == x2 and y1 == y2:
                 break
 
             if mask.get_at((x1, y1)):
-                collisions.append((x1, y1))
+                if not last_was_collision:
+                    curr_collision_index += 1
+                    collisions.append([])
+
+                collisions[curr_collision_index].append((x1, y1))
+
+                last_was_collision = True
+
+                if DEBUG_PATH_MASK_COLLISION:
+                    pg.draw.circle(pg.display.get_surface(), (0, 255, 0), (x1 + 620, y1), 3)
+                    pg.display.flip()
+                    pg.time.wait(1)
+            else:
+                last_was_collision = False
+
+                if DEBUG_PATH_MASK_COLLISION:
+                    pg.draw.circle(pg.display.get_surface(), (255, 0, 0), (x1 + 620, y1), 3)
+                    pg.display.flip()
+                    pg.time.wait(1)
             
             x1 += step_x
             y1 += step_y
@@ -107,6 +144,24 @@ class utils:
             lines = [(points[0], points[-1])]
                 
         return lines
+
+    @staticmethod
+    def angle_between_lines(v1: Tuple[float, float], v2: Tuple[float, float]) -> float:
+        x1, y1 = v1
+        x2, y2 = v2
+
+        dot_product = x1 * x2 + y1 * y2
+        determinant = x1 * y2 - y1 * x2
+
+        angle = atan2(determinant, dot_product)
+
+        return degrees(angle) 
+
+    @staticmethod
+    def angle_difference(angle_1: float, angle_2: float) -> float:
+        diff = angle_2 - angle_1
+        diff = (diff + 180) % 360 - 180
+        return diff
 
 class LayableRenderObj:
     def render0(self) -> None: ...

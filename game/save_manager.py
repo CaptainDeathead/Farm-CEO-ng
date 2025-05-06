@@ -7,7 +7,8 @@ from paddock import Paddock
 from machinary import Tractor, Header, Tool
 from data import *
 
-if BUILD: from android.storage import app_storage_path
+if BUILD:
+    from android.storage import app_storage_path
 else:
     def app_storage_path() -> str:
         return "./"
@@ -262,7 +263,7 @@ class SaveManager:
                 "brand": tool.brand,
                 "model": tool.model,
                 "size": tool.size,
-                "sizePx": tool.size_px,
+                "sizePx": tool.working_width,
                 "hp": tool.hp,
                 "turningPoint": tool.turning_point,
                 "hitch": tool.hitch_y,

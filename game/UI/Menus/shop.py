@@ -154,6 +154,7 @@ class Shop:
         self.back_button = Button(self.rendered_surface, PANEL_WIDTH / 2 - 150, self.rect.h - 160, 300, 100, self.rect, UI_MAIN_COLOR,
                                   UI_MAIN_COLOR, UI_TEXT_COLOR, "Back", 60, (20, 20, 20, 20), 0, 0, True, lambda: self.backtrack_path())
 
+        self.active = False
         self.just_rebuilt = False
         self.rebuild()
 

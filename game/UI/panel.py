@@ -5,7 +5,7 @@ from resource_manager import ResourceManager
 from events import Events
 
 from farm import Shed
-from sellpoints import SellpointManager
+from sellpoint_manager import SellpointManager
 
 from UI.pygame_gui import Button
 from UI.navbar import NavBar
@@ -48,11 +48,20 @@ class Panel:
         self.shop.rebuild()
         self.equipment.rebuild()
 
+    def reset_actives(self) -> None:
+        self.shop.active = False
+        self.equipment.active = False
+
     def draw_shop(self, force: bool = False) -> None:
+        self.reset_actives()
+        self.shop.active = True
+
         redraw_shop = self.shop.update()
         if redraw_shop or force: self.shop.draw()
 
     def draw_equipment(self, force: bool = False) -> None:
+        self.equipment.active = True
+
         redraw_equipment = self.equipment.update()
         if redraw_equipment or force: self.equipment.draw()
 

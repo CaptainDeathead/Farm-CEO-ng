@@ -85,7 +85,7 @@ class Vehicle:
     @property
     def position(self) -> pg.math.Vector2:
         return pg.math.Vector2((self.x, self.y))
-
+    
     @property
     def speed(self) -> float:
         return math.sqrt(self.velocity[0]**2 + self.velocity[1]**2)
@@ -105,22 +105,24 @@ class Vehicle:
         self.velocity[0] *= 0.9 / delta_time
         self.velocity[1] *= 0.9 / delta_time
 
-    def draw(self, delta_time: float) -> None:
+    def simulate(self, delta_time: float) -> None:
         self.move(delta_time)
-
         self.update_rect()
-        self.rotate_image_centered(self.rotation)
 
+        self.rotate_image_centered(self.rotation)
         self.hitch.update_parent_center(self.rect.center)
 
+        rotated_hitch = rotate_point_centered(self.rect.center, self.rect.center + self.hitch.vector, math.radians(-self.rotation))
+        self.hitch.update_position(rotated_hitch[0], rotated_hitch[1])
+
+    def draw(self) -> None:
         self.screen.blit(self.image, self.rect.topleft)
 
         rotated_hitch = rotate_point_centered(self.rect.center, self.rect.center + self.hitch.vector, math.radians(-self.rotation))
 
-        self.hitch.update_position(rotated_hitch[0], rotated_hitch[1])
-
-        pg.draw.circle(self.screen, (0, 0, 255), rotated_hitch, 3)
-        pg.draw.circle(self.screen, (0, 0, 255), self.position, 3)
+        #pg.draw.circle(self.screen, (255, 255, 255), rotated_hitch, 3)
+        #pg.draw.circle(self.screen, (255, 255, 255), self.position, 3)
+        #pg.draw.circle(self.screen, (255, 255, 255), self.rect.center, 3)
 
 class Trailer:
     def __init__(self, screen: pg.Surface, vehicle: Vehicle, image: pg.Surface, pos: Tuple[float, float], hitch_offset_x: int, hitch_offset_y: int) -> None:
@@ -174,7 +176,7 @@ class Trailer:
         self.rect.x = self.x
         self.rect.y = self.y
 
-    def draw(self, delta_time: float) -> None:
+    def simulate(self, delta_time: float) -> None:
         self.rotation %= 360
         self.rotation = self.direction_to_vehicle(delta_time)
 
@@ -188,9 +190,14 @@ class Trailer:
         self.rotate_image_centered(self.rotation)
         self.hitch.update_parent_center(self.rect.center)
 
+    def draw(self) -> None:
+        rotated_hitch = rotate_point_centered(self.rect.center, self.rect.center+self.hitch.vector, -math.radians(self.rotation))
+
         self.screen.blit(self.image, (self.x, self.y))
 
         #pg.draw.circle(self.screen, (0, 255, 0), rotated_hitch, 3)
+        #pg.draw.circle(self.screen, (0, 255, 255), self.position, 3)
+        #pg.draw.circle(self.screen, (0, 255, 255), self.rect.center, 3)
 
 class Test:
     def __init__(self) -> None:
@@ -223,8 +230,11 @@ class Test:
             if keys[pg.K_a]: self.vehicle.rotation += 1 * self.vehicle.speed * dt
             if keys[pg.K_d]: self.vehicle.rotation -= 1 * self.vehicle.speed * dt
 
-            self.vehicle.draw(dt)
-            self.trailer.draw(dt)
+            self.vehicle.simulate(dt)
+            self.trailer.simulate(dt)
+
+            self.vehicle.draw()
+            self.trailer.draw()
 
             pg.display.flip()
             dt = self.clock.tick(60) / 1000 * 60

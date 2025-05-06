@@ -26,10 +26,13 @@ class PaddockManager:
 
         self.location_callback = None
 
+    def get_paddocks(self) -> List[Paddock]:
+        return self.paddocks
+
     def parse_paddocks(self, paddocks: Dict[str, any]) -> List[Paddock]:
         pdk_list = []
         for paddock in paddocks:
-            pdk_list.append(Paddock(paddocks[paddock], paddock, self.scale))
+            pdk_list.append(Paddock(paddocks[paddock], paddock, self.scale, self.map_paddocks_surf))
         
         return pdk_list
 
@@ -111,22 +114,18 @@ class PaddockManager:
                 surface.set_at((nx, ny), (255, 0, 0))
                 pg.display.flip()
 
-    def fill_paddock(self, paddock: Paddock, color: pg.Color) -> None:
-        boundary = paddock.boundary
-        pg.draw.polygon(self.map_paddocks_surf, color, boundary)
-
-    def load_paddock_state(self, paddock: Paddock) -> None:
-        self.fill_paddock(paddock, STATE_COLORS[paddock.state])
-
     def set_paddock_state(self, paddock_number: int, state: int) -> None:
         paddock = self.paddocks[paddock_number-1]
 
         paddock.state = state
         paddock.fill(STATE_COLORS[paddock.state])
 
-    def fill_all_paddocks(self) -> None:
-        for paddock in self.paddocks:
-            self.load_paddock_state(paddock)
+    def fill_all_paddocks(self, exclude_paddocks: List[int] = []) -> None:
+        for i, paddock in enumerate(self.paddocks):
+            if i in exclude_paddocks:
+                paddock.fill((0, 0, 0))
+            else:
+                paddock.load_state()
 
     def init_paddocks(self) -> None:
         logging.debug("Initializing paddocks... (This may take some time)")
@@ -135,7 +134,7 @@ class PaddockManager:
             self.locate_paddock_boundary(paddock)
             paddock.init_collision()
 
-            self.load_paddock_state(paddock)
+            paddock.load_state()
 
         save_manager = SaveManager()
         save_manager.set_paddocks(self.paddocks)
@@ -161,6 +160,13 @@ class PaddockManager:
         self.location_callback = None
 
     def update(self, mouse_just_released: bool) -> None:
+        for paddock in self.paddocks:
+            if paddock.state_changed:
+                logging.info(f"Paddock {paddock.num} state change detected, updating save_manager dict...")
+                paddock.state_changed = False
+                SaveManager().set_paddocks(self.paddocks)
+                break
+
         if mouse_just_released and self.location_callback is not None:
             paddock_clicked = self.check_paddock_clicks()
 
