@@ -7,6 +7,7 @@ from save_manager import SaveManager
 from machinary import Tractor, Header, Tool
 from pathfinding import TaskManager
 from destination import Destination
+from sellpoints import SellPoint
 from utils import utils, LayableRenderObj
 from data import *
 
@@ -14,7 +15,7 @@ from copy import deepcopy
 from typing import List, Dict, Sequence
 
 class Shed(LayableRenderObj):
-    def __init__(self, game_surface: pg.Surface, rect: pg.Rect, rotation: float, roads: List[Sequence[int]], scale: List[Sequence[int]]) -> None:        
+    def __init__(self, game_surface: pg.Surface, rect: pg.Rect, rotation: float, roads: List[Sequence[int]], scale: List[Sequence[int]], silo: SellPoint | None) -> None:        
         self.game_surface = game_surface
 
         self.rect = rect
@@ -27,6 +28,11 @@ class Shed(LayableRenderObj):
 
         self.vehicles: List[Tractor | Header] = []
         self.tools: List[Tool] = []
+
+        if silo is None:
+            logging.debug(f"Recieved silo is None! Should be {SellPoint} type. This will should be set later by the set_silo function.")
+
+        self.silo = silo
 
         self.roads = roads
         self.scale_roads()
@@ -52,6 +58,10 @@ class Shed(LayableRenderObj):
 
         logging.info("equipment_draw has been set.")
 
+    def set_silo(self, silo: SellPoint) -> None:
+        self.silo = silo
+        logging.debug(f"Shed recieved silo: {silo}.")
+
     def scale_roads(self) -> None:
         new_roads = []
         for road in self.roads:
@@ -74,7 +84,7 @@ class Shed(LayableRenderObj):
         attrs.update(save_attrs)
 
         if attrs["header"]: vehicle = Header(self.game_surface, self.rect, attrs, self.scale, self.task_header, self.equipment_draw)
-        else: vehicle = Tractor(self.game_surface, self.rect, attrs, self.scale, self.task_tractor, self.equipment_draw)
+        else: vehicle = Tractor(self.game_surface, self.rect, attrs, self.scale, self.task_tractor, self.equipment_draw, self.silo)
 
         self.vehicles.append(vehicle)
 

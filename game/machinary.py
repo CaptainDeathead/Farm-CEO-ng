@@ -4,6 +4,7 @@ import logging
 from resource_manager import ResourceManager
 from vehicle_trailer_simulation import Vehicle, Trailer, Hitch
 from destination import Destination
+from sellpoints import SellPoint
 from utils import utils
 from data import *
 
@@ -16,7 +17,7 @@ class Tractor(Vehicle):
     IS_VEHICLE: bool = True
     PATH_POP_RADIUS: bool = 15
 
-    def __init__(self, game_surface: pg.Surface, shed_rect: pg.Rect, attrs: Dict[str, any], scale: float, task_tractor: object, equipment_draw: object) -> None:
+    def __init__(self, game_surface: pg.Surface, shed_rect: pg.Rect, attrs: Dict[str, any], scale: float, task_tractor: object, equipment_draw: object, silo: SellPoint) -> None:
         self.surface = game_surface
         self.shed_rect = shed_rect
         self.scale = scale
@@ -45,6 +46,7 @@ class Tractor(Vehicle):
         self.paddock: int = -1
 
         self.path: List[Sequence[float]] = []
+        self.silo = silo
 
         self.active = False
         self.stage = 2
@@ -57,6 +59,7 @@ class Tractor(Vehicle):
         self.desired_rotation: float = 0.0
         self.waiting = False
         self.has_waited = False
+        self.going_to_gate = False
 
         image = pg.transform.scale_by(ResourceManager.load_image(self.anims['normal']), self.scale*VEHICLE_SCALE)
         super().__init__(self.surface, image, (shed_rect.x, shed_rect.y + 10), 0, self.hitch_y)
@@ -101,8 +104,16 @@ class Tractor(Vehicle):
             if self.tool.tool_type == "Trailers" and self.destination.is_paddock:
                 # Needs to unload
                 if self.has_waited:
-                    self.stage = JOB_TYPES["transporting_from"]
-                    self.path = list(reversed(self.tool.path))
+                    if self.going_to_gate:
+                        self.has_waited = False
+                        self.going_to_gate = False
+                        self.destination = Destination(self.silo)
+                        self.path = self.task_tractor(self, self.tool, self.destination, self.stage)
+                        self.set_string_task(f"Transporting {round(self.tool.fill, 1)}T of {self.tool.get_fill_type_str} to {self.destination.get_name()}...")
+                    else:
+                        self.stage = JOB_TYPES["transporting_from"]
+                        self.going_to_gate = True
+                        self.set_string_task(f"Transporting {round(self.tool.fill, 1)}T of {self.tool.get_fill_type_str} to a silo...")
                 else:
                     self.set_waiting(True)
                 
@@ -335,6 +346,7 @@ class Header(Vehicle):
             self.unloading = False
             self.waiting = False
             self.unloading_vehicle.set_waiting(False)
+            self.unloading_vehicle.path = self.job.trace_collision_boundary(self.position, self.destination.destination.gate, self.job.lap_1)
             logging.debug(f"{self.full_name} is now empty. Resuming task...")
 
     def on_unloading_vehicle_arrive(self) -> None:

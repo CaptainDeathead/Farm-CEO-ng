@@ -1,5 +1,6 @@
 import pygame as pg
 import logging
+import sys
 
 from traceback import format_exc
 from data import *
@@ -44,6 +45,7 @@ class CrashHandler:
             for event in pg.event.get():
                 if event.type == pg.QUIT:
                     pg.quit()
+                    sys.exit(1)
                     return
 
             clock.tick(30)

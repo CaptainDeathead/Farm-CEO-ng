@@ -1,5 +1,6 @@
 import pygame as pg
 import logging
+import sys
 
 from save_manager import SaveManager
 from data import *
@@ -60,7 +61,7 @@ class Events:
                 SaveManager().save_game()
 
                 pg.quit()
-                exit()
+                sys.exit(0)
 
             elif event.type == pg.ACTIVEEVENT:
                 if event.state == 2 and event.gain == 0: # Lost focus
