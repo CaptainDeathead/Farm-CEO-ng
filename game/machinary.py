@@ -16,8 +16,10 @@ from typing import Dict, List, Sequence
 class Tractor(Vehicle):
     IS_VEHICLE: bool = True
     PATH_POP_RADIUS: bool = 15
+    UNLOAD_INTERVAL: float = 0.5
+    UNLOAD_RATE: float = 1
 
-    def __init__(self, game_surface: pg.Surface, shed_rect: pg.Rect, attrs: Dict[str, any], scale: float, task_tractor: object, equipment_draw: object, silo: SellPoint) -> None:
+    def __init__(self, game_surface: pg.Surface, shed_rect: pg.Rect, attrs: Dict[str, any], scale: float, task_tractor: object, equipment_draw: object, get_silo: object) -> None:
         self.surface = game_surface
         self.shed_rect = shed_rect
         self.scale = scale
@@ -46,7 +48,7 @@ class Tractor(Vehicle):
         self.paddock: int = -1
 
         self.path: List[Sequence[float]] = []
-        self.silo = silo
+        self.get_silo = get_silo
 
         self.active = False
         self.stage = 2
@@ -60,6 +62,9 @@ class Tractor(Vehicle):
         self.waiting = False
         self.has_waited = False
         self.going_to_gate = False
+        self.heading_to_silo = False
+
+        self.last_unload = time()
 
         image = pg.transform.scale_by(ResourceManager.load_image(self.anims['normal']), self.scale*VEHICLE_SCALE)
         super().__init__(self.surface, image, (shed_rect.x, shed_rect.y + 10), 0, self.hitch_y)
@@ -99,6 +104,25 @@ class Tractor(Vehicle):
         if was_waiting and not self.waiting:
             self.has_waited = True
 
+    def unload_tool(self) -> None:
+        if time() - self.last_unload < self.UNLOAD_INTERVAL: return
+
+        self.last_unload = time()
+        fill_difference = min(self.tool.fill, self.UNLOAD_RATE)
+        self.tool.fill -= fill_difference
+
+        if self.destination.destination == self.get_silo():
+            self.get_silo().store_crop(self.tool.get_fill_type_str, fill_difference)
+        else:
+            logging.warning(f"Unloading {fill_difference}T of {self.tool.fill_type} into nothing.")
+
+        if self.tool.fill == 0:
+            self.set_waiting(False)
+            self.heading_to_silo = False
+            self.stage = JOB_TYPES["travelling_from"]
+            self.set_string_task("Driving to shed...")
+            self.task_tractor(self, self.tool, Destination(None), self.stage)
+
     def follow_path(self) -> None:
         if len(self.path) == 0:
             if self.tool.tool_type == "Trailers" and self.destination.is_paddock:
@@ -107,8 +131,9 @@ class Tractor(Vehicle):
                     if self.going_to_gate:
                         self.has_waited = False
                         self.going_to_gate = False
-                        self.destination = Destination(self.silo)
-                        self.path = self.task_tractor(self, self.tool, self.destination, self.stage)
+                        self.heading_to_silo = True
+                        target = Destination(self.get_silo())
+                        self.task_tractor(self, self.tool, target, self.stage)
                         self.set_string_task(f"Transporting {round(self.tool.fill, 1)}T of {self.tool.get_fill_type_str} to {self.destination.get_name()}...")
                     else:
                         self.stage = JOB_TYPES["transporting_from"]
@@ -117,6 +142,14 @@ class Tractor(Vehicle):
                 else:
                     self.set_waiting(True)
                 
+                return
+
+            elif self.tool.tool_type == "Trailers" and self.heading_to_silo:
+                # Needs to unload trailer
+                # This will get called over and over again while it is unloading
+                self.destination = Destination(self.get_silo())
+                self.set_waiting(True)
+                self.unload_tool()
                 return
 
             self.stage += 1
@@ -339,8 +372,15 @@ class Header(Vehicle):
         if time() - self.last_unload < self.UNLOAD_INTERVAL: return
 
         self.last_unload = time()
-        self.fill = max(self.fill - self.UNLOAD_RATE, 0)
+
+        fill_difference = min(self.fill, self.UNLOAD_RATE)
+        self.fill -= fill_difference
         self.equipment_draw()
+
+        if self.unloading_vehicle is None:
+            logging.warning("Header unloading into null vehicle (nothing)!")
+        else:
+            self.unloading_vehicle.tool.update_fill(self.fill_type, fill_difference)
 
         if self.fill == 0:
             self.unloading = False
@@ -637,6 +677,17 @@ class Tool(Trailer):
         self.fill = fill_amount
 
         return original_fill_type, original_fill
+
+    def update_fill(self, fill_type: int, fill_amount: float) -> Tuple[int, float]:
+        """
+        Returns how much crop was stored in it already and the type
+        (Is a wrapper to set_fill except adds the fill already in the tool)
+        """
+
+        if self.fill_type != fill_type and self.fill > 0:
+            logging.warning(f"Trailer already has fill of a different fill type! Updating this is adding crop that doesn't exist of the new type. (Old: {self.get_fill_type_str})")
+
+        return self.set_fill(fill_type, self.fill + fill_amount)
 
     def reload_vt_sim(self) -> None:
         logging.debug(f"Reloading vehicle_trailer_simulation for tool {self.full_name}...")

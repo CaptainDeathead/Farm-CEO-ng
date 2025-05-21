@@ -102,14 +102,11 @@ class SellpointManager:
 
         return stored_crops
 
-    def store_crop(self, crop_type: str, ammount: float) -> None:
-        self.silo.contents[crop_type] += ammount
+    def store_crop(self, crop_type: str, amount: float) -> None:
+        return self.silo.store_crop(crop_type, amount)
 
-    def take_crop(self, crop_type: str, desired_ammount: float) -> float:
-        ammount = min(self.silo.contents[crop_type], desired_ammount)
-        self.silo.contents[crop_type] -= ammount
-
-        return ammount
+    def take_crop(self, crop_type: str, desired_amount: float) -> float:
+        return self.silo.take_crop(crop_type, desired_amount)
 
     def render_grids(self) -> None:
         for sellpoint in self.sellpoints:

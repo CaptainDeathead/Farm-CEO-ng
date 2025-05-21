@@ -361,9 +361,20 @@ class Job:
         elif self.tool.tool_type == "Trailers":
             if self.end_location.is_paddock:
                 # Unloading header
-                return self.generate_transport_path((0, 0), self.end_location.destination.gate, from_shed = True)
+                # WARNING: Assumes you are at the shed
+                return self.generate_transport_path((0, 0), self.end_location.destination.gate, from_shed=True)
 
-            raise Exception("Trailer logic not implemented!")
+            if self.start_location.is_paddock:
+                # At gate (full) -> silo
+                # WARNING: THIS ASSUMES THE SILO IS RIGHT NEXT TO THE SHED AND CAN BE ACCESSED FROM THE SHED WITHOUT ANY ROADS!!!!!
+                # WILL ONLY WORK ON BASE MAP (GREEN SPRINGS)
+                return self.generate_transport_path(self.start_location.destination.gate, self.end_location.destination.pos, from_shed=False)
+            elif self.end_location.is_shed:
+                # Go to shed
+                return self.generate_transport_path(self.start_location.destination.pos, self.end_location.get_pos(), from_shed=False)
+            else:
+                # Assumes you are at the shed
+                return self.generate_transport_path((0, 0), self.end_location.destination.pos, from_shed=True)
 
         else:
             if self.start_location.is_paddock:

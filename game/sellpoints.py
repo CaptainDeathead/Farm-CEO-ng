@@ -51,3 +51,18 @@ class SellPoint(LayableRenderObj):
     def draw_silo(self) -> None:
         #self.game_surface.blit(self.silo_surface, self.silo_rect)
         utils.blit_centered(self.game_surface, self.silo_surface, self.silo_rect.topleft, self.silo_surface.get_rect().center, self.rotation)
+
+    def store_crop(self, crop_type: str, amount: float) -> None:
+        if not self.silo:
+            raise Exception("Cannot store crops in a non-silo sellpoint!")
+
+        self.contents[crop_type] += amount
+
+    def take_crop(self, crop_type: str, desired_amount: float) -> float:
+        if not self.silo:
+            raise Exception("Cannot take crops from a non-silo sellpoint")
+
+        amount = min(self.silo.contents[crop_type], desired_amount)
+        self.contents[crop_type] -= amount
+
+        return amount

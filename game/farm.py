@@ -30,9 +30,9 @@ class Shed(LayableRenderObj):
         self.tools: List[Tool] = []
 
         if silo is None:
-            logging.debug(f"Recieved silo is None! Should be {SellPoint} type. This will should be set later by the set_silo function.")
+            logging.warning(f"Recieved silo is None! Should be {SellPoint} type. This will should be set later by the set_silo function.")
 
-        self.silo = silo
+        self._silo = silo
 
         self.roads = roads
         self.scale_roads()
@@ -47,6 +47,17 @@ class Shed(LayableRenderObj):
 
         self.rebuild()
 
+    def get_silo(self) -> SellPoint | None:
+        """
+        Returns the silo in the sellpoint_manager
+
+        If the sellpoint_manager hasn't given the shed the silo yet, then the silo will be None
+        """
+        if self._silo is None:
+            logging.warning(f"shed.silo property was called but shed._silo is still None! Returning NoneType value.")
+
+        return self._silo
+
     def set_equipment_draw(self, equipment_draw: object) -> None:
         # Should be called from equipment.py at __init__
         self.equipment_draw = equipment_draw
@@ -59,7 +70,7 @@ class Shed(LayableRenderObj):
         logging.info("equipment_draw has been set.")
 
     def set_silo(self, silo: SellPoint) -> None:
-        self.silo = silo
+        self._silo = silo
         logging.debug(f"Shed recieved silo: {silo}.")
 
     def scale_roads(self) -> None:
@@ -84,7 +95,7 @@ class Shed(LayableRenderObj):
         attrs.update(save_attrs)
 
         if attrs["header"]: vehicle = Header(self.game_surface, self.rect, attrs, self.scale, self.task_header, self.equipment_draw)
-        else: vehicle = Tractor(self.game_surface, self.rect, attrs, self.scale, self.task_tractor, self.equipment_draw, self.silo)
+        else: vehicle = Tractor(self.game_surface, self.rect, attrs, self.scale, self.task_tractor, self.equipment_draw, self.get_silo)
 
         self.vehicles.append(vehicle)
 

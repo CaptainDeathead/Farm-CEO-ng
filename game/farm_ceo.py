@@ -13,7 +13,7 @@ from events import Events
 from UI.panel import Panel
 from UI.popups import PopupType
 
-from utils import utils
+from utils import utils, VarsSingleton
 from farm import Shed
 from data import *
 from typing import Dict, List, Iterable
@@ -100,6 +100,9 @@ class FarmCEO:
 
         self.time: float = self.save_manager.get_attr("time") # time / 24 = *n* days
         self.last_update_time = 0.0
+
+        self.vars_singleton = VarsSingleton()
+        self.vars_singleton.init(shed=self.shed)
 
         equipment_map_funcs = {
             "map_lighten": self.map.disable_dark_overlay,

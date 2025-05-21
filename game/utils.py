@@ -163,6 +163,16 @@ class utils:
         diff = (diff + 180) % 360 - 180
         return diff
 
+class VarsSingleton:
+    def __new__(cls) -> None:
+        if not hasattr(cls, 'instance'):
+            cls.instance = super(VarsSingleton, cls).__new__(cls)
+
+        return cls.instance
+    
+    def init(self, shed) -> None:
+        self.shed = shed
+
 class LayableRenderObj:
     def render0(self) -> None: ...
     def render1(self) -> None: ...

@@ -114,6 +114,9 @@ class CommandLineProcessor(cmd.Cmd):
 		'''
 		os.execv(sys.executable, ['python'] + [sys.argv[0]])
 
+	def do_set_header_fill(self, params):
+		self.app.win.farm_ceo.shed.vehicles[1].fill = 7.3
+
 	def do_shell(self, params):
 		''' Executes python commands in the console. App entity can be accessed
 		by referencing self. See examples of possible usage below:
