@@ -117,6 +117,9 @@ class Tractor(Vehicle):
             logging.warning(f"Unloading {fill_difference}T of {self.tool.fill_type} into nothing.")
 
         if self.tool.fill == 0:
+            self.tool.set_animation('empty')
+            self.tool.reload_vt_sim()
+
             self.set_waiting(False)
             self.heading_to_silo = False
             self.stage = JOB_TYPES["travelling_from"]
@@ -385,8 +388,13 @@ class Header(Vehicle):
         if self.fill == 0:
             self.unloading = False
             self.waiting = False
+            self.original_image = ResourceManager.load_image(self.anims['pipeIn'])
+
             self.unloading_vehicle.set_waiting(False)
+            self.unloading_vehicle.tool.set_animation('full')
+            self.unloading_vehicle.tool.reload_vt_sim()
             self.unloading_vehicle.path = self.job.trace_collision_boundary(self.position, self.destination.destination.gate, self.job.lap_1)
+
             logging.debug(f"{self.full_name} is now empty. Resuming task...")
 
     def on_unloading_vehicle_arrive(self) -> None:
