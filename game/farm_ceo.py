@@ -3,7 +3,7 @@ import logging
 
 from time import time
 
-from resource_manager import ResourceManager
+from resource_manager import ResourceManager, FontManager
 from save_manager import SaveManager
 
 from paddock_manager import PaddockManager
@@ -71,6 +71,28 @@ class Map:
         self.screen.blit(self.active_surface, (self.x, self.y))
         self.screen.blit(self.paddocks_surface, (self.x, self.y))
 
+class HUD:
+    save_manager = SaveManager()
+
+    def __init__(self, game_surface: pg.Surface) -> None:
+        self.game_surface = game_surface
+
+        self.WIDTH = self.game_surface.width
+        self.HEIGHT = self.game_surface.height
+
+        self.money_icon = pg.transform.smoothscale(ResourceManager().load_image("Icons/currency.png"), (50, 50))
+        self.rebuild_money()
+
+    def rebuild_money(self) -> None:
+        self.money_text = ResourceManager().font_manager.get_sysfont(None, 70).render(f"{self.save_manager.money:,.2f}", True, (255, 255, 255))
+        self.money_surface = pg.Surface((self.money_icon.width + self.money_text.width + 10, max(self.money_icon.height, self.money_text.height)), pg.SRCALPHA)
+
+        self.money_surface.blit(self.money_icon, (0, 0))
+        self.money_surface.blit(self.money_text, (self.money_icon.width + 5, 0))
+
+    def draw(self) -> None:
+        self.game_surface.blit(self.money_surface, (self.WIDTH - self.money_surface.width - 10, 10))
+
 class FarmCEO:
     RESOURCE_MANAGER: ResourceManager = ResourceManager()
 
@@ -92,11 +114,15 @@ class FarmCEO:
         self.save_manager: SaveManager = SaveManager()
         self.save_manager.init(self.map.map_cfg, self.shed.vehicles, self.shed.tools, self.shed.add_vehicle, self.shed.add_tool)
 
+        FontManager().init()
+
         self.paddock_manager: PaddockManager = PaddockManager()
         self.paddock_manager.init(self.screen, self.map.surface, self.map.paddocks_surface, self.save_manager.get_paddocks(), self.map.scale)
 
         self.sellpoint_manager = SellpointManager(self.game_surface, self.map.scale, self.save_manager.get_sellpoints())
         self.shed.set_silo(self.sellpoint_manager.silo)
+
+        self.hud = HUD(self.game_surface)
 
         self.time: float = self.save_manager.get_attr("time") # time / 24 = *n* days
         self.last_update_time = 0.0
@@ -173,6 +199,7 @@ class FarmCEO:
         self.shed.render()
         self.sellpoint_manager.render_silos()
 
+        self.hud.draw()
         self.screen.blit(self.game_surface, (PANEL_WIDTH, 0))
 
     def ui_render(self) -> None:

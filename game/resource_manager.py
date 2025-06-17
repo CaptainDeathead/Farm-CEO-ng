@@ -9,6 +9,25 @@ from data import *
 from json import loads, dumps, JSONDecodeError
 from typing import Tuple, Dict
 
+class FontManager:
+    def __new__(cls) -> None:
+        if not hasattr(cls, 'instance'):
+            cls.instance = super(FontManager, cls).__new__(cls)
+
+        return cls.instance
+
+    def init(self) -> None:
+        self.loaded_fonts = {}
+
+    def get_sysfont(self, name: str, size: int) -> pg.Font:
+        if self.loaded_fonts.get(name) is None:
+            self.loaded_fonts[name] = {}
+
+        if self.loaded_fonts[name].get(size) is None:
+            self.loaded_fonts[name][size] = pg.font.SysFont(name, size)
+        
+        return self.loaded_fonts[name][size]
+
 class ResourceManager:
     """
     Manager for all resources.
@@ -23,6 +42,8 @@ class ResourceManager:
     ASSETS_PATH: str = f"{PATH}/assets"
     DATA_PATH: str = f"{ASSETS_PATH}/Data"
     MAPS_PATH: str = f"{DATA_PATH}/Maps"
+
+    font_manager = FontManager()
 
     @staticmethod
     def _fmt_read_error(obj_type: str, obj_path: str, err_msg: str) -> str:
