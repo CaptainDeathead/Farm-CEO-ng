@@ -100,7 +100,7 @@ class Shed(LayableRenderObj):
         self.vehicles.append(vehicle)
 
     def add_tool(self, save_attrs: Dict[str, any]) -> None:
-        attrs = deepcopy(SaveManager().STATIC_TOOLS_DICT)
+        attrs = deepcopy(SaveManager().STATIC_TOOLS_DICT[save_attrs["toolType"]][save_attrs["brand"]][save_attrs["model"]])
         attrs.update(save_attrs)
 
         tool = Tool(self.game_surface, self.rect, attrs, self.scale)

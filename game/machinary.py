@@ -63,6 +63,7 @@ class Tractor(Vehicle):
         self.has_waited = False
         self.going_to_gate = False
         self.heading_to_silo = False
+        self.heading_to_sell = False
 
         self.last_unload = time()
 
@@ -113,6 +114,8 @@ class Tractor(Vehicle):
 
         if self.destination.destination == self.get_silo():
             self.get_silo().store_crop(self.tool.get_fill_type_str, fill_difference)
+        elif self.destination.is_sellpoint:
+            self.destination.destination.sell_crop(self.tool.get_fill_type_str, fill_difference)
         else:
             logging.warning(f"Unloading {fill_difference}T of {self.tool.fill_type} into nothing.")
 
@@ -122,6 +125,7 @@ class Tractor(Vehicle):
 
             self.set_waiting(False)
             self.heading_to_silo = False
+            self.heading_to_sell = False
             self.stage = JOB_TYPES["travelling_from"]
             self.set_string_task("Driving to shed...")
             self.task_tractor(self, self.tool, Destination(None), self.stage)
@@ -147,10 +151,12 @@ class Tractor(Vehicle):
                 
                 return
 
-            elif self.tool.tool_type == "Trailers" and self.heading_to_silo:
+            elif self.tool.tool_type == "Trailers" and (self.heading_to_silo or self.heading_to_sell):
                 # Needs to unload trailer
                 # This will get called over and over again while it is unloading
-                self.destination = Destination(self.get_silo())
+                if self.heading_to_silo:
+                    self.destination = Destination(self.get_silo())
+                
                 self.set_waiting(True)
                 self.unload_tool()
                 return
@@ -605,13 +611,13 @@ class Tool(Trailer):
         self.price = attrs["price"]
         self.tool_id = attrs["toolId"]
 
-        if self.tool_type in ("Seeder", "Spreader", "Sprayer", "Trailer"):
+        if self.tool_type in ("Seeders", "Spreaders", "Sprayers", "Trailers"):
             self.storage = attrs["storage"]
 
-        if self.tool_type == "Seeder":
+        if self.tool_type == "Seeders":
             self.cart = attrs["cart"]
 
-        if self.tool_type == "Trailer":
+        if self.tool_type == "Trailers":
             self.set_animation("full")
         else:
             self.set_animation(self.anims["default"]) # anims['default'] key returns the name of the key to the default image
@@ -678,11 +684,13 @@ class Tool(Trailer):
         if self.fill > 0:
             logging.warning(f"While filling {self.full_name} it already has {round(self.fill, 1)} tons of {CROP_TYPES[self.fill_type]} which should be stored back in the silo!")
 
-        original_fill_type = self.fill_type
-        original_fill = self.fill
+        fill_pool = self.fill + fill_amount
 
         self.fill_type = fill_type
-        self.fill = fill_amount
+        self.fill = min(self.storage, fill_pool)
+
+        original_fill_type = self.fill_type
+        original_fill = fill_pool - self.fill
 
         return original_fill_type, original_fill
 

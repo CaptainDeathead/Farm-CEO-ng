@@ -110,6 +110,11 @@ class Equipment:
             self.set_popup(SelectCropPopup(self.events, self.sellpoint_manager, self.close_popup, self.remove_destination_picker, self.selected_tool.set_fill, self.assign_task))
             return
 
+        elif self.selected_tool.tool_type == "Trailers" and not done_additional_popup:
+            logging.debug("Selected tool is a trailer. Opening crop selection popup...")
+            self.set_popup(SelectCropPopup(self.events, self.sellpoint_manager, self.close_popup, self.remove_destination_picker, self.selected_tool.set_fill, self.assign_task))
+            return
+
         logging.info(f"Assigning vehicle: {self.selected_vehicle.full_name}, with tool: {self.selected_tool.full_name} a task at: {self.selected_destination.get_name()}...")
 
         self.shed.task_tractor(self.selected_vehicle, self.selected_tool, self.selected_destination)
@@ -118,6 +123,10 @@ class Equipment:
         if self.selected_destination.is_paddock and self.selected_tool.tool_type == "Trailers":
             self.selected_vehicle.path.extend(self.selected_vehicle_unloading_headers[self.selected_vehicle.paddock].on_unloading_vehicle_assign(self.selected_vehicle))
             self.selected_vehicle.path.append(self.selected_vehicle_unloading_headers[self.selected_vehicle.paddock].position)
+
+        elif self.selected_tool.tool_type == "Trailers":
+            # Just delivering
+            self.selected_vehicle.heading_to_sell = True
 
         self.remove_destination_picker()
 
@@ -142,6 +151,9 @@ class Equipment:
             if paddock_index in self.get_excluded_paddocks(self.selected_tool.tool_type):
                 # The paddock is not the state the tool requires
                 return
+
+        elif self.selected_destination.is_sellpoint and self.selected_tool.tool_type in EXCLUDE_SELLPOINT_TOOLS:
+            return
 
         self.rebuild_destination_picker(self.selected_tool, destination)
         self.draw()

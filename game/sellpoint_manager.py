@@ -3,6 +3,7 @@ import logging
 
 from save_manager import SaveManager
 from sellpoints import SellPoint
+from destination import Destination
 from data import *
 
 from random import uniform
@@ -24,6 +25,8 @@ class SellpointManager:
         self.silo = None
 
         self._save_sellpoints_on_load = False # Does not need to be reset if it becomes true because it should only be used on game load
+
+        self.location_callback = None
 
         self.load_sellpoints(sellpoints_dict)
 
@@ -48,12 +51,12 @@ class SellpointManager:
             rotation = sellpoints[sellpoint_id]["rotation"]
             silo = sellpoints[sellpoint_id]["silo"]
             name = sellpoints[sellpoint_id]["name"]
-            contents = sellpoints[sellpoint_id].get("contents", {})
-            prices = sellpoints[sellpoint_id].get("prices", {})
+            contents = sellpoints[sellpoint_id].get("contents", None)
+            prices = sellpoints[sellpoint_id].get("prices", None)
 
-            if prices == {}:
+            if prices is None:
                 if silo:
-                    if contents == {}:
+                    if contents is None:
                         logging.warning("Silo contents not found. Generating...")
                         contents = self.STARTING_SILO_STORAGE
 
@@ -91,7 +94,7 @@ class SellpointManager:
 
         return sellpoints_dict
 
-    def get_stored_ammount(self, crop_type: str) -> float:
+    def get_stored_amount(self, crop_type: str) -> float:
         return self.silo.contents[crop_type]
 
     def get_stored_crops(self) -> List[str]:
@@ -115,3 +118,31 @@ class SellpointManager:
     def render_silos(self) -> None:
         for sellpoint in self.sellpoints:
             sellpoint.draw_silo()
+
+    def check_sellpoint_clicks(self) -> SellPoint | None:
+        pos = pg.mouse.get_pos()
+        pos = (pos[0] - PANEL_WIDTH, pos[1])
+
+        for sellpoint in self.sellpoints:
+            pressed = sellpoint.update(pos)
+
+            if pressed:
+                return sellpoint 
+
+    def set_location_click_callback(self, callback: callable) -> None:
+        self.location_callback = callback
+
+    def destroy_location_click_callback(self) -> None:
+        self.location_callback = None
+
+    def update(self, mouse_just_released: bool) -> None:
+        for sellpoint in self.sellpoints:
+            if sellpoint.pending_money > 0:
+                SaveManager().add_money(sellpoint.pending_money)
+                sellpoint.pending_money = 0
+
+        if mouse_just_released and self.location_callback is not None:
+            sellpoint_clicked = self.check_sellpoint_clicks()
+
+            if sellpoint_clicked is not None:
+                self.location_callback(Destination(sellpoint_clicked))

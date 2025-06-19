@@ -109,6 +109,14 @@ FILL_TOOLS = {
     "Cultivators": False
 }
 
+EXCLUDE_SELLPOINT_TOOLS = {
+    "Seeders": True,
+    "Spreaders": True,
+    "Sprayers": True,
+    "Headers": True,
+    "Cultivators": False
+}
+
 # ---------- CONFIG ----------
 BUILD: bool = False
 TARGET_FPS: int = 1200

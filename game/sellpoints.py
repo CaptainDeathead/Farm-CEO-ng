@@ -1,4 +1,5 @@
 import pygame as pg
+import logging
 
 from resource_manager import ResourceManager
 from utils import LayableRenderObj, utils
@@ -39,9 +40,7 @@ class SellPoint(LayableRenderObj):
         self.silo = silo
         self.contents = contents
         self.prices = prices
-
-        if not silo:
-            self.prices = self.contents.get("prices", None)
+        self.pending_money = 0.0
 
     def draw_grid(self) -> None:
         # TODO: THIS IS DISABLED AT THE MOMENT BECAUSE OF ROTATION ISSUES
@@ -53,16 +52,38 @@ class SellPoint(LayableRenderObj):
         utils.blit_centered(self.game_surface, self.silo_surface, self.silo_rect.topleft, self.silo_surface.get_rect().center, self.rotation)
 
     def store_crop(self, crop_type: str, amount: float) -> None:
+        """amount should be in tons"""
+
         if not self.silo:
             raise Exception("Cannot store crops in a non-silo sellpoint!")
+
+        logging.info(f"Filling silo with {amount}T of {crop_type}...")
 
         self.contents[crop_type] += amount
 
     def take_crop(self, crop_type: str, desired_amount: float) -> float:
+        """desired_amount should be in tons"""
+
         if not self.silo:
             raise Exception("Cannot take crops from a non-silo sellpoint")
 
-        amount = min(self.silo.contents[crop_type], desired_amount)
+        logging.info(f"Unloading silo of {desired_amount}T of {crop_type}...")
+
+        amount = min(self.contents[crop_type], desired_amount)
         self.contents[crop_type] -= amount
 
         return amount
+
+    def sell_crop(self, crop_type: str, desired_amount: float) -> None:
+        """desired_amount should be in tons"""
+
+        if self.silo:
+            raise Exception("Cannot sell crops to a silo!")
+
+        self.pending_money += self.prices[crop_type] * desired_amount
+
+    def update(self, mouse_pos: tuple[int, int]) -> bool:
+        if self.silo_rect.collidepoint(mouse_pos[0] + self.silo_rect.w / 2, mouse_pos[1] + self.silo_rect.h / 2):
+            return True
+
+        return False

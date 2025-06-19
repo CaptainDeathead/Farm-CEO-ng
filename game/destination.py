@@ -10,6 +10,7 @@ class Destination:
     def __init__(self, destination: Paddock | SellPoint | None) -> None:
         self.destination = destination
         self.is_paddock = isinstance(destination, Paddock)
+        self.is_sellpoint = isinstance(destination, SellPoint)
         self.is_shed = destination is None
 
         self.name = self.get_name()

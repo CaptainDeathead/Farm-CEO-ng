@@ -204,6 +204,9 @@ class SaveManager:
     def set_money(self, new_money: float) -> None:
         self.money = new_money
 
+    def add_money(self, add_amount: float) -> None:
+        self.set_money(self.money + add_amount)
+
     def set_xp(self, new_xp: float) -> None:
         self.xp = new_xp
 

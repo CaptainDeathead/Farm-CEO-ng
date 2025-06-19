@@ -83,6 +83,8 @@ class HUD:
         self.money_icon = pg.transform.smoothscale(ResourceManager().load_image("Icons/currency.png"), (50, 50))
         self.rebuild_money()
 
+        self.last_money = self.save_manager.money
+
     def rebuild_money(self) -> None:
         self.money_text = ResourceManager().font_manager.get_sysfont(None, 70).render(f"{self.save_manager.money:,.2f}", True, (255, 255, 255))
         self.money_surface = pg.Surface((self.money_icon.width + self.money_text.width + 10, max(self.money_icon.height, self.money_text.height)), pg.SRCALPHA)
@@ -91,6 +93,9 @@ class HUD:
         self.money_surface.blit(self.money_text, (self.money_icon.width + 5, 0))
 
     def draw(self) -> None:
+        if self.save_manager.money != self.last_money:
+            self.rebuild_money()
+
         self.game_surface.blit(self.money_surface, (self.WIDTH - self.money_surface.width - 10, 10))
 
 class FarmCEO:
@@ -133,8 +138,8 @@ class FarmCEO:
         equipment_map_funcs = {
             "map_lighten": self.map.disable_dark_overlay,
             "map_darken": self.map.enable_dark_overlay,
-            "set_location_click_callback": self.paddock_manager.set_location_click_callback,
-            "destroy_location_click_callback": self.paddock_manager.destroy_location_click_callback,
+            "set_location_click_callback": self.set_location_click_callback,
+            "destroy_location_click_callback": self.destroy_location_click_callback,
             "fill_all_paddocks": self.paddock_manager.fill_all_paddocks,
             "get_paddocks": self.paddock_manager.get_paddocks
         }
@@ -175,6 +180,18 @@ class FarmCEO:
         self.events.set_override_authority_requirement(False)
         self.popup = None
 
+    def set_location_click_callback(self, callback: object) -> None:
+        self.paddock_manager.set_location_click_callback(callback)
+        self.sellpoint_manager.set_location_click_callback(callback)
+
+        logging.debug("Location click callbacks set for paddock and sellpoint managers.")
+
+    def destroy_location_click_callback(self) -> None:
+        self.paddock_manager.destroy_location_click_callback()
+        self.sellpoint_manager.destroy_location_click_callback()
+
+        logging.debug("Location click callbacks destroyed for paddock and sellpoint managers.")
+
     def background_render(self) -> None:
         self.map.render()
         self.paddock_manager.draw_paddock_numbers()
@@ -187,6 +204,7 @@ class FarmCEO:
             self.time += TIMESCALE
 
         self.paddock_manager.update(self.events.mouse_just_released)
+        self.sellpoint_manager.update(self.events.mouse_just_released)
         self.shed.simulate(dt)
 
     def foreground_render(self) -> None:

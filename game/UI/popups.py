@@ -173,7 +173,7 @@ class SelectCropPopup(PopupType):
 
         self.crop_selection_buttons = [
             Button(self.widget.surface, dropdown_pos[0], dropdown_pos[1], btn_width, btn_height, pg.Rect(0, 0, self.WIDTH, self.HEIGHT), UI_MAIN_COLOR, UI_ACTIVE_COLOR, UI_TEXT_COLOR,
-                   f"{crop_type.capitalize()} ({round(sellpoint_manager.get_stored_ammount(crop_type), 1)}T)", 40, (20, 20, 20, 20), 0, 0, True, authority=True)
+                   f"{crop_type.capitalize()} ({round(sellpoint_manager.get_stored_amount(crop_type), 1)}T)", 40, (20, 20, 20, 20), 0, 0, True, authority=True)
                    for crop_type in sellpoint_manager.get_stored_crops()
         ]
 
@@ -204,13 +204,15 @@ class SelectCropPopup(PopupType):
         self.remove_destination_picker()
 
         crop_type = self.crop_selection_dropdown.get_selected_text().split(" ")[0].lower()
-        crop_ammount = self.sellpoint_manager.get_stored_ammount(crop_type)
+        crop_amount = self.sellpoint_manager.get_stored_amount(crop_type)
         crop_index = CROP_TYPES.index(crop_type)
 
-        old_crop_type, old_amount = self.set_tool_fill(crop_index, crop_ammount)
+        self.sellpoint_manager.take_crop(crop_type, crop_amount)
+
+        old_crop_type, old_amount = self.set_tool_fill(crop_index, crop_amount)
 
         if old_amount > 0:
-            self.sellpoint_manager.silo.contents[CROP_TYPES[old_crop_type]] += old_amount
+            self.sellpoint_manager.store_crop(CROP_TYPES[old_crop_type], old_amount)
 
         self.assign_task(done_additional_popup=True)
 
