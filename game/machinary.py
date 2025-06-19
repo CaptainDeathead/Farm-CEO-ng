@@ -780,7 +780,7 @@ class Tool(Trailer):
     def update(self) -> None:
         if self.active:
             if self.working:
-                if FILL_TOOLS[self.tool_type]:
+                if self.tool_type in PAINT_TOOLS:
                     self.check_paint()
 
             self.draw()

@@ -109,6 +109,8 @@ FILL_TOOLS = {
     "Cultivators": False
 }
 
+PAINT_TOOLS = ["Seeders", "Spreaders", "Sprayers", "Headers", "Cultivators"]
+
 EXCLUDE_SELLPOINT_TOOLS = {
     "Seeders": True,
     "Spreaders": True,
