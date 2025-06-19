@@ -47,7 +47,7 @@ class SellpointManager:
         logging.debug("Loading sellpoints...")
 
         for sellpoint_id in sellpoints:
-            position = sellpoints[sellpoint_id]["location"]
+            raw_position = sellpoints[sellpoint_id]["location"]
             rotation = sellpoints[sellpoint_id]["rotation"]
             silo = sellpoints[sellpoint_id]["silo"]
             name = sellpoints[sellpoint_id]["name"]
@@ -67,9 +67,9 @@ class SellpointManager:
 
                     self._save_sellpoints_on_load = True
 
-            game_pos = (position[0] * self.map_scale, position[1] * self.map_scale)
+            game_pos = (raw_position[0] * self.map_scale, raw_position[1] * self.map_scale)
 
-            sellpoint = SellPoint(self.game_surface, game_pos, rotation, self.map_scale, name, silo, contents, prices)
+            sellpoint = SellPoint(self.game_surface, raw_position, game_pos, rotation, self.map_scale, name, silo, contents, prices)
             self.sellpoints.append(sellpoint)
 
             if sellpoint.silo: self.silo = sellpoint
@@ -84,7 +84,7 @@ class SellpointManager:
 
         for i, sellpoint in enumerate(self.sellpoints):
             sellpoints_dict[str(i)] = {
-                "location": sellpoint.pos,
+                "location": sellpoint.raw_position,
                 "rotation": sellpoint.rotation,
                 "silo": sellpoint.silo,
                 "name": sellpoint.name,

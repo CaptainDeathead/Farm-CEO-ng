@@ -3,14 +3,16 @@ import logging
 
 from resource_manager import ResourceManager
 from utils import LayableRenderObj, utils
+from data import PANEL_WIDTH
 
 from typing import Dict, Sequence
 
 class SellPoint(LayableRenderObj):
-    def __init__(self, game_surface: pg.Surface, pos: Sequence[int], rotation: float, map_scale: float, name: str, silo: bool,
+    def __init__(self, game_surface: pg.Surface, raw_position: Sequence[int], pos: Sequence[int], rotation: float, map_scale: float, name: str, silo: bool,
                  contents: Dict[str, float], prices: Dict[str, float]) -> None:
 
         self.game_surface = game_surface
+        self.raw_position = raw_position # Position without scaling and moving (raw from savefile)
 
         self.pos = pos
         self.rotation = rotation

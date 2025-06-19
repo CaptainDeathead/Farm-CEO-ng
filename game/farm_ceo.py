@@ -56,6 +56,8 @@ class Map:
         self.surface = pg.transform.scale(self.original_surface, (self.rect.w * self.scale, self.rect.h * self.scale))
         self.rect = self.surface.get_rect()
 
+        logging.info(f"Global scale set to: {self.scale}x!")
+
     def enable_dark_overlay(self) -> None:
         self.active_surface = self.dark_surface
         self.dark_overlay_enabled = True
