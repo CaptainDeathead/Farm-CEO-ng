@@ -79,7 +79,14 @@ class TractorNewTaskPopup(PopupType):
             index = i + len(self.vehicles)
 
             self.equipment_buttons[index].old_command = self.equipment_buttons[index].command
-            self.equipment_buttons[index].command = lambda i=i: self.set_selected_tool(i)
+
+            if tool.active:
+                self.equipment_buttons[index].set_opacity(128)
+                self.equipment_buttons[index].draw()
+
+                self.equipment_buttons[index].command = lambda: None
+            else:
+                self.equipment_buttons[index].command = lambda i=i: self.set_selected_tool(i)
 
     def init_widget_components(self) -> None:
         widget = self.widget
