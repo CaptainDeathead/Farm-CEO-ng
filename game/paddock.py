@@ -5,7 +5,7 @@ from typing import Dict, List, Tuple
 from data import PANEL_WIDTH, STATE_COLORS
 
 class Paddock:
-    def __init__(self, attrs: Dict[int, any], num: int, scale: float, map_paddocks_surf: pg.Surface) -> None:
+    def __init__(self, attrs: Dict[int, any], num: str, scale: float, map_paddocks_surf: pg.Surface) -> None:
         self.attrs = attrs
         self.num = num
         self.scale = scale

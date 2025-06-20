@@ -74,6 +74,7 @@ class Equipment:
         self.shed.set_equipment_draw(self.draw)
 
         self.selected_vehicle_unloading_headers = {}
+        self.selected_vehicle_loading_vehicles = {}
 
     def close_popup(self) -> None:
         self.set_popup(None)
@@ -97,6 +98,7 @@ class Equipment:
     def cancel_task_assign(self) -> None:
         self.showing_destination_picker = False
         self.selected_vehicle_unloading_headers = {}
+        self.selected_vehicle_loading_vehicles = {}
 
         self.draw()
         self.reset_map()
@@ -105,24 +107,50 @@ class Equipment:
     def assign_task(self, done_additional_popup: bool = False) -> None:
         if self.selected_destination is None: return
 
+        if self.selected_destination.is_paddock:
+            paddock = int(self.selected_destination.destination.num) - 1
+
+            header = self.selected_vehicle_unloading_headers.get(paddock)
+            vehicle = self.selected_vehicle_loading_vehicles.get(paddock)
+        else:
+            header = None
+            vehicle = None
+
+        # This code needs probably to be replaced in the future if trailers need to do more than one of 3 things:
+        #   1. Unload headers
+        #   2. Load tools
+        #   3. Sell crops
+        # This is because the determinant of weather to fill the trailer (below) is just if its not a header it does not require filling, and it fills for everything else
+        trailer_requires_fill = True
+        if header is not None:
+            trailer_requires_fill = False
+
         if self.selected_tool.tool_type == "Seeders" and not done_additional_popup:
             logging.debug("Selected tool is a seeder. Opening crop selection popup...")
             self.set_popup(SelectCropPopup(self.events, self.sellpoint_manager, self.close_popup, self.remove_destination_picker, self.selected_tool.set_fill, self.assign_task))
             return
 
-        elif self.selected_tool.tool_type == "Trailers" and not done_additional_popup:
+        elif self.selected_tool.tool_type == "Trailers" and not done_additional_popup and trailer_requires_fill:
             logging.debug("Selected tool is a trailer. Opening crop selection popup...")
             self.set_popup(SelectCropPopup(self.events, self.sellpoint_manager, self.close_popup, self.remove_destination_picker, self.selected_tool.set_fill, self.assign_task))
             return
 
         logging.info(f"Assigning vehicle: {self.selected_vehicle.full_name}, with tool: {self.selected_tool.full_name} a task at: {self.selected_destination.get_name()}...")
-
         self.shed.task_tractor(self.selected_vehicle, self.selected_tool, self.selected_destination)
 
-        # There is a full header in the paddock because it would've been added by the get_excluded_paddocks call
         if self.selected_destination.is_paddock and self.selected_tool.tool_type == "Trailers":
-            self.selected_vehicle.path.extend(self.selected_vehicle_unloading_headers[self.selected_vehicle.paddock].on_unloading_vehicle_assign(self.selected_vehicle))
-            self.selected_vehicle.path.append(self.selected_vehicle_unloading_headers[self.selected_vehicle.paddock].position)
+            if header:
+                # There is a full header in the paddock because it would've been added by the get_excluded_paddocks call
+                self.selected_vehicle.path.extend(header.on_unloading_vehicle_assign(self.selected_vehicle))
+                self.selected_vehicle.path.append(header.position)
+                self.selected_vehicle.deliver_on_load_complete = True
+            elif vehicle:
+                # There is a tool that needs filling in the paddock
+                self.selected_vehicle.path.extend(vehicle.on_loading_vehicle_assign(self.selected_vehicle))
+                self.selected_vehicle.path.append(vehicle.position)
+                self.selected_vehicle.deliver_on_load_complete = True
+            else:
+                logging.error("Unexpected race condition! A paddock has not been excluded for a selected trailer that has nothing to do with the trailer.")
 
         elif self.selected_tool.tool_type == "Trailers":
             # Just delivering
@@ -165,19 +193,24 @@ class Equipment:
         excluded_paddocks = []
 
         for p, paddock in enumerate(self.get_paddocks()):
+            # WARNING: For trailers to load different tools they need to have access to that tool's desired states (put the state in the trailers desired states in data)
             if paddock.state not in desired_paddock_states:
                 excluded_paddocks.append(p)
                 continue
 
             if tool_type == "Trailers":
                 found_valid_header = False
+                found_valid_tool = False
                 for vehicle in self.shed.vehicles:
                     if isinstance(vehicle, Header) and vehicle.paddock == int(paddock.num) - 1 and vehicle.waiting_for_unloading_vehicle_assign:
                         found_valid_header = True
                         self.selected_vehicle_unloading_headers[p] = vehicle
-                        break
+
+                    elif isinstance(vehicle, Tractor) and vehicle.tool is not None and vehicle.paddock == int(paddock.num) - 1 and vehicle.waiting_for_loading_vehicle_assign:
+                        found_valid_tool = True
+                        self.selected_vehicle_loading_vehicles[p] = vehicle
                 
-                if not found_valid_header:
+                if not found_valid_header and not found_valid_tool:
                     excluded_paddocks.append(p)
 
         return excluded_paddocks

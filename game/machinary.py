@@ -12,12 +12,16 @@ from time import time
 from math import atan2, sqrt, cos, sin, radians, degrees
 from copy import deepcopy
 from typing import Dict, List, Sequence
+from typing_extensions import Self
 
 class Tractor(Vehicle):
     IS_VEHICLE: bool = True
     PATH_POP_RADIUS: bool = 15
+
     UNLOAD_INTERVAL: float = 0.5
     UNLOAD_RATE: float = 1
+    LOAD_INTERVAL: float = 0.5
+    LOAD_RATE: float = 1
 
     def __init__(self, game_surface: pg.Surface, shed_rect: pg.Rect, attrs: Dict[str, any], scale: float, task_tractor: object, equipment_draw: object, get_silo: object) -> None:
         self.surface = game_surface
@@ -65,7 +69,14 @@ class Tractor(Vehicle):
         self.heading_to_silo = False
         self.heading_to_sell = False
 
+        self.waiting_for_loading_vehicle_assign = False
+        self.waiting_for_loading_vehicle = False
+        self.loading_vehicle = None
+        self.loading = False
+        self.deliver_on_load_complete = False
+
         self.last_unload = time()
+        self.last_load = time()
 
         image = pg.transform.scale_by(ResourceManager.load_image(self.anims['normal']), self.scale*VEHICLE_SCALE)
         super().__init__(self.surface, image, (shed_rect.x, shed_rect.y + 10), 0, self.hitch_y)
@@ -105,6 +116,23 @@ class Tractor(Vehicle):
         if was_waiting and not self.waiting:
             self.has_waited = True
 
+    def on_loading_vehicle_arrive(self) -> None:
+        logging.debug(f"{self.full_name} loading vehicle has arrived. Begginning unloading sequence...")
+
+        self.waiting_for_loading_vehicle = False
+        self.loading = True
+
+    def on_loading_vehicle_assign(self, vehicle: Self) -> List[Sequence[float]]:
+        """Returns a path to the header"""
+
+        logging.debug(f"{self.full_name} loading vehicle has been assigned. Waiting for it's arrival...")
+
+        self.loading_vehicle = vehicle
+        self.waiting_for_loading_vehicle_assign = False
+        self.waiting_for_loading_vehicle = True
+
+        return list(reversed(self.job.trace_collision_boundary(self.position, self.destination.destination.gate, self.job.lap_1)))
+
     def unload_tool(self) -> None:
         if time() - self.last_unload < self.UNLOAD_INTERVAL: return
 
@@ -130,23 +158,68 @@ class Tractor(Vehicle):
             self.set_string_task("Driving to shed...")
             self.task_tractor(self, self.tool, Destination(None), self.stage)
 
+    def load_tool(self) -> None:
+        if time() - self.last_load < self.LOAD_INTERVAL: return
+
+        self.last_load = time()
+        this_fill_difference = min(self.tool.storage, self.fill + self.LOAD_RATE) - self.fill
+        other_fill_difference = min(self.loading_vehicle.tool.fill, self.LOAD_RATE)
+        fill_difference = min(this_fill_difference, other_fill_difference)
+
+        self.tool.update_fill(self.tool.fill_type, fill_difference)
+        self.loading_vehicle.tool.update_fill(self.tool.fill_type, -fill_difference)
+
+        if self.loading_vehicle.tool.fill <= 0 or self.tool.fill >= self.tool.storage:
+            logging.info("Loading tool has run out of material or previously empty (target) tool is full! Loading finished.")
+
+            self.loading = False
+            self.waiting = False
+
+            self.loading_vehicle.set_waiting(False)
+            self.loading_vehicle.tool.set_animation('full')
+            self.loading_vehicle.tool.reload_vt_sim()
+            self.loading_vehicle.path = self.job.trace_collision_boundary(self.position, self.destination.destination.gate, self.job.lap_1)
+
     def follow_path(self) -> None:
+        if self.waiting_for_loading_vehicle_assign: return
+
+        if self.waiting_for_loading_vehicle:
+            if self.loading_vehicle.waiting:
+                self.on_loading_vehicle_arrive()
+            return
+
+        if self.loading:
+            self.load_tool()
+
         if len(self.path) == 0:
             if self.tool.tool_type == "Trailers" and self.destination.is_paddock:
-                # Needs to unload
                 if self.has_waited:
                     if self.going_to_gate:
+                        # 2
                         self.has_waited = False
                         self.going_to_gate = False
-                        self.heading_to_silo = True
-                        target = Destination(self.get_silo())
+
+                        if self.deliver_on_load_complete:
+                            self.heading_to_silo = True
+                            target = Destination(self.get_silo())
+                        else:
+                            target = Destination(None)
+
+                        self.deliver_on_load_complete = False
+
                         self.task_tractor(self, self.tool, target, self.stage)
-                        self.set_string_task(f"Transporting {round(self.tool.fill, 1)}T of {self.tool.get_fill_type_str} to {self.destination.get_name()}...")
                     else:
-                        self.stage = JOB_TYPES["transporting_from"]
+                        # 1
                         self.going_to_gate = True
-                        self.set_string_task(f"Transporting {round(self.tool.fill, 1)}T of {self.tool.get_fill_type_str} to a silo...")
+                        
+                        if self.deliver_on_load_complete:
+                            self.stage = JOB_TYPES["transporting_from"]
+                            self.set_string_task(f"Transporting {round(self.tool.fill, 1)}T of {self.tool.get_fill_type_str} to a silo...")
+                        else:
+                            self.stage = JOB_TYPES["travelling_from"]
+                            self.set_string_task("Travelling to shed...")
                 else:
+                    # Needs to unload
                     self.set_waiting(True)
                 
                 return
@@ -275,6 +348,11 @@ class Tractor(Vehicle):
             self.calculate_movement(required_dt)
             self.simulate(required_dt)
             self.tool.simulate(required_dt * 2)
+
+            if self.tool.waiting_for_loading:
+                self.waiting_for_loading_vehicle_assign = True
+                self.waiting = True
+                self.tool.waiting_for_loading = False
 
             remaining_dt -= required_dt
 
@@ -426,8 +504,8 @@ class Header(Vehicle):
         if self.waiting_for_unloading_vehicle:
             if self.unloading_vehicle.waiting:
                 self.on_unloading_vehicle_arrive()
-            else:
-                return
+
+            return
 
         if self.unloading:
             self.unload()
@@ -641,6 +719,7 @@ class Tool(Trailer):
         self.vehicle: Tractor | Header = None
 
         self.desired_rotation: float = 0.0
+        self.waiting_for_loading: bool = False
 
     @property
     def full_name(self) -> str:
@@ -735,7 +814,7 @@ class Tool(Trailer):
     def request_fill(self) -> None:
         logging.info(f"Tool {self.full_name} is requesting fill...")
 
-        logging.error("Error when requesting fill! Unimplemented!")
+        self.waiting_for_loading = True
 
     def paint(self) -> int:
         paint_surf = pg.transform.rotate(self.master_image, self.rotation)

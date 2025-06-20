@@ -44,7 +44,7 @@ TOOL_STATES = {
     "Seeders": (2,),
     "Spreaders": (0, 1, 2, 3, 4),
     "Sprayers": (0, 2, 3, 4),
-    "Trailers": (6,),
+    "Trailers": (0, 1, 2, 3, 4, 5, 6),
     "Headers": (6,)
 }
 
