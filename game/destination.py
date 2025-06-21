@@ -10,8 +10,15 @@ class Destination:
     def __init__(self, destination: Paddock | SellPoint | None) -> None:
         self.destination = destination
         self.is_paddock = isinstance(destination, Paddock)
-        self.is_sellpoint = isinstance(destination, SellPoint)
         self.is_shed = destination is None
+        self.is_silo = False
+        self.is_sellpoint = False
+
+        if isinstance(destination, SellPoint):
+            if destination.silo:
+                self.is_silo = True
+            else:
+                self.is_sellpoint = True
 
         self.name = self.get_name()
 

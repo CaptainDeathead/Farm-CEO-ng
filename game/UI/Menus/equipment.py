@@ -107,6 +107,10 @@ class Equipment:
     def assign_task(self, done_additional_popup: bool = False) -> None:
         if self.selected_destination is None: return
 
+        self.selected_vehicle.re_init()
+        if self.selected_tool is not None:
+            self.selected_tool.re_init()
+
         if self.selected_destination.is_paddock:
             paddock = int(self.selected_destination.destination.num) - 1
 

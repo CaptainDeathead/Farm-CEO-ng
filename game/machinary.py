@@ -81,6 +81,33 @@ class Tractor(Vehicle):
         image = pg.transform.scale_by(ResourceManager.load_image(self.anims['normal']), self.scale*VEHICLE_SCALE)
         super().__init__(self.surface, image, (shed_rect.x, shed_rect.y + 10), 0, self.hitch_y)
 
+    def re_init(self) -> None:
+        logging.info(f"Re-initializing tractor: {self.full_name}...")
+
+        self.string_task = "No task assigned"
+        self.paddock: int = -1
+
+        self.active = False
+        self.stage = 2
+        self.destination = Destination(None)
+        self.max_speed = 40
+        self.curr_speed = self.max_speed
+
+        self.tool: Tool = None
+
+        self.desired_rotation: float = 0.0
+        self.waiting = False
+        self.has_waited = False
+        self.going_to_gate = False
+        self.heading_to_silo = False
+        self.heading_to_sell = False
+
+        self.waiting_for_loading_vehicle_assign = False
+        self.waiting_for_loading_vehicle = False
+        self.loading_vehicle = None
+        self.loading = False
+        self.deliver_on_load_complete = False
+
     @property
     def full_name(self) -> str:
         return f"{self.brand} {self.model}"
@@ -206,7 +233,6 @@ class Tractor(Vehicle):
                             target = Destination(None)
 
                         self.deliver_on_load_complete = False
-
                         self.task_tractor(self, self.tool, target, self.stage)
                     else:
                         # 1
@@ -408,8 +434,39 @@ class Header(Vehicle):
 
         self.desired_rotation: float = 0.0
 
+        self.waiting_for_unloading_vehicle_assign = False
+        self.waiting_for_unloading_vehicle = False
+        self.unloading_vehicle = None
+        self.unloading = False
+        self.last_unload = time()
+        self.waiting = False
+
+        self.completed_path = []
+        self.job = None
+
         image = ResourceManager.load_image(self.anims['pipeIn'])
         super().__init__(self.surface, image, (shed_rect.x, shed_rect.y + 10), 0, 0)
+
+        self.working_width = self.image.get_width()
+
+    def re_init(self) -> None:
+        logging.info(f"Re-initializing header: {self.full_name}...")
+
+        self.string_task = "No task assigned"
+        self.paddock: int = -1
+
+        self.active = False
+        self.stage = 2
+        self.destination = Destination(None)
+        self.max_speed = 40
+        self.curr_speed = self.max_speed
+
+        self.last_fill = 0
+
+        self.last_paint_left = (0, 0)
+        self.last_paint_right = (0, 0)
+
+        self.desired_rotation: float = 0.0
 
         self.working_width = self.image.get_width()
 
@@ -717,6 +774,19 @@ class Tool(Trailer):
         self.destination = Destination(None)
 
         self.vehicle: Tractor | Header = None
+
+        self.desired_rotation: float = 0.0
+        self.waiting_for_loading: bool = False
+
+    def re_init(self) -> None:
+        logging.info(f"Re-initializing tool: {self.full_name}...")
+
+        self.string_task = "No task assigned"
+        self.paddock: int = -1
+        self.path: List[Sequence[float]]
+
+        self.active = False
+        self.destination = Destination(None)
 
         self.desired_rotation: float = 0.0
         self.waiting_for_loading: bool = False
