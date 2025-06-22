@@ -875,10 +875,7 @@ class Tool(Trailer):
         self.set_working_animation(reload_vt=False)
         self.working_width = self.master_image.get_width()
 
-        if self.tool_type == "Trailer" and self.fill > 0:
-            self.set_animation("full")
-        else:
-            self.set_animation(self.anims["default"]) # anims['default'] key returns the name of the key to the default image
+        self.set_animation(self.anims["default"]) # anims['default'] key returns the name of the key to the default image
 
     def request_fill(self) -> None:
         logging.info(f"Tool {self.full_name} is requesting fill...")

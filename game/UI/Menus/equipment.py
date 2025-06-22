@@ -153,6 +153,7 @@ class Equipment:
                 self.selected_vehicle.path.extend(vehicle.on_loading_vehicle_assign(self.selected_vehicle))
                 self.selected_vehicle.path.append(vehicle.position)
                 self.selected_vehicle.deliver_on_load_complete = True
+                self.selected_tool.set_animation("full")
             else:
                 logging.error("Unexpected race condition! A paddock has not been excluded for a selected trailer that has nothing to do with the trailer.")
 
