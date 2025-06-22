@@ -95,7 +95,7 @@ class SellpointManager:
         return sellpoints_dict
 
     def get_stored_amount(self, crop_type: str) -> float:
-        return self.silo.contents[crop_type]
+        return self.silo.contents.get(crop_type, 0)
 
     def get_stored_crops(self, crop_filter: List[str] = []) -> List[str]:
         stored_crops = []

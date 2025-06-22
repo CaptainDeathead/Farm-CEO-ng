@@ -73,6 +73,11 @@ CROP_IDS = {
 LIME_STAGES = (0, 1, 2)
 FERTILISER_STAGES = (2, 3, 4)
 FERTILISERS = ("lime", "super", "urea")
+FERTILISER_PRICES = {
+    "lime": 30,
+    "super": 300,
+    "urea": 700
+}
 
 FILL_TYPES = []
 FILL_TYPES.extend(CROP_TYPES)
