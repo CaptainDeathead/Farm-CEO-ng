@@ -68,6 +68,14 @@ CROP_IDS = {
     "canola": 3
 }
 
+LIME_STAGES = (0, 1, 2)
+FERTILISER_STAGES = (2, 3, 4)
+FERTILISERS = ("lime", "super", "urea")
+
+FILL_TYPES = []
+FILL_TYPES.extend(CROP_TYPES)
+FILL_TYPES.extend(FERTILISERS)
+
 BASE_CROP_PRICES = {
     0: 300,
     1: 400,

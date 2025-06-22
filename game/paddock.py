@@ -2,7 +2,7 @@ import pygame as pg
 
 from random import randint
 from typing import Dict, List, Tuple
-from data import PANEL_WIDTH, STATE_COLORS
+from data import *
 
 class Paddock:
     def __init__(self, attrs: Dict[int, any], num: str, scale: float, map_paddocks_surf: pg.Surface) -> None:
@@ -31,6 +31,10 @@ class Paddock:
         self.state_changed = False
         self.last_collision_count = 0
 
+        self.lime_years = attrs.get("lime_years", 3) # Years until lime runs out
+        self.super_spreaded = attrs.get("super_spreaded", False)
+        self.urea_spreaded = attrs.get("urea_spreaded", False)
+
     def init_collision(self) -> None:
         self.surface, self.rect = self.create_surface()
         self.localised_boundary = self.localise_boundary()
@@ -48,7 +52,10 @@ class Paddock:
             "gate": self.attrs["gate"],
             "state": self.state,
             "hectares": self.hectares,
-            "owned_by": self.owned_by
+            "owned_by": self.owned_by,
+            "lime_years": self.lime_years,
+            "super_spreaded": self.super_spreaded,
+            "urea_spreaded": self.urea_spreaded
         }
     
     def rebuild_num(self) -> None:
@@ -93,6 +100,20 @@ class Paddock:
         pg.draw.polygon(self.surface, color, self.localised_boundary)
         self.draw_to_map()
 
+    def calculate_yield(self) -> float:
+        """Returns a yield bonus percent between 1-2"""
+
+        return 1.0 + (int(self.lime_years > 0) + int(self.super_spreaded) + int(self.urea_spreaded)) / 3
+
+    def is_lime_spreadable(self) -> bool:
+        return self.state in LIME_STAGES
+
+    def is_super_spreadable(self) -> bool:
+        return self.stage in FERTILISER_STAGES
+
+    def is_urea_spreadable(self) -> bool:
+        return self.stage in FERTILISER_STAGES
+
     def load_state(self) -> None:
         self.fill(STATE_COLORS[self.state])
 
@@ -100,6 +121,12 @@ class Paddock:
         self.state = state
         self.load_state()
         self.state_changed = True
+
+        if STATE_NAMES[self.state] == "Harvested":
+            # End of year
+            self.lime_years -= 1
+            self.super_spreaded = False
+            self.urea_spreaded = False
 
     def reset_paint(self) -> None:
         # Note: this only changes the variable is_painting! to reset the paint on the surface you need to fill this paddock after calling this func

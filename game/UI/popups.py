@@ -148,7 +148,7 @@ class SelectCropPopup(PopupType):
     HEIGHT = 500
 
     def __init__(self, events: Events, sellpoint_manager: SellpointManager, close_popup: object, remove_destination_picker: object, set_tool_fill: object,
-                 assign_task: callable) -> None:
+                 assign_task: callable, crop_filter: List[str] = []) -> None:
         self.parent_surface = pg.display.get_surface()
         self.surface = pg.Surface((self.WIDTH, self.HEIGHT), pg.SRCALPHA)
 
@@ -178,11 +178,19 @@ class SelectCropPopup(PopupType):
 
         dropdown_pos = (self.WIDTH / 2 - btn_width, self.HEIGHT / 2 - btn_height)
 
-        self.crop_selection_buttons = [
-            Button(self.widget.surface, dropdown_pos[0], dropdown_pos[1], btn_width, btn_height, pg.Rect(0, 0, self.WIDTH, self.HEIGHT), UI_MAIN_COLOR, UI_ACTIVE_COLOR, UI_TEXT_COLOR,
-                   f"{crop_type.capitalize()} ({round(sellpoint_manager.get_stored_amount(crop_type), 1)}T)", 40, (20, 20, 20, 20), 0, 0, True, authority=True)
-                   for crop_type in sellpoint_manager.get_stored_crops()
-        ]
+        self.fertiliser_mode = crop_filter == "Fertilisers"
+
+        if self.fertiliser_mode:
+            self.crop_selection_buttons = [
+                Button(self.widget.surface, dropdown_pos[0], dropdown_pos[1], btn_width, btn_height, pg.Rect(0, 0, self.WIDTH, self.HEIGHT), UI_MAIN_COLOR, UI_ACTIVE_COLOR, UI_TEXT_COLOR,
+                       f"{fert_type.capitalize()}", 40, (20, 20, 20, 20), 0, 0, True, authority=True) for fert_type in FERTILISERS
+            ]
+        else:
+            self.crop_selection_buttons = [
+                Button(self.widget.surface, dropdown_pos[0], dropdown_pos[1], btn_width, btn_height, pg.Rect(0, 0, self.WIDTH, self.HEIGHT), UI_MAIN_COLOR, UI_ACTIVE_COLOR, UI_TEXT_COLOR,
+                    f"{crop_type.capitalize()} ({round(sellpoint_manager.get_stored_amount(crop_type), 1)}T)", 40, (20, 20, 20, 20), 0, 0, True, authority=True)
+                    for crop_type in sellpoint_manager.get_stored_crops(crop_filter)
+            ]
 
         if len(self.crop_selection_buttons) == 0:
             # TODO: NO CROPS OWNED SCREEN, MAYBE TAKE USER TO CROP BUY MENU
@@ -210,15 +218,25 @@ class SelectCropPopup(PopupType):
         self.close_popup()
         self.remove_destination_picker()
 
-        crop_type = self.crop_selection_dropdown.get_selected_text().split(" ")[0].lower()
-        crop_amount = self.sellpoint_manager.get_stored_amount(crop_type)
-        crop_index = CROP_TYPES.index(crop_type)
+        if self.fertiliser_mode:
+            crop_type = self.crop_selection_dropdown.get_selected_text().lower()
+            crop_amount = 1_000_000 # 1 million should be more than enough
+            crop_index = FILL_TYPES.index(crop_type)
 
-        self.sellpoint_manager.take_crop(crop_type, crop_amount)
+            # TODO: Make it buy the fertiliser here
+            # ...
 
-        old_crop_type, old_amount = self.set_tool_fill(crop_index, crop_amount)
+            old_crop_type, old_amount = self.set_tool_fill(crop_index, crop_amount)
+        else:
+            crop_type = self.crop_selection_dropdown.get_selected_text().split(" ")[0].lower()
+            crop_amount = self.sellpoint_manager.get_stored_amount(crop_type)
+            crop_index = FILL_TYPES.index(crop_type)
 
-        if old_amount > 0:
+            self.sellpoint_manager.take_crop(crop_type, crop_amount)
+
+            old_crop_type, old_amount = self.set_tool_fill(crop_index, crop_amount)
+
+        if old_amount > 0 and old_crop_type in CROP_TYPES:
             self.sellpoint_manager.store_crop(CROP_TYPES[old_crop_type], old_amount)
 
         self.assign_task(done_additional_popup=True)

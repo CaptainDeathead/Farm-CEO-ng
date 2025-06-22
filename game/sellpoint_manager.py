@@ -97,11 +97,12 @@ class SellpointManager:
     def get_stored_amount(self, crop_type: str) -> float:
         return self.silo.contents[crop_type]
 
-    def get_stored_crops(self) -> List[str]:
+    def get_stored_crops(self, crop_filter: List[str] = []) -> List[str]:
         stored_crops = []
 
-        for crop, ammount in self.silo.contents.items():
-            if ammount > 0: stored_crops.append(crop)
+        for crop, amount in self.silo.contents.items():
+            if amount > 0 and (crop in crop_filter or crop_filter == []):
+                stored_crops.append(crop)
 
         return stored_crops
 

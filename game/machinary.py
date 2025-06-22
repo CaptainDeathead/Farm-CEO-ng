@@ -285,8 +285,20 @@ class Tractor(Vehicle):
 
                     if self.stage - 1 == JOB_TYPES["working"]:
                         # was just working, sort out paddock now
+                        self.tool.set_animation("") # will go to default
+
                         self.destination.destination.reset_paint()
-                        self.destination.destination.set_state(self.tool.get_output_state())
+                        if self.tool.fill_type not in FERTILISERS:
+                            self.destination.destination.set_state(self.tool.get_output_state())
+                            
+                            if FERTILISERS[self.tool.fill_type] == "lime":
+                                self.destination.destination.reset_lime_years()
+                            elif FERTILISERS[self.tool.fill_type] == "super":
+                                self.destination.destination.super_spreaded = True
+                            elif FERTILISERS[self.tool.fill_type] == "urea":
+                                self.destination.destination.urea_spreaded = True
+                            else:
+                                logging.error("Unexpected race condition occurred when setting paddock fertiliser states: fill_type not found in FERTILISERS!")
 
                 if self.stage == JOB_TYPES["travelling_from"]:
                     # Go to shed
@@ -675,7 +687,7 @@ class Header(Vehicle):
         last_paint_right_dist = sqrt((right_paint[0] - self.last_paint_right[0])**2 + (right_paint[1] - self.last_paint_right[1])**2)
 
         if last_paint_left_dist >= PAINT_RECT_DIST or last_paint_right_dist >= PAINT_RECT_DIST:
-            fill_amount = self.paint()
+            fill_amount = self.paint() * self.destination.destination.calculate_yield()
             self.increment_fill(fill_amount)
 
             self.last_paint_left = left_paint
@@ -802,7 +814,7 @@ class Tool(Trailer):
     @property
     def get_fill_type_str(self) -> str:
         if self.fill_type == -1: return "--"
-        return CROP_TYPES[self.fill_type]
+        return FILL_TYPES[self.fill_type]
 
     @property
     def working(self) -> bool: return self.vehicle.working
@@ -825,12 +837,12 @@ class Tool(Trailer):
     def set_fill(self, fill_type: int, fill_amount: float) -> Tuple[int, float]:
         """Returns how much crop was stored in it already and the type"""
 
-        crop_name = CROP_TYPES[fill_type]
+        crop_name = FILL_TYPES[fill_type]
 
         logging.debug(f"Filling {self.full_name} with {fill_amount}T of {crop_name}...")
 
         if self.fill > 0:
-            logging.warning(f"While filling {self.full_name} it already has {round(self.fill, 1)} tons of {CROP_TYPES[self.fill_type]} which should be stored back in the silo!")
+            logging.warning(f"While filling {self.full_name} it already has {round(self.fill, 1)} tons of {FILL_TYPES[self.fill_type]} which should be stored back in the silo!")
 
         fill_pool = self.fill + fill_amount
 
@@ -883,8 +895,13 @@ class Tool(Trailer):
         self.waiting_for_loading = True
 
     def paint(self) -> int:
+        color = STATE_COLORS[self.get_output_state()]
+
+        if self.get_fill_type_str in FERTILISERS:
+            color = (100, color[1], 100)
+
         paint_surf = pg.transform.rotate(self.master_image, self.rotation)
-        return self.destination.destination.paint(paint_surf, self.position, STATE_COLORS[self.get_output_state()])
+        return self.destination.destination.paint(paint_surf, self.position, color)
 
     def check_paint(self) -> None: 
         half_width = self.master_image.get_width() / 2
