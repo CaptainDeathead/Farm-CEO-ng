@@ -142,7 +142,21 @@ class PaddockManager:
 
     def draw_paddock_numbers(self) -> None:
         for paddock in self.paddocks:
-            self.screen.blit(paddock.number_surface, (PANEL_WIDTH + paddock.center[0], paddock.center[1]))
+            self.screen.blit(paddock.number_surface, (PANEL_WIDTH + paddock.center[0] - paddock.number_surface.width / 2, paddock.center[1] - paddock.number_surface.height / 2))
+
+            curr_y = paddock.number_surface.height / 2 + paddock.center[1]
+            if paddock.lime_years <= 0:
+                self.screen.blit(paddock.needs_lime_surface, (PANEL_WIDTH + paddock.center[0] - paddock.needs_lime_surface.width / 2, curr_y))
+                curr_y += paddock.needs_lime_surface.height
+
+            if not paddock.super_spreaded:
+                self.screen.blit(paddock.needs_super_surface, (PANEL_WIDTH + paddock.center[0] - paddock.needs_super_surface.width / 2, curr_y))
+                curr_y += paddock.needs_super_surface.height
+
+            if not paddock.urea_spreaded:
+                self.screen.blit(paddock.needs_urea_surface, (PANEL_WIDTH + paddock.center[0] - paddock.needs_urea_surface.width / 2, curr_y))
+                curr_y += paddock.needs_urea_surface.height
+
 
     def check_paddock_clicks(self) -> Paddock | None:
         pos = pg.mouse.get_pos()

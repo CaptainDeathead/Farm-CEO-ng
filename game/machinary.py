@@ -285,20 +285,20 @@ class Tractor(Vehicle):
 
                     if self.stage - 1 == JOB_TYPES["working"]:
                         # was just working, sort out paddock now
-                        self.tool.set_animation("") # will go to default
+                        self.tool.set_animation(self.attrs["default"]) # will go to default
 
                         self.destination.destination.reset_paint()
-                        if self.tool.fill_type not in FERTILISERS:
-                            self.destination.destination.set_state(self.tool.get_output_state())
-                            
-                            if FERTILISERS[self.tool.fill_type] == "lime":
+                        if FILL_TYPES[self.tool.fill_type] in FERTILISERS:
+                            if FILL_TYPES[self.tool.fill_type] == "lime":
                                 self.destination.destination.reset_lime_years()
-                            elif FERTILISERS[self.tool.fill_type] == "super":
+                            elif FILL_TYPES[self.tool.fill_type] == "super":
                                 self.destination.destination.super_spreaded = True
-                            elif FERTILISERS[self.tool.fill_type] == "urea":
+                            elif FILL_TYPES[self.tool.fill_type] == "urea":
                                 self.destination.destination.urea_spreaded = True
                             else:
                                 logging.error("Unexpected race condition occurred when setting paddock fertiliser states: fill_type not found in FERTILISERS!")
+
+                        self.destination.destination.set_state(self.tool.get_output_state())
 
                 if self.stage == JOB_TYPES["travelling_from"]:
                     # Go to shed

@@ -18,6 +18,9 @@ class Paddock:
         if self.owned_by == "player": color = (0, 0, 255)
 
         self.number_surface = pg.font.SysFont(None, 80).render(str(self.num), True, color)
+        self.needs_lime_surface = pg.font.SysFont(None, 30).render("Needs lime", True, (255, 0, 0))
+        self.needs_super_surface = pg.font.SysFont(None, 30).render("Needs super", True, (255, 0, 0))
+        self.needs_urea_surface = pg.font.SysFont(None, 30).render("Needs urea", True, (255, 0, 0))
 
         cx, cy = attrs["center"]
         gx, gy = attrs["gate"]
