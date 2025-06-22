@@ -334,8 +334,6 @@ class Shop:
         step = size + 25 # padding = 25
 
         for item in self.current_items:
-            
-            
             if self.easter_egg:
                 self.buttons.append(Button(self.rendered_surface, x, y, size, size, self.rect, UI_MAIN_COLOR, UI_MAIN_COLOR, UI_TEXT_COLOR,
                                        item, 30, (20, 20, 20, 20), 0, 0, True, lambda item=item: self.update_path(item),

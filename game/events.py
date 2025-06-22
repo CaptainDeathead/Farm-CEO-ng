@@ -45,6 +45,14 @@ class Events:
     def log_mouse_events(self) -> None:
         logging.info(f"{self.mouse_just_pressed=}, {self.mouse_just_released=}, {self.authority_mouse_just_pressed=}, {self.authority_mouse_just_released=}, {self.mouse_press_override=}")
 
+    def check_mouse_hit(self, rect: pg.Rect) -> bool:
+        if rect.collidepoint(pg.mouse.get_pos()) and self.mouse_just_pressed:
+            self.set_override(True)
+            self.mouse_just_pressed = False
+            return True
+        
+        return False
+
     def process_events(self, events: List[pg.event.Event]) -> None:
         if not self.override_requires_authority:
             self.mouse_just_pressed = False
@@ -57,7 +65,7 @@ class Events:
 
         for event in events:
             if event.type == pg.QUIT:
-                logging.info("Farm CEO is closing (pg.QUIT event recieved)...")
+                logging.info("Farm CEO is closing (pg.QUIT event received)...")
                 SaveManager().save_game()
 
                 pg.quit()

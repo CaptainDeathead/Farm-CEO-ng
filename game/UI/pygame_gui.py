@@ -384,7 +384,11 @@ class Popup:
         if self.contents.rect.collidepoint(mouse_pos):
             redraw_required = self.contents.update()
 
-        exit_btn_redraw = self.exit_btn.update(self.events.authority_mouse_just_pressed, self.events.set_override)
+        if self.show_exit_button:
+            exit_btn_redraw = self.exit_btn.update(self.events.authority_mouse_just_pressed, self.events.set_override)
+        else:
+            exit_btn_redraw = False
+
         submit_btn_redraw = self.submit_btn.update(self.events.authority_mouse_just_pressed, self.events.set_override)
 
         if exit_btn_redraw or submit_btn_redraw:
@@ -395,7 +399,9 @@ class Popup:
         return redraw_required
 
     def draw(self) -> None:
-        self.exit_btn.draw()
+        if self.show_exit_button:
+            self.exit_btn.draw()
+
         self.submit_btn.draw()
 
         self.surface.blit(self.contents.surface, (0, self.BANNER_HEIGHT))

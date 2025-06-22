@@ -39,6 +39,8 @@ STATE_COLORS = {
     6: (0, 0, 0)
 }
 
+GROWTH_STAGES = [2, 3, 4]
+
 TOOL_STATES = {
     "Cultivators": (1,),
     "Seeders": (2,),
@@ -139,8 +141,8 @@ CONSOLE_BUILD: bool = not BUILD
 DEBUG_BOUNDARY_LOADING: bool = False
 DEBUG_PATH_GENERATION: bool = False
 DEBUG_PATH_MASK_COLLISION: bool = False
-DEBUG_PATHS: bool = True
-DEBUG_ROADS: bool = True
+DEBUG_PATHS: bool = False
+DEBUG_ROADS: bool = False
 DEBUG_MOUSE_EVENTS: bool = False
 
 # ---------- ABOUT ----------

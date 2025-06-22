@@ -196,7 +196,7 @@ class SelectCropPopup(PopupType):
             # TODO: NO CROPS OWNED SCREEN, MAYBE TAKE USER TO CROP BUY MENU
             self.crop_selection_buttons.append(
                 Button(self.widget.surface, dropdown_pos[0], dropdown_pos[1], btn_width, btn_height, pg.Rect(0, 0, self.WIDTH, self.HEIGHT), UI_MAIN_COLOR, UI_ACTIVE_COLOR, UI_TEXT_COLOR,
-                   f"NO CROP (N/A))", 40, (20, 20, 20, 20), 0, 0, True, authority=True)
+                   f"NO CROP (N/A)", 40, (20, 20, 20, 20), 0, 0, True, authority=True)
             )
 
             self.submit = self.cancel
@@ -251,4 +251,104 @@ class SelectCropPopup(PopupType):
 
         self.popup.update()
 
+        self.draw()
+
+class OKPopup(PopupType):
+    WIDTH = 900
+    HEIGHT = 500
+
+    def __init__(self, events: Events, close_popup: object, title: str, description: str) -> None:
+        self.parent_surface = pg.display.get_surface()
+        self.surface = pg.Surface((self.WIDTH, self.HEIGHT), pg.SRCALPHA)
+
+        self.events = events
+        self.close_popup = close_popup
+        
+        self.title = title
+        self.description = description
+
+        self.widget_rect = pg.Rect(0, Popup.BANNER_HEIGHT, self.WIDTH, self.HEIGHT - Popup.BANNER_HEIGHT * 2)
+        self.widget = Widget(self.parent_surface, self.widget_rect)
+
+        self.widget.surface.fill(UI_BACKGROUND_COLOR)
+
+        self.rect = pg.Rect(0, 0, self.WIDTH, self.HEIGHT)
+
+        self.x = PANEL_WIDTH + 20
+        self.y = self.parent_surface.get_height() / 2 - self.HEIGHT / 2
+
+        self.widget_global_rect = pg.Rect(self.x, self.y + Popup.BANNER_HEIGHT, self.widget_rect.w, self.widget_rect.h)
+        self.global_rect = pg.Rect(self.x, self.y, self.rect.w, self.rect.h)
+
+        self.widget.surface.blit(pg.font.SysFont(None, 60).render(self.description, True, UI_TEXT_COLOR, wraplength=self.widget.rect.w - 40), (20, 20))
+
+        self.popup = Popup(self.parent_surface, self.rect, self.global_rect, 20, self.title, self.widget, (63, 72, 204), (255, 255, 255),
+                           self.cancel, self.submit, self.events, show_exit_button=False)
+
+        self.popup.draw()
+        self.draw()
+
+    def cancel(self) -> None:
+        self.close_popup()
+
+    def submit(self) -> None:
+        self.close_popup()
+
+    def draw(self) -> None:
+        self.surface.blit(self.popup.surface, (0, 0))
+        self.surface.blit(self.widget.surface, (0, self.popup.BANNER_HEIGHT))
+
+    def update(self) -> None:
+        self.popup.update()
+        self.draw()
+
+class OKCancelPopup(PopupType):
+    WIDTH = 900
+    HEIGHT = 500
+
+    def __init__(self, events: Events, close_popup: object, submit_func: object, title: str, description: str) -> None:
+        self.parent_surface = pg.display.get_surface()
+        self.surface = pg.Surface((self.WIDTH, self.HEIGHT), pg.SRCALPHA)
+
+        self.events = events
+        self.close_popup = close_popup
+        self.submit_func = submit_func
+        
+        self.title = title
+        self.description = description
+
+        self.widget_rect = pg.Rect(0, Popup.BANNER_HEIGHT, self.WIDTH, self.HEIGHT - Popup.BANNER_HEIGHT * 2)
+        self.widget = Widget(self.parent_surface, self.widget_rect)
+
+        self.widget.surface.fill(UI_BACKGROUND_COLOR)
+
+        self.rect = pg.Rect(0, 0, self.WIDTH, self.HEIGHT)
+
+        self.x = PANEL_WIDTH + 20
+        self.y = self.parent_surface.get_height() / 2 - self.HEIGHT / 2
+
+        self.widget_global_rect = pg.Rect(self.x, self.y + Popup.BANNER_HEIGHT, self.widget_rect.w, self.widget_rect.h)
+        self.global_rect = pg.Rect(self.x, self.y, self.rect.w, self.rect.h)
+
+        self.widget.surface.blit(pg.font.SysFont(None, 60).render(self.description, True, UI_TEXT_COLOR, wraplength=self.widget.rect.w - 40), (20, 20))
+
+        self.popup = Popup(self.parent_surface, self.rect, self.global_rect, 20, self.title, self.widget, (63, 72, 204), (255, 255, 255),
+                           self.cancel, self.submit, self.events)
+
+        self.popup.draw()
+        self.draw()
+
+    def cancel(self) -> None:
+        self.close_popup()
+
+    def submit(self) -> None:
+        self.submit_func()
+        self.close_popup()
+
+    def draw(self) -> None:
+        self.surface.blit(self.popup.surface, (0, 0))
+        self.surface.blit(self.widget.surface, (0, self.popup.BANNER_HEIGHT))
+
+    def update(self) -> None:
+        self.popup.update()
         self.draw()

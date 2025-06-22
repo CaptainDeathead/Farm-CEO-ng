@@ -11,7 +11,7 @@ from sellpoint_manager import SellpointManager
 from events import Events
 
 from UI.panel import Panel
-from UI.popups import PopupType
+from UI.popups import PopupType, OKPopup, OKCancelPopup
 
 from utils import utils, VarsSingleton
 from farm import Shed
@@ -116,7 +116,9 @@ class FarmCEO:
         self.map = Map(self.screen, self.RESOURCE_MANAGER.load_map("Green_Spring_cfg.json")) # map estimated to be almost screen size
         self.game_surface = pg.Surface((self.map.rect.w, self.map.rect.h), pg.SRCALPHA)
         
-        self.shed = Shed(self.game_surface, utils.scale_rect(pg.Rect(self.map.map_cfg["shed"]["rect"]), self.map.scale), self.map.map_cfg["shed"]["rotation"], self.map.map_cfg["roads"], self.map.scale, None) # Silo will be set later (not None)
+        self.shed = Shed(
+            self.game_surface, self.events, utils.scale_rect(pg.Rect(self.map.map_cfg["shed"]["rect"]), self.map.scale), self.map.map_cfg["shed"]["rotation"], self.map.map_cfg["roads"],
+            self.map.scale, None, self.request_sleep) # Silo will be set later (not None)
 
         self.save_manager: SaveManager = SaveManager()
         self.save_manager.init(self.map.map_cfg, self.shed.vehicles, self.shed.tools, self.shed.add_vehicle, self.shed.add_tool)
@@ -193,6 +195,28 @@ class FarmCEO:
         self.sellpoint_manager.destroy_location_click_callback()
 
         logging.debug("Location click callbacks destroyed for paddock and sellpoint managers.")
+    
+    def sleep(self) -> None:
+        logging.info("Sleeping...")
+
+        for paddock in self.paddock_manager.get_paddocks():
+            if paddock.state in GROWTH_STAGES:
+                paddock.set_state(paddock.state + 1)
+
+    def request_sleep(self) -> None:
+        logging.info("Sleep requested.")
+
+        for vehicle in self.shed.vehicles:
+            if vehicle.active:
+                self.set_popup(OKPopup(self.events, self.remove_popup, "Cannot Sleep Now!", "You cannot sleep until all machinery is in the shed."))
+                return
+        
+        for tool in self.shed.tools:
+            if tool.active:
+                self.set_popup(OKPopup(self.events, self.remove_popup, "Cannot Sleep Now!", "You cannot sleep until all machinery is in the shed."))
+                return
+
+        self.set_popup(OKCancelPopup(self.events, self.remove_popup, self.sleep, "Sleep Request", "Are you sure you want to sleep?\nAll crops will advance to the next growth stage."))
 
     def background_render(self) -> None:
         self.map.render()
@@ -224,7 +248,6 @@ class FarmCEO:
 
     def ui_render(self) -> None:
         self.panel.draw()
-
 
         # WARNING: THIS HAS TO BE LAST
         if self.popup is not None:

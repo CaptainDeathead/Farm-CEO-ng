@@ -6,6 +6,7 @@ from save_manager import SaveManager
 
 from machinary import Tractor, Header, Tool
 from pathfinding import TaskManager
+from events import Events
 from destination import Destination
 from sellpoints import SellPoint
 from utils import utils, LayableRenderObj
@@ -15,10 +16,12 @@ from copy import deepcopy
 from typing import List, Dict, Sequence
 
 class Shed(LayableRenderObj):
-    def __init__(self, game_surface: pg.Surface, rect: pg.Rect, rotation: float, roads: List[Sequence[int]], scale: List[Sequence[int]], silo: SellPoint | None) -> None:        
+    def __init__(self, game_surface: pg.Surface, events: Events, rect: pg.Rect, rotation: float, roads: List[Sequence[int]], scale: List[Sequence[int]], silo: SellPoint | None, request_sleep: object) -> None:
         self.game_surface = game_surface
+        self.events = events
 
         self.rect = rect
+        self.global_rect = pg.Rect(self.rect.x + PANEL_WIDTH - self.rect.w / 2, self.rect.y - self.rect.h / 2, self.rect.w, self.rect.h)
         self.scale = scale
 
         self.rotation = rotation
@@ -30,9 +33,10 @@ class Shed(LayableRenderObj):
         self.tools: List[Tool] = []
 
         if silo is None:
-            logging.warning(f"Recieved silo is None! Should be {SellPoint} type. This will should be set later by the set_silo function.")
+            logging.warning(f"Received silo is None! Should be {SellPoint} type. This will should be set later by the set_silo function.")
 
         self._silo = silo
+        self.request_sleep = request_sleep
 
         self.roads = roads
         self.scale_roads()
@@ -71,7 +75,7 @@ class Shed(LayableRenderObj):
 
     def set_silo(self, silo: SellPoint) -> None:
         self._silo = silo
-        logging.debug(f"Shed recieved silo: {silo}.")
+        logging.debug(f"Shed received silo: {silo}.")
 
     def scale_roads(self) -> None:
         new_roads = []
@@ -140,6 +144,8 @@ class Shed(LayableRenderObj):
         header.set_path(job, path, stage, paddock)
 
     def simulate(self, dt: float) -> None:
+        self.update()
+
         for vehicle in self.vehicles:
             if vehicle.active:
                 vehicle.update(dt)
@@ -156,6 +162,11 @@ class Shed(LayableRenderObj):
 
         # Concrete pad in front of shed
         pg.draw.rect(self.surface, self.pad_color, pg.Rect(0, self.rect.h*2/3, self.rect.w, self.rect.h/3))
+    
+    def update(self) -> None:
+        if self.events.check_mouse_hit(self.global_rect):
+            # Sleep
+            self.request_sleep()
 
     def render2(self) -> None:
         utils.blit_centered(self.game_surface, self.surface, (self.rect.x, self.rect.y), (self.rect.w/2, self.rect.h/2), self.rotation)
