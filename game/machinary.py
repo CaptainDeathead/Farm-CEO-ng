@@ -285,7 +285,8 @@ class Tractor(Vehicle):
 
                     if self.stage - 1 == JOB_TYPES["working"]:
                         # was just working, sort out paddock now
-                        self.tool.set_animation(self.attrs["default"]) # will go to default
+                        self.tool.set_animation("") # will go to default
+                        self.tool.reload_vt_sim()
 
                         self.destination.destination.reset_paint()
                         if FILL_TYPES[self.tool.fill_type] in FERTILISERS:
@@ -870,7 +871,7 @@ class Tool(Trailer):
         super().__init__(self.surface, self.vehicle, self.master_image, (self.shed_rect.x, self.shed_rect.y + 10), 0, -self.master_image.get_height() / 2 + 9)
 
     def set_animation(self, anim_name: str) -> None:
-        anim = self.anims.get(anim_name, self.anims['default'])
+        anim = self.anims.get(anim_name, self.anims[self.anims['default']])
         self.master_image = pg.transform.scale_by(ResourceManager.load_image(anim), self.scale*TOOL_SCALE)
 
     def set_working_animation(self, reload_vt: bool = True) -> None:
