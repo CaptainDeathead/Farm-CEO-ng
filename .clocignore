@@ -1,0 +1,15 @@
+docker/
+game/bin/
+game/.buildozer/
+game/pygame_console/
+game/p4a-recipes/
+game/libs/
+game/assets/
+__pycache__/*
+*.png
+*.jpg
+*.spec
+*.idx
+*.rev
+*.pack
+*.sample

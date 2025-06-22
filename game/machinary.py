@@ -517,16 +517,15 @@ class Header(Vehicle):
 
         self.last_unload = time()
 
-        fill_difference = min(self.fill, self.UNLOAD_RATE)
+        this_fill_difference = min(self.fill, self.UNLOAD_RATE)
+        other_fill_difference = min(self.unloading_vehicle.tool.storage, self.unloading_vehicle.tool.fill + self.UNLOAD_RATE) - self.unloading_vehicle.tool.fill
+        fill_difference = min(this_fill_difference, other_fill_difference)
+
         self.fill -= fill_difference
+        self.unloading_vehicle.tool.update_fill(self.fill_type, fill_difference)
         self.equipment_draw()
 
-        if self.unloading_vehicle is None:
-            logging.warning("Header unloading into null vehicle (nothing)!")
-        else:
-            self.unloading_vehicle.tool.update_fill(self.fill_type, fill_difference)
-
-        if self.fill == 0:
+        if self.fill == 0 or self.unloading_vehicle.tool.fill == self.unloading_vehicle.tool.storage:
             self.unloading = False
             self.waiting = False
             self.original_image = ResourceManager.load_image(self.anims['pipeIn'])
@@ -836,10 +835,10 @@ class Tool(Trailer):
         fill_pool = self.fill + fill_amount
 
         self.fill_type = fill_type
-        self.fill = min(self.storage, fill_pool)
+        self.fill = min(self.storage, fill_amount)
 
         original_fill_type = self.fill_type
-        original_fill = fill_pool - self.fill
+        original_fill = fill_pool - self.fill # self.fill is fill_amount
 
         return original_fill_type, original_fill
 
@@ -876,7 +875,7 @@ class Tool(Trailer):
         self.set_working_animation(reload_vt=False)
         self.working_width = self.master_image.get_width()
 
-        if self.tool_type == "Trailer":
+        if self.tool_type == "Trailer" and self.fill > 0:
             self.set_animation("full")
         else:
             self.set_animation(self.anims["default"]) # anims['default'] key returns the name of the key to the default image

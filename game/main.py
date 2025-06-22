@@ -60,7 +60,7 @@ class Window:
 
         self.display = int(not BUILD)
         #self.display = 0
-        self.screen: pg.Surface = pg.display.set_mode((self.WIDTH, self.HEIGHT), pg.DOUBLEBUF | pg.HWSURFACE, display=self.display)
+        self.screen: pg.Surface = pg.display.set_mode((self.WIDTH, self.HEIGHT), pg.DOUBLEBUF | pg.HWSURFACE | pg.FULLSCREEN, display=self.display)
         self.clock: pg.time.Clock = pg.time.Clock()
         self.events: Events = Events()
 
