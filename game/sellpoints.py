@@ -44,6 +44,8 @@ class SellPoint(LayableRenderObj):
         self.prices = prices
         self.pending_money = 0.0
 
+        self.lbl = pg.font.SysFont(None, int(20 * map_scale)).render(self.name, True, (255, 255, 255))
+
     def draw_grid(self) -> None:
         # TODO: THIS IS DISABLED AT THE MOMENT BECAUSE OF ROTATION ISSUES
         return
@@ -52,6 +54,7 @@ class SellPoint(LayableRenderObj):
     def draw_silo(self) -> None:
         #self.game_surface.blit(self.silo_surface, self.silo_rect)
         utils.blit_centered(self.game_surface, self.silo_surface, self.silo_rect.topleft, self.silo_surface.get_rect().center, self.rotation)
+        self.game_surface.blit(self.lbl, (self.pos[0] - self.lbl.width // 2, self.pos[1] - self.lbl.height * 2))
 
     def store_crop(self, crop_type: str, amount: float) -> None:
         """amount should be in tons"""
