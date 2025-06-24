@@ -605,6 +605,11 @@ class Header(Vehicle):
 
                 if self.stage - 1 == JOB_TYPES["working"]:
                     # was just working, sort out paddock now
+                    if self.fill > 0:
+                        self.request_unload()
+                        self.stage -= 1
+                        return
+
                     self.destination.destination.reset_paint()
                     self.destination.destination.set_state(self.get_output_state())
 

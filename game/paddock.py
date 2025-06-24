@@ -109,7 +109,7 @@ class Paddock:
     def calculate_yield(self) -> float:
         """Returns a yield bonus percent"""
 
-        return (1.0 + int(self.lime_years > 0) + int(self.super_spreaded) + int(self.urea_spreaded)) / self.weeds
+        return (1.0 + int(self.lime_years > 0) + int(self.super_spreaded) + int(self.urea_spreaded)) / (self.weeds + 1) # Division by 0
 
     def is_lime_spreadable(self) -> bool:
         return self.state in LIME_STAGES and self.lime_years > 0
