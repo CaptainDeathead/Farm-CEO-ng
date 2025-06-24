@@ -183,11 +183,17 @@ class SelectCropPopup(PopupType):
         dropdown_pos = (self.WIDTH / 2 - btn_width, self.HEIGHT / 2 - btn_height)
 
         self.fertiliser_mode = crop_filter == "Fertilisers"
+        self.chemical_mode = crop_filter == "Chemicals"
 
         if self.fertiliser_mode:
             self.crop_selection_buttons = [
                 Button(self.widget.surface, dropdown_pos[0], dropdown_pos[1], btn_width, btn_height, pg.Rect(0, 0, self.WIDTH, self.HEIGHT), UI_MAIN_COLOR, UI_ACTIVE_COLOR, UI_TEXT_COLOR,
                        f"{fert_type.capitalize()}", 40, (20, 20, 20, 20), 0, 0, True, authority=True) for fert_type in FERTILISERS
+            ]
+        elif self.chemical_mode:
+            self.crop_selection_buttons = [
+                Button(self.widget.surface, dropdown_pos[0], dropdown_pos[1], btn_width, btn_height, pg.Rect(0, 0, self.WIDTH, self.HEIGHT), UI_MAIN_COLOR, UI_ACTIVE_COLOR, UI_TEXT_COLOR,
+                       f"{fert_type.capitalize()}", 40, (20, 20, 20, 20), 0, 0, True, authority=True) for fert_type in CHEMICALS
             ]
         else:
             self.crop_selection_buttons = [
@@ -221,6 +227,13 @@ class SelectCropPopup(PopupType):
 
         return min(buy_amount, max_affordable_amount)
 
+    def get_max_chemical_buy_amount(self, selected_chem: str) -> float:
+        stored_amount = self.sellpoint_manager.get_stored_amount(selected_chem)
+        buy_amount = max(0, self.tool_capacity - stored_amount)
+        max_affordable_amount = SaveManager().money // CHEMICAL_PRICES[selected_chem]
+
+        return min(buy_amount, max_affordable_amount)
+
     def cancel(self) -> None:
         self.close_popup()
         self.remove_destination_picker()
@@ -235,6 +248,11 @@ class SelectCropPopup(PopupType):
             total_buy_amount = self.get_max_fertiliser_buy_amount(selected_item)
 
             SaveManager().take_money(total_buy_amount * FERTILISER_PRICES[selected_item])
+            old_crop_type, old_amount = self.set_tool_fill(FILL_TYPES.index(selected_item), total_buy_amount)
+        elif self.chemical_mode:
+            total_buy_amount = self.get_max_chemical_buy_amount(selected_item)
+
+            SaveManager().take_money(total_buy_amount * CHEMICAL_PRICES[selected_item])
             old_crop_type, old_amount = self.set_tool_fill(FILL_TYPES.index(selected_item), total_buy_amount)
         else:
             crop_type = selected_item.split(" ")

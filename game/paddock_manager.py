@@ -157,6 +157,9 @@ class PaddockManager:
                 self.screen.blit(paddock.needs_urea_surface, (PANEL_WIDTH + paddock.center[0] - paddock.needs_urea_surface.width / 2, curr_y))
                 curr_y += paddock.needs_urea_surface.height
 
+            if paddock.weeds > 0:
+                self.screen.blit(paddock.needs_herbicide_surface, (PANEL_WIDTH + paddock.center[0] - paddock.needs_herbicide_surface.width / 2, curr_y))
+                curr_y += paddock.needs_herbicide_surface.height
 
     def check_paddock_clicks(self) -> Paddock | None:
         pos = pg.mouse.get_pos()

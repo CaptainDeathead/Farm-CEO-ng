@@ -21,6 +21,7 @@ class Paddock:
         self.needs_lime_surface = pg.font.SysFont(None, 30).render("Needs lime", True, (255, 0, 0))
         self.needs_super_surface = pg.font.SysFont(None, 30).render("Needs super", True, (255, 0, 0))
         self.needs_urea_surface = pg.font.SysFont(None, 30).render("Needs urea", True, (255, 0, 0))
+        self.needs_herbicide_surface = pg.font.SysFont(None, 30).render("Needs herbicide", True, (255, 0, 0))
 
         cx, cy = attrs["center"]
         gx, gy = attrs["gate"]
@@ -37,6 +38,7 @@ class Paddock:
         self.lime_years = attrs.get("lime_years", 3) # Years until lime runs out
         self.super_spreaded = attrs.get("super_spreaded", False)
         self.urea_spreaded = attrs.get("urea_spreaded", False)
+        self.weeds = attrs.get("weeds", 0)
 
     def init_collision(self) -> None:
         self.surface, self.rect = self.create_surface()
@@ -58,7 +60,8 @@ class Paddock:
             "owned_by": self.owned_by,
             "lime_years": self.lime_years,
             "super_spreaded": self.super_spreaded,
-            "urea_spreaded": self.urea_spreaded
+            "urea_spreaded": self.urea_spreaded,
+            "weeds": self.weeds
         }
     
     def rebuild_num(self) -> None:
@@ -104,18 +107,21 @@ class Paddock:
         self.draw_to_map()
 
     def calculate_yield(self) -> float:
-        """Returns a yield bonus percent between 1-2"""
+        """Returns a yield bonus percent"""
 
-        return 1.0 + (int(self.lime_years > 0) + int(self.super_spreaded) + int(self.urea_spreaded)) / 3
+        return (1.0 + int(self.lime_years > 0) + int(self.super_spreaded) + int(self.urea_spreaded)) / self.weeds
 
     def is_lime_spreadable(self) -> bool:
-        return self.state in LIME_STAGES
+        return self.state in LIME_STAGES and self.lime_years > 0
 
     def is_super_spreadable(self) -> bool:
-        return self.stage in FERTILISER_STAGES
+        return self.stage in FERTILISER_STAGES and not self.super_spreaded
 
     def is_urea_spreadable(self) -> bool:
-        return self.stage in FERTILISER_STAGES
+        return self.stage in FERTILISER_STAGES and not self.urea_spreaded
+    
+    def is_herbicide_sprayable(self) -> bool:
+        return self.stage in FERTILISER_STAGES and self.weeds > 0
 
     def load_state(self) -> None:
         self.fill(STATE_COLORS[self.state])
@@ -130,6 +136,7 @@ class Paddock:
             self.lime_years -= 1
             self.super_spreaded = False
             self.urea_spreaded = False
+            self.weeds = min(self.weeds + 1, 2)
 
     def reset_paint(self) -> None:
         # Note: this only changes the variable is_painting! to reset the paint on the surface you need to fill this paddock after calling this func

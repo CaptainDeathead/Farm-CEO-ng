@@ -296,6 +296,8 @@ class Tractor(Vehicle):
                                 self.destination.destination.super_spreaded = True
                             elif FILL_TYPES[self.tool.fill_type] == "urea":
                                 self.destination.destination.urea_spreaded = True
+                            elif FILL_TYPES[self.tool.fill_type] == "herbicide":
+                                self.destination.destination.weeds = max(self.destination.destination.weeds - 1, 0)
                             else:
                                 logging.error("Unexpected race condition occurred when setting paddock fertiliser states: fill_type not found in FERTILISERS!")
 
@@ -898,7 +900,7 @@ class Tool(Trailer):
     def paint(self) -> int:
         color = STATE_COLORS[self.get_output_state()]
 
-        if self.get_fill_type_str in FERTILISERS:
+        if self.get_fill_type_str in FERTILISERS or self.get_fill_type_str in CHEMICALS:
             color = (100, color[1], 100)
 
         paint_surf = pg.transform.rotate(self.master_image, self.rotation)

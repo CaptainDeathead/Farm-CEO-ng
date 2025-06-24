@@ -79,9 +79,18 @@ FERTILISER_PRICES = {
     "urea": 700
 }
 
+CHEMICAL_STAGES = (3, 4)
+CHEMICALS = ("liquid-super", "liquid-urea", "herbicide")
+CHEMICAL_PRICES = {
+    "liquid-super": 400,
+    "liquid-urea": 800,
+    "herbicide": 300
+}
+
 FILL_TYPES = []
 FILL_TYPES.extend(CROP_TYPES)
 FILL_TYPES.extend(FERTILISERS)
+FILL_TYPES.extend(CHEMICALS)
 
 BASE_CROP_PRICES = {
     0: 300,

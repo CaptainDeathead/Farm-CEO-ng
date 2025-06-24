@@ -139,9 +139,14 @@ class Equipment:
             self.set_popup(SelectCropPopup(self.events, self.sellpoint_manager, self.close_popup, self.remove_destination_picker, self.selected_tool.set_fill, self.selected_tool.storage, self.assign_task))
             return
         
-        elif self.selected_tool.tool_type == "Spreaders" and not done_additional_popup:
-            logging.debug("Selected tool is a spreader. Opening fertiliser selection popup...")
-            self.set_popup(SelectCropPopup(self.events, self.sellpoint_manager, self.close_popup, self.remove_destination_picker, self.selected_tool.set_fill, self.selected_tool.storage, self.assign_task, crop_filter="Fertilisers"))
+        elif self.selected_tool.tool_type in ("Spreaders", "Sprayers") and not done_additional_popup:
+            if self.selected_tool.tool_type == "Spreaders":
+                crop_filter = "Fertilisers"
+            else:
+                crop_filter = "Chemicals"
+
+            logging.debug(f"Selected tool is a {self.selected_tool.tool_type}. Opening fertiliser selection popup...")
+            self.set_popup(SelectCropPopup(self.events, self.sellpoint_manager, self.close_popup, self.remove_destination_picker, self.selected_tool.set_fill, self.selected_tool.storage, self.assign_task, crop_filter=crop_filter))
             return
 
         logging.info(f"Assigning vehicle: {self.selected_vehicle.full_name}, with tool: {self.selected_tool.full_name} a task at: {self.selected_destination.get_name()}...")
