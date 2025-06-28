@@ -12,6 +12,7 @@ from UI.navbar import NavBar
 
 from UI.Menus.shop import Shop
 from UI.Menus.equipment import Equipment
+from UI.Menus.grain import Grain
 
 from data import *
 
@@ -35,6 +36,7 @@ class Panel:
 
         self.shop = Shop(self.rendered_surface, self.events, page_height)
         self.equipment = Equipment(self.rendered_surface, self.events, self.set_popup, page_height, shed, sellpoint_manager, map_funcs)
+        self.grain = Grain(self.rendered_surface, self.events, page_height, sellpoint_manager)
 
         self.rebuild()
 
@@ -47,6 +49,7 @@ class Panel:
         
         self.shop.rebuild()
         self.equipment.rebuild()
+        self.grain.rebuild()
 
     def reset_actives(self) -> None:
         self.shop.active = False
@@ -65,6 +68,12 @@ class Panel:
         redraw_equipment = self.equipment.update()
         if redraw_equipment or force: self.equipment.draw()
 
+    def draw_grain(self, force: bool = False) -> None:
+        self.grain.active = True
+
+        redraw_grain = self.grain.update()
+        if redraw_grain or force: self.grain.draw()
+
     def draw(self) -> None:
         self.screen.blit(self.rendered_surface, (0, 0))
 
@@ -74,8 +83,10 @@ class Panel:
         match self.nav_bar.get_selected():
             case 0: self.draw_shop()
             case 1: self.draw_equipment()
+            case 3: self.draw_grain()
 
     def force_draw_page(self) -> None:
         match self.nav_bar.get_selected():
             case 0: self.draw_shop(force=True)
             case 1: self.draw_equipment(force=True)
+            case 3: self.draw_grain(force=True)

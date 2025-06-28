@@ -234,7 +234,7 @@ class DropDown:
 
 class Table:
     def __init__(self, screen: pg.Surface, x: int, y: int, width: int, height: int, rows: List[str], columns: List[str],
-                 color: Tuple[int, int, int], selectedColor: Tuple[int, int, int], size: int, grid: List[List[str]]) -> None:
+                 color: Tuple[int, int, int], selectedColor: Tuple[int, int, int], font_size: int, grid: List[List[str]]) -> None:
         
         self.screen: pg.Surface = screen
         self.x: int = x
@@ -246,9 +246,9 @@ class Table:
         self.color: Tuple[int, int, int] = color
         self.selectedColor: Tuple[int, int, int] = selectedColor
         self.seg_width: float = self.width / self.rows
-        self.seg_height: float = self.width / self.columns
+        self.seg_height: float = self.height / self.columns
         self.grid: List[List[str]] = grid
-        self.font: pg.font.Font = pg.font.SysFont("Arail", size)
+        self.font: pg.font.Font = pg.font.SysFont(None, font_size)
         self.line_width = 5
         self.rendered_surface: pg.Surface = pg.Surface((self.width, self.height))
 
@@ -257,23 +257,23 @@ class Table:
     def rebuild(self) -> None:
         self.rendered_surface.fill(self.color) # background
 
-        pg.draw.rect(self.rendered_surface, self.selectedColor, (self.x, self.y, self.seg_width, self.height)) # left bar
-        pg.draw.rect(self.rendered_surface, self.selectedColor, (self.x, self.y, self.width, self.seg_height)) # right bar
+        pg.draw.rect(self.rendered_surface, self.selectedColor, (0, 0, self.seg_width, self.height)) # left bar
+        pg.draw.rect(self.rendered_surface, self.selectedColor, (0, 0, self.width, self.seg_height)) # right bar
         
         for x in range(1, self.rows):
-            pg.draw.line(self.rendered_surface, (0, 0, 0), (self.x+self.seg_width*x, self.y),
-                         (self.x+self.seg_height*x, self.y+self.height), self.line_width)
+            pg.draw.line(self.rendered_surface, (0, 0, 0), (self.seg_width*x, 0),
+                         (self.seg_height*x, self.height), self.line_width)
 
-        for y in range(1, self.rows):
-            pg.draw.line(self.rendered_surface, (0, 0, 0), (self.x, self.y+self.seg_height*y),
-                         (self.x+self.width, self.y+self.seg_height*y), self.line_width)
+        for y in range(1, self.columns):
+            pg.draw.line(self.rendered_surface, (0, 0, 0), (0, self.seg_height*y),
+                         (self.width, self.seg_height*y), self.line_width)
 
         for y in range(self.columns):
             for x in range(self.rows):
-                render_x = self.x + self.seg_width * x + self.seg_width / 16
-                render_y = self.y + self.seg_height * y + self.seg_height / 2.5
+                rendered_font = self.font.render(str(self.grid[y][x]), True, (255, 255, 255), wraplength=int(self.seg_width))
 
-                rendered_font = self.font.render(str(self.grid[y][x]), True, (255, 255, 255))
+                render_x = self.seg_width * x + self.seg_width / 2 - rendered_font.width / 2
+                render_y = self.seg_height * y + self.seg_height / 2 - rendered_font.height / 2
 
                 self.rendered_surface.blit(rendered_font, (render_x, render_y))
 
@@ -282,7 +282,7 @@ class Table:
         ... # TODO
 
     def draw(self) -> None:
-        return self.rendered_surface
+        self.screen.blit(self.rendered_surface, (self.x, self.y))
     
 class Widget:
     def __init__(self, parent_surface: pg.Surface, rect: pg.Rect) -> None:
