@@ -54,6 +54,7 @@ class Panel:
     def reset_actives(self) -> None:
         self.shop.active = False
         self.equipment.active = False
+        self.grain.active = False
 
     def draw_shop(self, force: bool = False) -> None:
         self.reset_actives()
@@ -63,12 +64,14 @@ class Panel:
         if redraw_shop or force: self.shop.draw()
 
     def draw_equipment(self, force: bool = False) -> None:
+        self.reset_actives()
         self.equipment.active = True
 
         redraw_equipment = self.equipment.update()
         if redraw_equipment or force: self.equipment.draw()
 
     def draw_grain(self, force: bool = False) -> None:
+        self.reset_actives()
         self.grain.active = True
 
         redraw_grain = self.grain.update()

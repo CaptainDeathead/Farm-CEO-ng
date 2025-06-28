@@ -255,8 +255,8 @@ class SelectCropPopup(PopupType):
             SaveManager().take_money(total_buy_amount * CHEMICAL_PRICES[selected_item])
             old_crop_type, old_amount = self.set_tool_fill(FILL_TYPES.index(selected_item), total_buy_amount)
         else:
-            crop_type = selected_item.split(" ")
-            crop_amount = self.sellpoint_manager.get_stored_amount(crop_type)
+            crop_type = selected_item.split(" ")[0]
+            crop_amount = min(self.tool_capacity, self.sellpoint_manager.get_stored_amount(crop_type))
             crop_index = FILL_TYPES.index(crop_type)
 
             self.sellpoint_manager.take_crop(crop_type, crop_amount)

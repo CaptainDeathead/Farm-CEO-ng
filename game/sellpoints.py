@@ -86,6 +86,7 @@ class SellPoint(LayableRenderObj):
             raise Exception("Cannot sell crops to a silo!")
 
         self.pending_money += self.prices[crop_type] * desired_amount
+        self.prices[crop_type] -= (desired_amount / 1)
 
     def update(self, mouse_pos: tuple[int, int]) -> bool:
         if self.silo_rect.collidepoint(mouse_pos[0] + self.silo_rect.w / 2, mouse_pos[1] + self.silo_rect.h / 2):
