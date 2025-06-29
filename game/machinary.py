@@ -411,7 +411,7 @@ class Header(Vehicle):
     def __init__(self, game_surface: pg.Surface, shed_rect: pg.Rect, attrs: Dict[str, any], scale: float, task_header: object, equipment_draw: object, add_xp: object) -> None:
         self.surface = game_surface
         self.shed_rect = shed_rect
-        self.scale = scale
+        self.scale = scale / 1.2 # Headers are smaller
 
         self.task_header = task_header
         self.equipment_draw = equipment_draw
@@ -458,11 +458,12 @@ class Header(Vehicle):
         self.unloading = False
         self.last_unload = time()
         self.waiting = False
+        self.finished = False
 
         self.completed_path = []
         self.job = None
 
-        image = ResourceManager.load_image(self.anims['pipeIn'])
+        image = pg.transform.scale_by(ResourceManager.load_image(self.anims['pipeIn']), self.scale)
         super().__init__(self.surface, image, (shed_rect.x, shed_rect.y + 10), 0, 0)
 
         self.working_width = self.image.get_width()
@@ -494,6 +495,7 @@ class Header(Vehicle):
         self.unloading = False
         self.last_unload = time()
         self.waiting = False
+        self.finished = False
 
         self.completed_path = []
         self.job = None
@@ -546,7 +548,7 @@ class Header(Vehicle):
         if self.fill == 0 or self.unloading_vehicle.tool.fill == self.unloading_vehicle.tool.storage:
             self.unloading = False
             self.waiting = False
-            self.original_image = ResourceManager.load_image(self.anims['pipeIn'])
+            self.original_image = pg.transform.scale_by(ResourceManager.load_image(self.anims['pipeIn']), self.scale)
 
             self.unloading_vehicle.set_waiting(False)
             self.unloading_vehicle.tool.set_animation('full')
@@ -556,7 +558,7 @@ class Header(Vehicle):
             logging.debug(f"{self.full_name} is now empty. Resuming task...")
 
     def on_unloading_vehicle_arrive(self) -> None:
-        logging.debug(f"{self.full_name} unloading vehicle has arrived. Begginning unloading sequence...")
+        logging.debug(f"{self.full_name} unloading vehicle has arrived. Beginning unloading sequence...")
 
         self.waiting_for_unloading_vehicle = False
         self.unloading = True
@@ -608,14 +610,15 @@ class Header(Vehicle):
 
                 if self.stage - 1 == JOB_TYPES["working"]:
                     # was just working, sort out paddock now
-                    if self.fill > 0:
-                        self.request_unload()
-                        self.stage -= 1
-                        return
-
                     self.destination.destination.reset_paint()
                     self.destination.destination.set_state(self.get_output_state())
                     self.add_xp(1)
+
+                    if self.fill > 0:
+                        self.finished = True
+                        self.request_unload()
+                        self.stage -= 1
+                        return
 
             if self.stage == JOB_TYPES["travelling_from"]:
                 # Go to shed
@@ -701,7 +704,8 @@ class Header(Vehicle):
         last_paint_right_dist = sqrt((right_paint[0] - self.last_paint_right[0])**2 + (right_paint[1] - self.last_paint_right[1])**2)
 
         if last_paint_left_dist >= PAINT_RECT_DIST or last_paint_right_dist >= PAINT_RECT_DIST:
-            fill_amount, crop_index = self.paint() * self.destination.destination.calculate_yield()
+            fill_amount, crop_index = self.paint()
+            fill_amount *=  self.destination.destination.calculate_yield()
 
             if crop_index != self.fill_type:
                 if self.fill > 0:
@@ -718,7 +722,7 @@ class Header(Vehicle):
         logging.info(f"Header {self.full_name} is requesting unload...")
         self.waiting_for_unloading_vehicle_assign = True
         self.waiting = True
-        self.original_image = ResourceManager.load_image(self.anims['pipeOut'])
+        self.original_image = pg.transform.scale_by(ResourceManager.load_image(self.anims['pipeOut']), self.scale)
 
     def increment_fill(self, fill_amount: int) -> None:
         last_fill_amount = self.fill
@@ -747,7 +751,7 @@ class Header(Vehicle):
         while remaining_dt > 0:
             if remaining_dt < required_dt: remaining_dt = required_dt
 
-            if self.working:
+            if self.working and not self.finished:
                 self.check_paint()
 
             self.calculate_movement(required_dt)

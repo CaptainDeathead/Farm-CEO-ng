@@ -107,6 +107,11 @@ class Window:
             events = pg.event.get()
             self.events.process_events(events)
 
+            keys = pg.key.get_pressed()
+
+            if keys[pg.K_SPACE]:
+                self.frame_time *= 10
+
             self.farm_ceo.background_render()
 
             self.farm_ceo.simulate(self.frame_time)
