@@ -120,6 +120,12 @@ class CommandLineProcessor(cmd.Cmd):
 	def do_set_seeder_fill(self, params):
 		self.app.win.farm_ceo.shed.tools[0].fill = 0.01
 
+	def do_set_paddock_state(self, params):
+		self.app.win.farm_ceo.paddock_manager.set_paddock_state(1, 5)
+
+	def do_sps(self, params):
+		self.do_set_paddock_state(params)
+
 	def do_shell(self, params):
 		''' Executes python commands in the console. App entity can be accessed
 		by referencing self. See examples of possible usage below:

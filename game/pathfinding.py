@@ -292,7 +292,23 @@ class Job:
         # Go from last runline to gate around boundary
         path.extend(self.trace_collision_boundary(path[-1], paddock.gate, lap_1))
 
-        return path
+        # Postprocessing: if there are any points too farm away, force them to trace collision boundary
+        postprocessed_path = []
+
+        for i in range(1, len(path)):
+            p1 = path[i-1]
+            p2 = path[i]
+
+            dist = sqrt((p2[0] - p1[0])**2 + (p2[1] - p1[1])**2)
+
+            postprocessed_path.append(p1)
+
+            if dist > 50: # TODO: Value is arbitrary. Maybe do something smarter with it.
+                postprocessed_path.extend(self.trace_collision_boundary(p1, p2, lap_1))
+
+            postprocessed_path.append(p2)
+
+        return postprocessed_path
 
     def generate_transport_path(self, start_location_position: Sequence[float], end_location_position: Sequence[float], from_shed: bool) -> List[Sequence[float]]:
         # CAUTION: Assumes if it is not coming from shed it is going to shed

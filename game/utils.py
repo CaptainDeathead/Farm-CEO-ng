@@ -51,7 +51,39 @@ class utils:
     @staticmethod
     def shrink_polygon(polygon: list[tuple[int, int]], shrink: int) -> list[tuple[int, int]]:
         poly = Polygon(polygon)
-        return list(poly.buffer(-shrink).exterior.coords)
+        coords = list(poly.buffer(-shrink).exterior.coords)
+
+        processed_coords = []
+        for i in range(1, len(coords)):
+            p1_raw = coords[i-1]
+            p2_raw = coords[i]
+
+            p1 = (int(round(p1_raw[0], 0)), int(round(p1_raw[1], 0)))
+            p2 = (int(round(p2_raw[0], 0)), int(round(p2_raw[1], 0)))
+
+            processed_coords.append(p1)
+
+            if p1[0] == p2[0]:
+                if abs(p2[1] - p1[1]) != 1:
+                    if p1[1] < p2[1]:
+                        additions = [(p1[0], y) for y in range(p1[1] + 1, p2[1])]
+                        processed_coords.extend(additions)
+                    else:
+                        additions = [(p1[0], y) for y in range(p2[1] + 1, p1[1])]
+                        processed_coords.extend(list(reversed(additions)))
+
+            elif p1[1] == p2[1]:
+                if abs(p2[0] - p1[0]) != 1:
+                    if p1[0] < p2[0]:
+                        additions = [(x, p1[1]) for x in range(p1[0] + 1, p2[0])]
+                        processed_coords.extend(additions)
+                    else:
+                        additions = [(x, p1[1]) for x in range(p2[0] + 1, p1[0])]
+                        processed_coords.extend(list(reversed(additions)))
+
+            processed_coords.append(p2) 
+
+        return processed_coords
 
     @staticmethod
     def get_polygon_rect(polygon: list[tuple[int, int]]) -> pg.Rect:
