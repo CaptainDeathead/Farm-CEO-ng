@@ -127,8 +127,7 @@ class Window:
             self.frame_time = self.delta_time / 1000.0
 
 def main() -> None:
-    window = Window()
-    CrashHandler(window.main)
+    CrashHandler(lambda: Window().main())
 
 if __name__ == "__main__":
     main()
