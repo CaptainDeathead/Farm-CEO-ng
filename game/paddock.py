@@ -40,6 +40,8 @@ class Paddock:
         self.urea_spreaded = attrs.get("urea_spreaded", False)
         self.weeds = attrs.get("weeds", 0)
 
+        self.crop_index = attrs.get("crop_type", 0) # Default to wheat
+
     def init_collision(self) -> None:
         self.surface, self.rect = self.create_surface()
         self.localised_boundary = self.localise_boundary()
@@ -61,7 +63,8 @@ class Paddock:
             "lime_years": self.lime_years,
             "super_spreaded": self.super_spreaded,
             "urea_spreaded": self.urea_spreaded,
-            "weeds": self.weeds
+            "weeds": self.weeds,
+            "crop_type": self.crop_index
         }
     
     def rebuild_num(self) -> None:

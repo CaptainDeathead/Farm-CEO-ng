@@ -7,6 +7,7 @@ from paddock import Paddock
 from destination import Destination
 from data import *
 
+from math import cos, sin, radians
 from typing import Dict, List, Tuple
 
 class PaddockManager:
@@ -41,14 +42,23 @@ class PaddockManager:
 
     def preload_indicators(self) -> None:
         logging.info("Preloading indicators...")
+
         self.indicators = {}
+        self.indicator_size = 30 * self.scale
 
         for fill_type in FILL_TYPES:
-            surface = pg.Surface((48, 48), pg.SRCALPHA)
-            surface.fill((255, 255, 255))
-            surface.blit(ResourceManager().load_image(f"Icons/FillTypes/{fill_type.replace('liquid-', '').replace('herbicide', 'weeds')}.png"), (0, 0))
+            processed_fill_type = fill_type.replace('liquid-', '').replace('herbicide', 'weeds')
 
-            self.indicators[fill_type] = surface
+            clipping_surface = pg.Surface((self.indicator_size, self.indicator_size), pg.SRCALPHA)
+            pg.draw.circle(clipping_surface, (255, 255, 255), (self.indicator_size / 2, self.indicator_size / 2), self.indicator_size / 2)
+
+            surface = pg.Surface((self.indicator_size, self.indicator_size), pg.SRCALPHA)
+            surface.fill(UI_BACKGROUND_COLOR)
+            surface.blit(pg.transform.smoothscale(ResourceManager().load_image(f"Icons/FillTypes/{processed_fill_type}.png"), (self.indicator_size, self.indicator_size)), (0, 0))
+
+            surface.blit(clipping_surface, (0, 0), special_flags=pg.BLEND_RGBA_MIN)
+
+            self.indicators[processed_fill_type] = surface
 
     def locate_paddock_boundary(self, paddock: Paddock) -> None:
         logging.debug(f"Locating paddock boundary... Paddock: {paddock.num}")
@@ -154,26 +164,33 @@ class PaddockManager:
         save_manager.set_paddocks(self.paddocks)
         save_manager.save_game()
 
+    def get_indicator_position(self, paddock_center: Tuple[float, float], indicator_angle: int) -> Tuple[float, float]:
+        dist = 45 * self.scale
+        return (PANEL_WIDTH + paddock_center[0] + cos(radians(indicator_angle)) * dist - self.indicator_size / 2, paddock_center[1] + sin(radians(indicator_angle)) * dist - self.indicator_size / 2)
+
     def draw_paddock_numbers(self) -> None:
         for paddock in self.paddocks:
             self.screen.blit(paddock.number_surface, (PANEL_WIDTH + paddock.center[0] - paddock.number_surface.width / 2, paddock.center[1] - paddock.number_surface.height / 2))
 
-            curr_y = paddock.number_surface.height / 2 + paddock.center[1]
+            indicator_angle = 270
+            self.screen.blit(self.indicators[CROP_TYPES[paddock.crop_index]], self.get_indicator_position(paddock.center, indicator_angle))
+            indicator_angle -= 45
+
             if paddock.lime_years <= 0:
-                self.screen.blit(paddock.needs_lime_surface, (PANEL_WIDTH + paddock.center[0] - paddock.needs_lime_surface.width / 2, curr_y))
-                curr_y += paddock.needs_lime_surface.height
+                self.screen.blit(self.indicators["lime"], self.get_indicator_position(paddock.center, indicator_angle))
+                indicator_angle -= 45
 
             if not paddock.super_spreaded:
-                self.screen.blit(paddock.needs_super_surface, (PANEL_WIDTH + paddock.center[0] - paddock.needs_super_surface.width / 2, curr_y))
-                curr_y += paddock.needs_super_surface.height
+                self.screen.blit(self.indicators["super"], self.get_indicator_position(paddock.center, indicator_angle))
+                indicator_angle -= 45
 
             if not paddock.urea_spreaded:
-                self.screen.blit(paddock.needs_urea_surface, (PANEL_WIDTH + paddock.center[0] - paddock.needs_urea_surface.width / 2, curr_y))
-                curr_y += paddock.needs_urea_surface.height
+                self.screen.blit(self.indicators["urea"], self.get_indicator_position(paddock.center, indicator_angle))
+                indicator_angle -= 45
 
             if paddock.weeds > 0:
-                self.screen.blit(paddock.needs_herbicide_surface, (PANEL_WIDTH + paddock.center[0] - paddock.needs_herbicide_surface.width / 2, curr_y))
-                curr_y += paddock.needs_herbicide_surface.height
+                self.screen.blit(self.indicators["weeds"], self.get_indicator_position(paddock.center, indicator_angle))
+                indicator_angle -= 45
 
     def check_paddock_clicks(self) -> Paddock | None:
         pos = pg.mouse.get_pos()

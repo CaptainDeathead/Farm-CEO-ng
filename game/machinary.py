@@ -676,9 +676,11 @@ class Header(Vehicle):
 
         return sqrt(self.velocity[0]**2 + self.velocity[1]**2)
 
-    def paint(self) -> int:
+    def paint(self) -> Tuple[int, int]:
+        """Returns paint_amount & crop_index"""
+
         paint_surf = self.image
-        return self.destination.destination.paint(paint_surf, self.rect.topleft, STATE_COLORS[self.get_output_state()])
+        return (self.destination.destination.paint(paint_surf, self.rect.topleft, STATE_COLORS[self.get_output_state()]), self.destination.destination.crop_index)
 
     def check_paint(self) -> None: 
         if self.waiting: return
@@ -699,7 +701,14 @@ class Header(Vehicle):
         last_paint_right_dist = sqrt((right_paint[0] - self.last_paint_right[0])**2 + (right_paint[1] - self.last_paint_right[1])**2)
 
         if last_paint_left_dist >= PAINT_RECT_DIST or last_paint_right_dist >= PAINT_RECT_DIST:
-            fill_amount = self.paint() * self.destination.destination.calculate_yield()
+            fill_amount, crop_index = self.paint() * self.destination.destination.calculate_yield()
+
+            if crop_index != self.fill_type:
+                if self.fill > 0:
+                    logging.warning(f"Mixed crops in header! Old: {CROP_TYPES[self.fill_type]}  New: {CROP_TYPES[crop_index]}. Replacing old with new (but keeping fill).")
+                
+                self.fill_type = crop_index
+
             self.increment_fill(fill_amount)
 
             self.last_paint_left = left_paint
