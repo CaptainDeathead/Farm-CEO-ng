@@ -2,6 +2,7 @@ import pygame as pg
 import logging
 
 from save_manager import SaveManager
+from resource_manager import ResourceManager
 from paddock import Paddock
 from destination import Destination
 from data import *
@@ -26,6 +27,8 @@ class PaddockManager:
 
         self.location_callback = None
 
+        self.preload_indicators()
+
     def get_paddocks(self) -> List[Paddock]:
         return self.paddocks
 
@@ -35,6 +38,17 @@ class PaddockManager:
             pdk_list.append(Paddock(paddocks[paddock], paddock, self.scale, self.map_paddocks_surf))
         
         return pdk_list
+
+    def preload_indicators(self) -> None:
+        logging.info("Preloading indicators...")
+        self.indicators = {}
+
+        for fill_type in FILL_TYPES:
+            surface = pg.Surface((48, 48), pg.SRCALPHA)
+            surface.fill((255, 255, 255))
+            surface.blit(ResourceManager().load_image(f"Icons/FillTypes/{fill_type.replace('liquid-', '').replace('herbicide', 'weeds')}.png"), (0, 0))
+
+            self.indicators[fill_type] = surface
 
     def locate_paddock_boundary(self, paddock: Paddock) -> None:
         logging.debug(f"Locating paddock boundary... Paddock: {paddock.num}")

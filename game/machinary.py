@@ -23,7 +23,7 @@ class Tractor(Vehicle):
     LOAD_INTERVAL: float = 0.5
     LOAD_RATE: float = 1
 
-    def __init__(self, game_surface: pg.Surface, shed_rect: pg.Rect, attrs: Dict[str, any], scale: float, task_tractor: object, equipment_draw: object, get_silo: object) -> None:
+    def __init__(self, game_surface: pg.Surface, shed_rect: pg.Rect, attrs: Dict[str, any], scale: float, task_tractor: object, equipment_draw: object, get_silo: object, add_xp: object) -> None:
         self.surface = game_surface
         self.shed_rect = shed_rect
         self.scale = scale
@@ -53,6 +53,7 @@ class Tractor(Vehicle):
 
         self.path: List[Sequence[float]] = []
         self.get_silo = get_silo
+        self.add_xp = add_xp
 
         self.active = False
         self.stage = 2
@@ -144,7 +145,7 @@ class Tractor(Vehicle):
             self.has_waited = True
 
     def on_loading_vehicle_arrive(self) -> None:
-        logging.debug(f"{self.full_name} loading vehicle has arrived. Begginning unloading sequence...")
+        logging.debug(f"{self.full_name} loading vehicle has arrived. Beginning unloading sequence...")
 
         self.waiting_for_loading_vehicle = False
         self.loading = True
@@ -302,6 +303,7 @@ class Tractor(Vehicle):
                                 logging.error("Unexpected race condition occurred when setting paddock fertiliser states: fill_type not found in FERTILISERS!")
 
                         self.destination.destination.set_state(self.tool.get_output_state())
+                        self.add_xp(1)
 
                 if self.stage == JOB_TYPES["travelling_from"]:
                     # Go to shed
@@ -406,13 +408,14 @@ class Header(Vehicle):
     UNLOAD_INTERVAL: float = 0.5
     UNLOAD_RATE: float = 0.5
 
-    def __init__(self, game_surface: pg.Surface, shed_rect: pg.Rect, attrs: Dict[str, any], scale: float, task_header: object, equipment_draw: object) -> None:
+    def __init__(self, game_surface: pg.Surface, shed_rect: pg.Rect, attrs: Dict[str, any], scale: float, task_header: object, equipment_draw: object, add_xp: object) -> None:
         self.surface = game_surface
         self.shed_rect = shed_rect
         self.scale = scale
 
         self.task_header = task_header
         self.equipment_draw = equipment_draw
+        self.add_xp = add_xp
         
         self.attrs = attrs
         self.brand = attrs["brand"]
@@ -612,6 +615,7 @@ class Header(Vehicle):
 
                     self.destination.destination.reset_paint()
                     self.destination.destination.set_state(self.get_output_state())
+                    self.add_xp(1)
 
             if self.stage == JOB_TYPES["travelling_from"]:
                 # Go to shed

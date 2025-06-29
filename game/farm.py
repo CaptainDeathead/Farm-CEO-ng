@@ -62,11 +62,14 @@ class Shed(LayableRenderObj):
 
         return self._silo
 
+    def add_xp(self, amount: float) -> None:
+        SaveManager().xp += amount
+
     def set_equipment_draw(self, equipment_draw: object) -> None:
         # Should be called from equipment.py at __init__
         self.equipment_draw = equipment_draw
 
-        logging.debug("Recieved equipment_draw, setting it in every vehicle...")
+        logging.debug("Received equipment_draw, setting it in every vehicle...")
 
         for vehicle in self.vehicles:
             vehicle.set_equipment_draw(self.equipment_draw)
@@ -98,8 +101,8 @@ class Shed(LayableRenderObj):
         attrs = deepcopy(SaveManager().STATIC_VEHICLES_DICT[vehicle_type][save_attrs["brand"]][save_attrs["model"]])
         attrs.update(save_attrs)
 
-        if attrs["header"]: vehicle = Header(self.game_surface, self.rect, attrs, self.scale, self.task_header, self.equipment_draw)
-        else: vehicle = Tractor(self.game_surface, self.rect, attrs, self.scale, self.task_tractor, self.equipment_draw, self.get_silo)
+        if attrs["header"]: vehicle = Header(self.game_surface, self.rect, attrs, self.scale, self.task_header, self.equipment_draw, self.add_xp)
+        else: vehicle = Tractor(self.game_surface, self.rect, attrs, self.scale, self.task_tractor, self.equipment_draw, self.get_silo, self.add_xp)
 
         self.vehicles.append(vehicle)
 

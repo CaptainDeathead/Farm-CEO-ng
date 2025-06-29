@@ -2,6 +2,7 @@ import pygame as pg
 import logging
 
 from time import time
+from math import floor
 
 from resource_manager import ResourceManager, FontManager
 from save_manager import SaveManager
@@ -85,6 +86,9 @@ class HUD:
         self.money_icon = pg.transform.smoothscale(ResourceManager().load_image("Icons/currency.png"), (50, 50))
         self.rebuild_money()
 
+        self.xp_icon = pg.transform.smoothscale(ResourceManager().load_image("Icons/xp.png"), (50, 50))
+        self.rebuild_xp()
+
         self.last_money = self.save_manager.money
 
     def rebuild_money(self) -> None:
@@ -94,11 +98,19 @@ class HUD:
         self.money_surface.blit(self.money_icon, (0, 0))
         self.money_surface.blit(self.money_text, (self.money_icon.width + 5, 0))
 
+    def rebuild_xp(self) -> None:
+        self.xp_text = ResourceManager().font_manager.get_sysfont(None, 70).render(f"{floor(self.save_manager.xp):.0f}", True, (255, 255, 255))
+        self.xp_surface = pg.Surface((self.xp_icon.width + self.xp_text.width + 10, max(self.xp_icon.height, self.xp_text.height)), pg.SRCALPHA)
+
+        self.xp_surface.blit(self.xp_icon, (0, 0))
+        self.xp_surface.blit(self.xp_text, (self.xp_icon.width + 5, 0))
+
     def draw(self) -> None:
         if self.save_manager.money != self.last_money:
             self.rebuild_money()
 
-        self.game_surface.blit(self.money_surface, (self.WIDTH - self.money_surface.width - 10, 10))
+        self.game_surface.blit(self.money_surface, (self.WIDTH - self.money_surface.width - 30, 10))
+        self.game_surface.blit(self.xp_surface, (self.WIDTH - self.money_surface.width - 30 - self.xp_surface.width - 30, 10))
 
 class FarmCEO:
     RESOURCE_MANAGER: ResourceManager = ResourceManager()
