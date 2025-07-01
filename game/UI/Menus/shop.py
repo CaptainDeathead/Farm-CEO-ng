@@ -57,7 +57,6 @@ class PaddockBuyMenu:
         selected_paddock = int(self.dropdown.get_selected_text())-1
         paddock_area = PaddockManager().paddocks[selected_paddock].hectares
 
-        # Paddock price = Area * 12000
         price = paddock_area * 12000
 
         PaddockManager().paddocks[selected_paddock].owned_by = "player"

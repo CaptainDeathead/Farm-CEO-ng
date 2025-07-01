@@ -144,12 +144,14 @@ class PaddockManager:
         paddock.state = state
         paddock.fill(STATE_COLORS[paddock.state])
 
-    def fill_all_paddocks(self, exclude_paddocks: List[int] = []) -> None:
+    def fill_all_paddocks(self, exclude_paddocks: List[int] = [], draw_paint: bool = False) -> None:
         for i, paddock in enumerate(self.paddocks):
             if i in exclude_paddocks:
                 paddock.fill((0, 0, 0))
             else:
                 paddock.load_state()
+
+            paddock.draw_to_map(False, True)
 
     def init_paddocks(self) -> None:
         logging.debug("Initializing paddocks... (This may take some time)")
@@ -159,10 +161,6 @@ class PaddockManager:
             paddock.init_collision()
 
             paddock.load_state()
-
-        save_manager = SaveManager()
-        save_manager.set_paddocks(self.paddocks)
-        save_manager.save_game()
 
     def get_indicator_position(self, paddock_center: Tuple[float, float], indicator_angle: int) -> Tuple[float, float]:
         dist = 45 * self.scale
@@ -212,7 +210,6 @@ class PaddockManager:
             if paddock.state_changed:
                 logging.info(f"Paddock {paddock.num} state change detected, updating save_manager dict...")
                 paddock.state_changed = False
-                SaveManager().set_paddocks(self.paddocks)
                 break
 
         if mouse_just_released and self.location_callback is not None:

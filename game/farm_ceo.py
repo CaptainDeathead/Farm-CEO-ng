@@ -127,21 +127,28 @@ class FarmCEO:
 
         self.map = Map(self.screen, self.RESOURCE_MANAGER.load_map("Green_Spring_cfg.json")) # map estimated to be almost screen size
         self.game_surface = pg.Surface((self.map.rect.w, self.map.rect.h), pg.SRCALPHA)
-        
-        self.shed = Shed(
-            self.game_surface, self.events, utils.scale_rect(pg.Rect(self.map.map_cfg["shed"]["rect"]), self.map.scale), self.map.map_cfg["shed"]["rotation"], self.map.map_cfg["roads"],
-            self.map.scale, None, self.request_sleep) # Silo will be set later (not None)
-
-        self.save_manager: SaveManager = SaveManager()
-        self.save_manager.init(self.map.map_cfg, self.shed.vehicles, self.shed.tools, self.shed.add_vehicle, self.shed.add_tool)
 
         FontManager().init()
 
         self.paddock_manager: PaddockManager = PaddockManager()
-        self.paddock_manager.init(self.screen, self.map.surface, self.map.paddocks_surface, self.save_manager.get_paddocks(), self.map.scale)
 
-        self.sellpoint_manager = SellpointManager(self.game_surface, self.map.scale, self.save_manager.get_sellpoints())
+        self.sellpoint_manager = SellpointManager(self.game_surface, self.map.scale)
+        
+        self.shed = Shed(
+            self.game_surface, self.events, utils.scale_rect(pg.Rect(self.map.map_cfg["shed"]["rect"]), self.map.scale), self.map.map_cfg["shed"]["rotation"], self.map.map_cfg["roads"],
+            self.map.scale, None, self.request_sleep, self.paddock_manager, self.sellpoint_manager) # Silo will be set later (not None)
+
+        self.save_manager: SaveManager = SaveManager()
+        self.save_manager.init(self.map.map_cfg, self.shed.vehicles, self.shed.tools, self.shed.add_vehicle, self.shed.add_tool, []) # WARNING: Patch paddocks immediately
+                                                                                                                                               #
+        self.paddock_manager.init(self.screen, self.map.surface, self.map.paddocks_surface, self.save_manager.get_paddocks(), self.map.scale)  #
+        self.save_manager.paddocks = self.paddock_manager.paddocks                                                                             # HERE
+
+        self.sellpoint_manager.init(self.save_manager.get_sellpoints())
         self.shed.set_silo(self.sellpoint_manager.silo)
+
+        self.shed.fully_load_destinations()
+        self.shed.fully_load_jobs()
 
         self.hud = HUD(self.game_surface)
 

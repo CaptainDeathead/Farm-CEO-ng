@@ -1,4 +1,5 @@
 import pygame as pg
+import logging
 
 from machinary import Tractor, Header, Tool
 from destination import Destination
@@ -6,8 +7,8 @@ from utils import utils
 from data import *
 
 from math import sqrt
-from typing import List, Tuple, Sequence
-
+from typing import List, Tuple, Sequence, Dict
+from typing_extensions import Self
 
 class Job:
     def __init__(self,
@@ -30,6 +31,25 @@ class Job:
         self.job_id = job_id
 
         self.lap_1 = []
+
+    def to_dict(self) -> Dict[str, any]:
+        logging.info(f"Converting job: {self.job_id} to dict...")
+
+        ret_dict = {
+            "start": self.start_location.to_dict(),
+            "end": self.end_location.to_dict(),
+            "roads": self.roads,
+            "vehicle_index": self.vehicle.vehicle_id,
+            "job_id": self.job_id,
+            "lap_1": self.lap_1
+        }
+        
+        if self.tool is None:
+            ret_dict["tool_index"] = -1
+        else:
+            ret_dict["tool_index"] = self.tool.tool_id
+
+        return ret_dict
 
     def get_closest_point_on_boundary(self, point: Tuple, boundary: List[Tuple]) -> Tuple | None:
         closest_dist = float('inf')
@@ -409,17 +429,42 @@ class Job:
                     return self.generate_transport_path((0, 0), self.end_location.destination.gate, from_shed=True)
 
 class TaskManager:
-    def __init__(self, vehicles: List, tools: List, roads: List, shed_position: Sequence[int]) -> None:
+    def __init__(self, vehicles: List, tools: List, roads: List, shed_position: Sequence[int], fully_load_destination: object) -> None:
         self.vehicles = vehicles
         self.tools = tools
         self.roads = roads
         self.shed_position = shed_position
+        self.fully_load_destination = fully_load_destination
 
-        self.jobs = []
+        self.jobs: List[Job] = []
 
-    def create_job(self, vehicle: Tractor | Header, tool: Tool | None, start_location: Destination, end_location: Destination) -> Job:
-        job = Job(start_location, end_location, self.roads, vehicle, tool, self.shed_position, len(self.jobs))
+    def create_job(self, vehicle: Tractor | Header, tool: Tool | None, start_location: Destination, end_location: Destination, forced_job_id: int = -1) -> Job:
+        if forced_job_id == -1:
+            job_id = len(self.jobs)
+        else:
+            job_id = forced_job_id
+
+        job = Job(start_location, end_location, self.roads, vehicle, tool, self.shed_position, job_id)
         self.jobs.append(job)
+
+        return job
+
+    def load_job_from_dict(self, job_dict: Dict[str, any]) -> Job:
+        vehicle = self.vehicles[job_dict["vehicle_index"]]
+
+        if job_dict["tool_index"] >= 0:
+            tool = self.tools[job_dict["tool_index"]]
+        else:
+            tool = None
+
+        start = Destination(None).from_dict(job_dict["start"])
+        end = Destination(None).from_dict(job_dict["end"])
+
+        self.fully_load_destination(start)
+        self.fully_load_destination(end)
+
+        job = self.create_job(vehicle, tool, start, end, forced_job_id=job_dict["job_id"])
+        job.lap_1 = job_dict["lap_1"]
 
         return job
 

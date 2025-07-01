@@ -48,20 +48,21 @@ class Tractor(Vehicle):
         self.working_backwards = attrs["workingBackwards"]
         self.hitch_y = attrs["hitch"]
 
-        self.string_task = "No task assigned"
-        self.paddock: int = -1
+        self.string_task = attrs.get("stringTask", "No task assigned")
+        self.paddock: int = attrs.get("paddockNum", -1)
 
-        self.path: List[Sequence[float]] = []
+        self.path: List[Sequence[float]] = attrs.get("path", [])
         self.get_silo = get_silo
         self.add_xp = add_xp
 
-        self.active = False
-        self.stage = 2
-        self.destination = Destination(None)
+        self.active = attrs.get("active", False)
+        self.stage = attrs.get("stage", 2)
+        self.destination = Destination.from_dict(attrs.get("destination"))
         self.max_speed = 40
         self.curr_speed = self.max_speed
 
         self.tool: Tool = None
+        self.job = attrs.get("job", None)
 
         self.desired_rotation: float = 0.0
         self.waiting = False
@@ -79,8 +80,11 @@ class Tractor(Vehicle):
         self.last_unload = time()
         self.last_load = time()
 
+        pos = attrs.get("pos", (shed_rect.x - shed_rect.w / 2, shed_rect.y + 10))
+
         image = pg.transform.scale_by(ResourceManager.load_image(self.anims['normal']), self.scale*VEHICLE_SCALE)
-        super().__init__(self.surface, image, (shed_rect.x, shed_rect.y + 10), 0, self.hitch_y)
+        super().__init__(self.surface, image, pos, 0, self.hitch_y)
+        self.rotation = attrs.get("rotation", 0)
 
     def re_init(self) -> None:
         logging.info(f"Re-initializing tractor: {self.full_name}...")
@@ -435,13 +439,13 @@ class Header(Vehicle):
         self.size = attrs["size"]
         self.storage = attrs["storage"]
 
-        self.string_task = "No task assigned"
-        self.paddock: int = -1
-        self.path: List[Sequence[float, float]] = []
+        self.string_task = attrs.get("stringTask", "No task assigned")
+        self.paddock: int = attrs.get("paddockNum", -1)
+        self.path: List[Sequence[float, float]] = attrs.get("path", [])
 
-        self.active = False
-        self.stage = 2
-        self.destination = Destination(None)
+        self.active = attrs.get("active", False)
+        self.stage = attrs.get("stage", 2)
+        self.destination = Destination.from_dict(attrs.get("destination"))
         self.max_speed = 40
         self.curr_speed = self.max_speed
 
@@ -461,10 +465,13 @@ class Header(Vehicle):
         self.finished = False
 
         self.completed_path = []
-        self.job = None
+        self.job = attrs.get("job", None)
+
+        pos = attrs.get("pos", (shed_rect.x - shed_rect.w / 2, shed_rect.y + 10))
 
         image = pg.transform.scale_by(ResourceManager.load_image(self.anims['pipeIn']), self.scale)
-        super().__init__(self.surface, image, (shed_rect.x, shed_rect.y + 10), 0, 0)
+        super().__init__(self.surface, image, pos, 0, 0)
+        self.rotation = attrs.get("rotation", 0)
 
         self.working_width = self.image.get_width()
 
@@ -813,6 +820,8 @@ class Tool(Trailer):
 
         self.desired_rotation: float = 0.0
         self.waiting_for_loading: bool = False
+
+        super().__init__(self.surface, None, self.master_image, (self.shed_rect.x, self.shed_rect.y + 10), 0, -self.master_image.get_height() / 2 + 9)
 
     def re_init(self) -> None:
         logging.info(f"Re-initializing tool: {self.full_name}...")

@@ -18,7 +18,7 @@ class SellpointManager:
         "oat": 2.0
     }
 
-    def __init__(self, game_surface: pg.Surface, map_scale: float, sellpoints_dict: Dict[str, Dict]) -> None:
+    def __init__(self, game_surface: pg.Surface, map_scale: float) -> None:
         self.game_surface = game_surface
         self.map_scale = map_scale
         self.sellpoints = []
@@ -28,6 +28,7 @@ class SellpointManager:
 
         self.location_callback = None
 
+    def init(self, sellpoints_dict: Dict[str, Dict]) -> None:
         self.load_sellpoints(sellpoints_dict)
 
     def generate_prices(self) -> Dict[str, float]:

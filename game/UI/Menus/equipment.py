@@ -85,7 +85,7 @@ class Equipment:
     def reset_map(self) -> None:
         logging.info("Unhiding all paddocks and removing map transparency...")
 
-        self.fill_all_paddocks()
+        self.fill_all_paddocks(draw_paint=True)
         self.map_lighten()
 
     def remove_destination_picker(self) -> None:
@@ -182,7 +182,7 @@ class Equipment:
         self.remove_destination_picker()
 
     def location_click_callback(self, destination: Destination) -> None:
-        # Check if the callback has happened before because when clicking a paddock it doesnt use the mouse override, thus clicking whatever is behind the popup (a paddock)
+        # Check if the callback has happened before because when clicking a paddock it doesn't use the mouse override, thus clicking whatever is behind the popup (a paddock)
         if not self.location_callback_has_happened:
             self.location_callback_has_happened = True
             return
@@ -208,6 +208,10 @@ class Equipment:
         excluded_paddocks = []
 
         for p, paddock in enumerate(self.get_paddocks()):
+            if not paddock.owned_by == "player" and not UNLOCK_ALL_PADDOCKS:
+                excluded_paddocks.append(p)
+                continue
+
             # WARNING: For trailers to load different tools they need to have access to that tool's desired states (put the state in the trailers desired states in data)
             if paddock.state not in desired_paddock_states:
                 excluded_paddocks.append(p)

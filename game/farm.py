@@ -4,6 +4,8 @@ import logging
 from resource_manager import ResourceManager
 from save_manager import SaveManager
 
+from paddock_manager import PaddockManager
+from sellpoint_manager import SellpointManager
 from machinary import Tractor, Header, Tool
 from pathfinding import TaskManager
 from events import Events
@@ -16,7 +18,8 @@ from copy import deepcopy
 from typing import List, Dict, Sequence
 
 class Shed(LayableRenderObj):
-    def __init__(self, game_surface: pg.Surface, events: Events, rect: pg.Rect, rotation: float, roads: List[Sequence[int]], scale: List[Sequence[int]], silo: SellPoint | None, request_sleep: object) -> None:
+    def __init__(self, game_surface: pg.Surface, events: Events, rect: pg.Rect, rotation: float, roads: List[Sequence[int]], scale: List[Sequence[int]],
+                 silo: SellPoint | None, request_sleep: object, paddock_manager: PaddockManager, sellpoint_manager: SellpointManager) -> None:
         self.game_surface = game_surface
         self.events = events
 
@@ -38,18 +41,21 @@ class Shed(LayableRenderObj):
         self._silo = silo
         self.request_sleep = request_sleep
 
+        self.paddock_manager = paddock_manager
+        self.sellpoint_manager = sellpoint_manager
+
         self.roads = roads
         self.scale_roads()
 
         self.equipment_draw = lambda **args: logging.warning("equipment_draw called before it was initialized in the shed!")
-        self.task_manager = TaskManager(self.vehicles, self.tools, self.roads, self.rect.center)
+        self.task_manager = TaskManager(self.vehicles, self.tools, self.roads, self.rect.center, self.fully_load_destination)
 
         # shading for roof
         large_shadow_map = ResourceManager.load_image("Lighting/shed_shadow_map.png", (1000, 1000)) # Already converted
         self.shadow_map = pg.transform.scale(large_shadow_map, (rect.w, rect.h*2/3))
         self.shadow_map.set_alpha(128)
 
-        self.rebuild()
+        self.rebuild() 
 
     def get_silo(self) -> SellPoint | None:
         """
@@ -93,6 +99,32 @@ class Shed(LayableRenderObj):
                 new_roads[-1].append((px, py)) 
 
         self.roads = new_roads
+
+    def fully_load_destination(self, destination: Destination) -> None:
+        if destination.is_paddock:
+            destination.destination = self.paddock_manager.paddocks[int(destination.paddock_num) - 1]
+
+        elif destination.is_sellpoint or destination.is_silo:
+            for sellpoint in self.sellpoint_manager.sellpoints:
+                if sellpoint.name == destination.sellpoint_name:
+                    destination.destination = self.sellpoint_manager.sellpoints
+                    return
+
+            logging.error(f"Error while initializing destination which requires sellpoint with name: {destination.sellpoint_name}! Error: Name not found in sellpoints.")
+
+    def fully_load_destinations(self) -> None:
+        logging.info("Fully loading destinations...")
+
+        for vehicle in self.vehicles:
+            if vehicle.destination.load_destination_required:
+                self.fully_load_destination(vehicle.destination)
+
+    def fully_load_jobs(self) -> None:
+        logging.info("Fully loading jobs...")
+
+        for vehicle in self.vehicles:
+            if vehicle.job != None:
+                vehicle.job = self.task_manager.load_job_from_dict(vehicle.job)
 
     def add_vehicle(self, save_attrs: Dict[str, any]) -> None:
         if save_attrs["header"]: vehicle_type = "Harvesters"

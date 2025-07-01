@@ -1,4 +1,7 @@
 import pygame as pg
+import logging
+
+from resource_manager import ResourceManager
 
 from random import randint
 from typing import Dict, List, Tuple
@@ -38,9 +41,9 @@ class Paddock:
         self.lime_years = attrs.get("lime_years", 3) # Years until lime runs out
         self.super_spreaded = attrs.get("super_spreaded", False)
         self.urea_spreaded = attrs.get("urea_spreaded", False)
-        self.weeds = attrs.get("weeds", 0)
+        self.weeds = attrs.get("weeds", randint(0, 2))
 
-        self.crop_index = attrs.get("crop_type", 0) # Default to wheat
+        self.crop_index = attrs.get("crop_type", randint(0, len(CROP_TYPES)-1)) # Default to wheat
 
     def init_collision(self) -> None:
         self.surface, self.rect = self.create_surface()
@@ -66,6 +69,18 @@ class Paddock:
             "weeds": self.weeds,
             "crop_type": self.crop_index
         }
+
+    def save_paint_surface(self, save_path: str) -> None:
+        full_path = f"{save_path}/{self.num}_paint_surface.png"
+
+        logging.info(f"Saving paddock paint surface to: {full_path}")
+        pg.image.save(self.paint_surface, full_path)
+
+    def load_paint_surface(self, save_path: str) -> None:
+        full_path = f"{save_path}/{self.num}_paint_surface.png"
+
+        logging.info(f"Loading paddock paint surface from: {full_path}")
+        self.paint_surface = ResourceManager.load_image(full_path, expected_size=(10, 10), explicit_path=True)
     
     def rebuild_num(self) -> None:
         color = (255, 255, 255)
@@ -112,7 +127,7 @@ class Paddock:
     def calculate_yield(self) -> float:
         """Returns a yield bonus percent"""
 
-        return (1.0 + int(self.lime_years > 0) + int(self.super_spreaded) + int(self.urea_spreaded)) / (self.weeds + 1) # Division by 0
+        return (2.0 + int(self.lime_years > 0) + int(self.super_spreaded) + int(self.urea_spreaded)) / (self.weeds + 1) # Division by 0
 
     def is_lime_spreadable(self) -> bool:
         return self.state in LIME_STAGES and self.lime_years > 0

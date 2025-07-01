@@ -25,7 +25,7 @@ class SaveManager:
         return cls.instance
     
     def init(self, map_config: Dict[str, any], vehicles: List[Tractor | Header], tools: List[Tool],
-             add_vehicle: callable, add_tool: callable) -> None:
+             add_vehicle: callable, add_tool: callable, paddocks: List) -> None:
         
         self.STATIC_VEHICLES_DICT = ResourceManager().load_json("Machinary/Vehicles/vehicles.json")
         self.STATIC_TOOLS_DICT = ResourceManager().load_json("Machinary/Tools/tools.json")
@@ -43,6 +43,8 @@ class SaveManager:
         
         self.add_vehicle = add_vehicle
         self.add_tool = add_tool
+
+        self.paddocks = paddocks
 
         self.vehicles_dict = {
             0: {
@@ -137,6 +139,8 @@ class SaveManager:
         self.set_attr("tools", self.tools_dict)
         self.set_attr("sellpoints", self.sellpoints)
 
+        self.update_paddocks()
+
         logging.debug(f"Writing savegame file: \"{self.SAVE_PATH}\"...")
         ResourceManager.write_json(self.save, self.SAVE_PATH, explicit_path=True)
 
@@ -222,10 +226,12 @@ class SaveManager:
     def get_paddocks(self) -> Dict[int, any]:
         return self.get_attr("paddocks")
     
-    def set_paddocks(self, paddocks: List[Paddock]) -> None:
+    def update_paddocks(self) -> None:
+        logging.info("Updating paddocks dict...")
+
         paddocks_dict = {}
 
-        for paddock in paddocks:
+        for paddock in self.paddocks:
             paddocks_dict[paddock.num] = paddock.__dict__()
 
         self.set_attr("paddocks", paddocks_dict)
@@ -255,8 +261,20 @@ class SaveManager:
                 "vehicleId": vehicle.vehicle_id,
                 "jobId": vehicle.job_id,
                 "completionAmount": vehicle.completion_amount,
-                "workingBackwards": vehicle.working_backwards
+                "workingBackwards": vehicle.working_backwards,
+                "pos": (vehicle.x, vehicle.y),
+                "rotation": vehicle.rotation,
+                "stage": vehicle.stage,
+                "paddockNum": vehicle.paddock,
+                "stringTask": vehicle.string_task,
+                "active": vehicle.active,
+                "destination": vehicle.destination.to_dict(),
+                "path": vehicle.path,
+                "active": vehicle.active
             }
+
+            if vehicle.job is not None:
+                self.vehicles_dict[vehicle.vehicle_id]["job"] = vehicle.job.to_dict()
 
         return self.vehicles_dict
 
@@ -278,7 +296,11 @@ class SaveManager:
                 "vehicleId": tool.get_vehicle_id(),
                 "anims": tool.anims,
                 "price": tool.price,
-                "toolId": tool.tool_id
+                "toolId": tool.tool_id,
+                "pos": (tool.x, tool.y),
+                "rotation": tool.rotation,
+                "paddock": tool.paddock,
+                "stringTask": tool.string_task
             }
         
         return self.tools_dict

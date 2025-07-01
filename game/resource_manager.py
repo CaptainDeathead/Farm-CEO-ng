@@ -3,7 +3,6 @@ import os
 import logging
 import traceback
 
-from paddock import Paddock
 from data import *
 
 from json import loads, dumps, JSONDecodeError
@@ -54,14 +53,17 @@ class ResourceManager:
         return f"Error while writing {obj_type}!\n  {obj_type}: \"{obj_path}\"\n  Error: \"{err_msg}\""
 
     @staticmethod
-    def load_image(image_path: str, expected_size: Tuple[int, int] = (10, 10)) -> pg.Surface:
+    def load_image(image_path: str, expected_size: Tuple[int, int] = (10, 10), explicit_path: bool = False) -> pg.Surface:
         """image_path: str (relative to `DATA_PATH`)"""
         logging.debug(f"Loading image: \"{image_path}\"...")
 
         image = pg.Surface(expected_size)
 
+        if not explicit_path:
+            image_path = f"{ResourceManager.DATA_PATH}/{image_path}"
+
         try:
-            image = pg.image.load(f"{ResourceManager.DATA_PATH}/{image_path}").convert_alpha()
+            image = pg.image.load(f"{image_path}").convert_alpha()
 
         except pg.error as message:
             pg.draw.rect(image, (255, 0, 0), (0, 0, expected_size[0], expected_size[1])) # Red rectangle to show image load error to user
