@@ -464,7 +464,7 @@ class TaskManager:
         self.fully_load_destination(end)
 
         job = self.create_job(vehicle, tool, start, end, forced_job_id=job_dict["job_id"])
-        job.lap_1 = job_dict["lap_1"]
+        job.lap_1 = [(px, py) for px, py in job_dict["lap_1"]]
 
         return job
 
