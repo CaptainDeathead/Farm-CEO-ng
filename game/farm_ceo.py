@@ -139,7 +139,7 @@ class FarmCEO:
             self.map.scale, None, self.request_sleep, self.paddock_manager, self.sellpoint_manager) # Silo will be set later (not None)
 
         self.save_manager: SaveManager = SaveManager()
-        self.save_manager.init(self.map.map_cfg, self.shed.vehicles, self.shed.tools, self.shed.add_vehicle, self.shed.add_tool, []) # WARNING: Patch paddocks immediately
+        self.save_manager.init(self.map.map_cfg, self.shed.vehicles, self.shed.tools, self.shed.add_vehicle, self.shed.add_tool, [], self.shed.rect.center) # WARNING: Patch paddocks immediately
                                                                                                                                                #
         self.paddock_manager.init(self.screen, self.map.surface, self.map.paddocks_surface, self.save_manager.get_paddocks(), self.map.scale)  #
         self.save_manager.paddocks = self.paddock_manager.paddocks                                                                             # HERE

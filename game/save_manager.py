@@ -13,7 +13,7 @@ else:
     def app_storage_path() -> str:
         return "./"
     
-from typing import Dict, List
+from typing import Dict, List, Sequence
 
 class SaveManager:
     SAVE_PATH: str = os.path.join(app_storage_path(), "farmceo_savegame.json")
@@ -25,7 +25,7 @@ class SaveManager:
         return cls.instance
     
     def init(self, map_config: Dict[str, any], vehicles: List[Tractor | Header], tools: List[Tool],
-             add_vehicle: callable, add_tool: callable, paddocks: List) -> None:
+             add_vehicle: callable, add_tool: callable, paddocks: List, shed_pos: Sequence[int]) -> None:
         
         self.STATIC_VEHICLES_DICT = ResourceManager().load_json("Machinary/Vehicles/vehicles.json")
         self.STATIC_TOOLS_DICT = ResourceManager().load_json("Machinary/Tools/tools.json")
@@ -45,6 +45,7 @@ class SaveManager:
         self.add_tool = add_tool
 
         self.paddocks = paddocks
+        self.shed_pos = shed_pos
 
         self.vehicles_dict = {
             0: {
@@ -272,8 +273,17 @@ class SaveManager:
                 "path": vehicle.path,
             }
 
-            if vehicle.job is not None:
-                self.vehicles_dict[vehicle.vehicle_id]["job"] = vehicle.job.to_dict()
+            if hasattr(vehicle, 'tool') and vehicle.tool is not None:
+                if vehicle.tool.tool_type in "Trailers":
+                    self.vehicles_dict[vehicle.vehicle_id]["jobId"] = -1
+                    self.vehicles_dict[vehicle.vehicle_id]["active"] = False
+                    self.vehicles_dict[vehicle.vehicle_id]["destination"] = None
+                    self.vehicles_dict[vehicle.vehicle_id]["path"] = []
+                    self.vehicles_dict[vehicle.vehicle_id]["stringTask"] = "No task assigned"
+                    self.vehicles_dict[vehicle.vehicle_id]["pos"] = self.shed_pos
+
+            elif vehicle.job is not None:
+                    self.vehicles_dict[vehicle.vehicle_id]["job"] = vehicle.job.to_dict()
 
         return self.vehicles_dict
 
@@ -303,6 +313,13 @@ class SaveManager:
                 "active": tool.active,
                 "destination": tool.destination.to_dict(),
             }
+
+            if tool.tool_type == "Trailers":
+                self.tools_dict[tool.tool_id]["active"] = False
+                self.tools_dict[tool.tool_id]["destination"] = None
+                self.tools_dict[tool.tool_id]["path"] = []
+                self.tools_dict[tool.tool_id]["stringTask"] = "No task assigned"
+                self.tools_dict[tool.tool_id]["pos"] = self.shed_pos
         
         return self.tools_dict
 
