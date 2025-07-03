@@ -309,9 +309,7 @@ class SaveManager:
                 "pos": (tool.x, tool.y),
                 "rotation": tool.rotation,
                 "paddock": tool.paddock,
-                "stringTask": tool.string_task,
-                "active": tool.active,
-                "destination": tool.destination.to_dict(),
+                "active": tool.active
             }
 
             if tool.tool_type == "Trailers":

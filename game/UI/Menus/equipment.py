@@ -136,7 +136,6 @@ class Equipment:
 
         elif self.selected_tool.tool_type == "Trailers" and not done_additional_popup and trailer_requires_fill:
             logging.debug("Selected tool is a trailer. Opening crop selection popup...")
-            self.shed.check_trailer_fills(SaveManager().add_money)
             self.set_popup(SelectCropPopup(self.events, self.sellpoint_manager, self.close_popup, self.remove_destination_picker, self.selected_tool.set_fill, self.selected_tool.storage, self.assign_task))
             return
         
@@ -171,6 +170,8 @@ class Equipment:
         elif self.selected_tool.tool_type == "Trailers":
             # Just delivering
             self.selected_vehicle.heading_to_sell = True
+
+        self.shed.clean_silo(SaveManager().add_money)
 
         self.remove_destination_picker()
 

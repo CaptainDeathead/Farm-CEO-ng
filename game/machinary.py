@@ -130,10 +130,6 @@ class Tractor(Vehicle):
 
     def set_string_task(self, text: str) -> None:
         self.string_task = text
-
-        if self.tool is not None:
-            self.tool.string_task = text
-
         self.equipment_draw(rebuild=True)
 
     def set_job(self, job) -> None:
@@ -359,7 +355,6 @@ class Tractor(Vehicle):
         self.tool.active = True
         self.stage = stage
         self.paddock = paddock
-        self.tool.paddock = paddock
         self.waiting = False
     
     def calculate_movement(self, dt: float) -> float:
@@ -806,8 +801,6 @@ class Tool(Trailer):
 
         self.working_width = self.master_image.get_width()
 
-        self.string_task = "No task assigned"
-        self.paddock: int = -1
         self.path: List[Sequence[float]]
 
         self.fill = attrs.get("fill", 0)
@@ -818,8 +811,6 @@ class Tool(Trailer):
         self.last_paint_right = (0, 0)
 
         self.active = attrs.get("active", False)
-        self.destination = Destination.from_dict(attrs.get("destination"))
-
         self.vehicle: Tractor | Header = None
 
         self.desired_rotation: float = 0.0
@@ -830,12 +821,10 @@ class Tool(Trailer):
     def re_init(self) -> None:
         logging.info(f"Re-initializing tool: {self.full_name}...")
 
-        self.string_task = "No task assigned"
-        self.paddock: int = -1
         self.path: List[Sequence[float]]
 
         self.active = False
-        self.destination = Destination(None)
+        self.vehicle = None
 
         self.desired_rotation: float = 0.0
         self.waiting_for_loading: bool = False
@@ -859,6 +848,21 @@ class Tool(Trailer):
 
     @property
     def has_fill(self) -> bool: return FILL_TOOLS[self.tool_type]
+
+    @property
+    def destination(self) -> Destination:
+        if self.vehicle is None: return Destination(None)
+        return self.vehicle.destination
+
+    @property
+    def string_task(self) -> str:
+        if self.vehicle is None: return "No task assigned"
+        return self.vehicle.string_task
+
+    @property
+    def paddock(self) -> int:
+        if self.vehicle is None: return -1
+        return self.vehicle.paddock
 
     def get_vehicle_id(self) -> None:
         if self.vehicle is not None:
@@ -926,6 +930,9 @@ class Tool(Trailer):
         self.working_width = self.master_image.get_width()
 
         self.set_animation(self.anims["default"]) # anims['default'] key returns the name of the key to the default image
+
+        if self.working:
+            self.set_working_animation()
 
     def request_fill(self) -> None:
         logging.info(f"Tool {self.full_name} is requesting fill...")
