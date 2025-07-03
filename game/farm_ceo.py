@@ -146,6 +146,7 @@ class FarmCEO:
 
         self.sellpoint_manager.init(self.save_manager.get_sellpoints())
         self.shed.set_silo(self.sellpoint_manager.silo)
+        self.shed.check_trailer_fills(self.save_manager.add_money)
 
         self.shed.fully_load_destinations()
         self.shed.fully_load_jobs()

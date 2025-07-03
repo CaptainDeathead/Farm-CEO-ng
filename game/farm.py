@@ -126,6 +126,27 @@ class Shed(LayableRenderObj):
             if vehicle.job != None:
                 vehicle.job = self.task_manager.load_job_from_dict(vehicle.job)
 
+    def check_trailer_fills(self, add_money: object) -> None:
+        logging.info("Checking trailer fills...")
+
+        for tool in self.tools:
+            if tool.tool_type not in "Trailers" or tool.active: continue
+
+            if tool.fill > 0:
+                str_fill_type = FILL_TYPES[tool.fill_type]
+
+                if str_fill_type in CROP_TYPES:
+                    self.sellpoint_manager.store_crop(str_fill_type, tool.fill)
+                    tool.fill = 0
+                elif str_fill_type in FERTILISERS:
+                    add_money(FERTILISER_PRICES[str_fill_type] * tool.fill)
+                    tool.fill = 0
+                elif str_fill_type in CHEMICALS:
+                    add_money(CHEMICAL_PRICES[str_fill_type] * tool.fill)
+                    tool.fill = 0
+                else:
+                    logging.warning(f"Unknown fill type: {str_fill_type} in tool: {tool.full_name}!")
+
     def add_vehicle(self, save_attrs: Dict[str, any]) -> None:
         if save_attrs["header"]: vehicle_type = "Harvesters"
         else: vehicle_type = "Tractors"
