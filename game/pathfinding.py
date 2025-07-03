@@ -401,7 +401,7 @@ class Job:
                 return self.generate_transport_path((0, 0), self.end_location.destination.gate, from_shed=True)
             elif self.end_location.is_sellpoint:
                 # Assumes you are at the shed (may work if you aren't, I'm not sure)
-                return self.generate_transport_path(self.vehicle.position, self.end_location.destination.pos, from_shed=True)
+                return self.generate_transport_path(tuple(self.vehicle.position), self.end_location.destination.pos, from_shed=True)
 
             if self.start_location.is_paddock:
                 # At gate (full) -> silo

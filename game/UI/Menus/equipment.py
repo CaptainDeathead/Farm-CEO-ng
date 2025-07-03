@@ -156,12 +156,12 @@ class Equipment:
             if header:
                 # There is a full header in the paddock because it would've been added by the get_excluded_paddocks call
                 self.selected_vehicle.path.extend(header.on_unloading_vehicle_assign(self.selected_vehicle))
-                self.selected_vehicle.path.append(header.position)
+                self.selected_vehicle.path.append(tuple(header.position))
                 self.selected_vehicle.deliver_on_load_complete = True
             elif vehicle:
                 # There is a tool that needs filling in the paddock
                 self.selected_vehicle.path.extend(vehicle.on_loading_vehicle_assign(self.selected_vehicle))
-                self.selected_vehicle.path.append(vehicle.position)
+                self.selected_vehicle.path.append(tuple(vehicle.position))
                 self.selected_vehicle.deliver_on_load_complete = True
                 self.selected_tool.set_animation("full")
             else:

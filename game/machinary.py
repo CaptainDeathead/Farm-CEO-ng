@@ -163,7 +163,7 @@ class Tractor(Vehicle):
         self.waiting_for_loading_vehicle_assign = False
         self.waiting_for_loading_vehicle = True
 
-        return list(reversed(self.job.trace_collision_boundary(self.position, self.destination.destination.gate, self.job.lap_1)))
+        return list(reversed(self.job.trace_collision_boundary(tuple(self.position), self.destination.destination.gate, self.job.lap_1)))
 
     def unload_tool(self) -> None:
         if time() - self.last_unload < self.UNLOAD_INTERVAL: return
@@ -210,7 +210,7 @@ class Tractor(Vehicle):
             self.loading_vehicle.set_waiting(False)
             self.loading_vehicle.tool.set_animation('full')
             self.loading_vehicle.tool.reload_vt_sim()
-            self.loading_vehicle.path = self.job.trace_collision_boundary(self.position, self.destination.destination.gate, self.job.lap_1)
+            self.loading_vehicle.path = self.job.trace_collision_boundary(tuple(self.position), self.destination.destination.gate, self.job.lap_1)
 
     def follow_path(self) -> None:
         if self.waiting_for_loading_vehicle_assign: return
@@ -306,6 +306,9 @@ class Tractor(Vehicle):
                             else:
                                 logging.error("Unexpected race condition occurred when setting paddock fertiliser states: fill_type not found in FERTILISERS!")
 
+                        if self.tool.tool_type == "Seeders":
+                            self.destination.destination.set_crop_type(self.tool.fill_type)
+
                         self.destination.destination.set_state(self.tool.get_output_state())
                         self.add_xp(1)
 
@@ -339,17 +342,17 @@ class Tractor(Vehicle):
         
     def set_path(self, job, new_path: List[Sequence[float]], stage: int, paddock: int = -1) -> None:
         if stage == -1:
-            # Default to travelling -> working -> etc...
+            # Default to traveling -> working -> etc...
             stage = 2
 
-            self.set_string_task(f"Travelling to {self.destination.get_name()}...")
+            self.set_string_task(f"Traveling to {self.destination.get_name()}...")
 
         logging.info(f"Setting new path for vehicle: {self.vehicle_id}...")
         self.set_job(job)
         self.path = new_path
 
         # Required for trailers because the tool.path is just a copy of the original path
-        # The way back for trailers is just the opporsite of the original path
+        # The way back for trailers is just the opposite of the original path
         self.tool.path = deepcopy(new_path)
 
         self.active = True
@@ -560,7 +563,7 @@ class Header(Vehicle):
             self.unloading_vehicle.set_waiting(False)
             self.unloading_vehicle.tool.set_animation('full')
             self.unloading_vehicle.tool.reload_vt_sim()
-            self.unloading_vehicle.path = self.job.trace_collision_boundary(self.position, self.destination.destination.gate, self.job.lap_1)
+            self.unloading_vehicle.path = self.job.trace_collision_boundary(tuple(self.position), self.destination.destination.gate, self.job.lap_1)
 
             logging.debug(f"{self.full_name} is now empty. Resuming task...")
 
@@ -579,7 +582,7 @@ class Header(Vehicle):
         self.waiting_for_unloading_vehicle_assign = False
         self.waiting_for_unloading_vehicle = True
 
-        return list(reversed(self.job.trace_collision_boundary(self.position, self.destination.destination.gate, self.job.lap_1)))
+        return list(reversed(self.job.trace_collision_boundary(tuple(self.position), self.destination.destination.gate, self.job.lap_1)))
 
     def follow_path(self) -> None:
         if self.waiting_for_unloading_vehicle_assign: return
@@ -668,7 +671,7 @@ class Header(Vehicle):
         self.active = True
         self.stage = stage
         self.paddock = paddock
-    
+
     def calculate_movement(self, dt: float) -> float:
         if self.waiting:
             self.velocity = [0, 0]
@@ -788,6 +791,7 @@ class Tool(Trailer):
         self.anims = attrs["anims"]
         self.price = attrs["price"]
         self.tool_id = attrs["toolId"]
+        self.start_vehicle_id = attrs["vehicleId"]
 
         if self.tool_type in ("Seeders", "Spreaders", "Sprayers", "Trailers"):
             self.storage = attrs["storage"]
@@ -813,8 +817,8 @@ class Tool(Trailer):
         self.last_paint_left = (0, 0)
         self.last_paint_right = (0, 0)
 
-        self.active = False
-        self.destination = Destination(None)
+        self.active = attrs.get("active", False)
+        self.destination = Destination.from_dict(attrs.get("destination"))
 
         self.vehicle: Tractor | Header = None
 
@@ -935,7 +939,7 @@ class Tool(Trailer):
             color = (100, color[1], 100)
 
         paint_surf = pg.transform.rotate(self.master_image, self.rotation)
-        return self.destination.destination.paint(paint_surf, self.position, color)
+        return self.destination.destination.paint(paint_surf, tuple(self.position), color)
 
     def check_paint(self) -> None: 
         half_width = self.master_image.get_width() / 2

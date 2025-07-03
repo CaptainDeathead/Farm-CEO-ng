@@ -270,7 +270,6 @@ class SaveManager:
                 "active": vehicle.active,
                 "destination": vehicle.destination.to_dict(),
                 "path": vehicle.path,
-                "active": vehicle.active
             }
 
             if vehicle.job is not None:
@@ -300,7 +299,9 @@ class SaveManager:
                 "pos": (tool.x, tool.y),
                 "rotation": tool.rotation,
                 "paddock": tool.paddock,
-                "stringTask": tool.string_task
+                "stringTask": tool.string_task,
+                "active": tool.active,
+                "destination": tool.destination.to_dict(),
             }
         
         return self.tools_dict

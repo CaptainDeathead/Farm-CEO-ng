@@ -156,6 +156,10 @@ class Paddock:
             self.urea_spreaded = False
             self.weeds = min(self.weeds + 1, 2)
 
+    def set_crop_type(self, crop_index: int) -> None:
+        logging.info(f"Setting paddock crop to {CROP_TYPES[crop_index]} for paddock {self.num}...")
+        self.crop_index = crop_index
+
     def reset_paint(self) -> None:
         # Note: this only changes the variable is_painting! to reset the paint on the surface you need to fill this paddock after calling this func
         self.paint_surface = pg.Surface(self.rect.size, pg.SRCALPHA)

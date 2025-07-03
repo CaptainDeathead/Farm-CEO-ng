@@ -144,6 +144,11 @@ class Shed(LayableRenderObj):
 
         tool = Tool(self.game_surface, self.rect, attrs, self.scale)
 
+        if tool.start_vehicle_id != -1:
+            vehicle = self.vehicles[tool.start_vehicle_id]
+            vehicle.tool = tool
+            tool.assign_vehicle(vehicle)
+
         self.tools.append(tool)
 
     def get_vehicle(self, vehicle_id: int) -> Tractor | Header:
