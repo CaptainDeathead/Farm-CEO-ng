@@ -267,7 +267,6 @@ class Tractor(Vehicle):
                 self.active = False
                 self.tool.active = False
                 self.paddock = -1
-                self.tool.paddock = -1
 
                 self.set_string_task("No task assigned")
 
@@ -290,7 +289,7 @@ class Tractor(Vehicle):
                         self.tool.reload_vt_sim()
 
                         self.destination.destination.reset_paint()
-                        if FILL_TYPES[self.tool.fill_type] in FERTILISERS:
+                        if FILL_TYPES[self.tool.fill_type] in FERTILISERS or FILL_TYPES[self.tool.fill_type] in CHEMICALS:
                             if FILL_TYPES[self.tool.fill_type] == "lime":
                                 self.destination.destination.reset_lime_years()
                             elif FILL_TYPES[self.tool.fill_type] == "super":
@@ -298,7 +297,7 @@ class Tractor(Vehicle):
                             elif FILL_TYPES[self.tool.fill_type] == "urea":
                                 self.destination.destination.urea_spreaded = True
                             elif FILL_TYPES[self.tool.fill_type] == "herbicide":
-                                self.destination.destination.weeds = max(self.destination.destination.weeds - 1, 0)
+                                self.destination.destination.weeds = 0
                             else:
                                 logging.error("Unexpected race condition occurred when setting paddock fertiliser states: fill_type not found in FERTILISERS!")
 
@@ -702,8 +701,9 @@ class Header(Vehicle):
         left_paint = utils.rotate_point_centered(center, (center[0] - half_width, center[1] - half_height), -radians(self.rotation))
         right_paint = utils.rotate_point_centered(center, (center[0] + half_width, center[1] - half_height), -radians(self.rotation))
 
-        pg.draw.circle(pg.display.get_surface(), (255, 0, 0), (PANEL_WIDTH + left_paint[0], left_paint[1]), 3)
-        pg.draw.circle(pg.display.get_surface(), (0, 0, 255), (PANEL_WIDTH + right_paint[0], right_paint[1]), 3)
+        if DEBUG_PAINT:
+            pg.draw.circle(pg.display.get_surface(), (255, 0, 0), (PANEL_WIDTH + left_paint[0], left_paint[1]), 3)
+            pg.draw.circle(pg.display.get_surface(), (0, 0, 255), (PANEL_WIDTH + right_paint[0], right_paint[1]), 3)
 
         last_paint_left_dist = sqrt((left_paint[0] - self.last_paint_left[0])**2 + (left_paint[1] - self.last_paint_left[1])**2)
         last_paint_right_dist = sqrt((right_paint[0] - self.last_paint_right[0])**2 + (right_paint[1] - self.last_paint_right[1])**2)
@@ -945,6 +945,9 @@ class Tool(Trailer):
         if self.get_fill_type_str in FERTILISERS or self.get_fill_type_str in CHEMICALS:
             color = (100, color[1], 100)
 
+            if self.get_fill_type_str == "lime":
+                color = (255, 255, 255)
+
         paint_surf = pg.transform.rotate(self.master_image, self.rotation)
         return self.destination.destination.paint(paint_surf, tuple(self.position), color)
 
@@ -958,8 +961,9 @@ class Tool(Trailer):
         left_paint = utils.rotate_point_centered(center, (center[0] - half_width, center[1] + half_height), -radians(self.rotation))
         right_paint = utils.rotate_point_centered(center, (center[0] + half_width, center[1] + half_height), -radians(self.rotation))
 
-        pg.draw.circle(pg.display.get_surface(), (255, 0, 0), (PANEL_WIDTH + left_paint[0], left_paint[1]), 3)
-        pg.draw.circle(pg.display.get_surface(), (0, 0, 255), (PANEL_WIDTH + right_paint[0], right_paint[1]), 3)
+        if DEBUG_PAINT:
+            pg.draw.circle(pg.display.get_surface(), (255, 0, 0), (PANEL_WIDTH + left_paint[0], left_paint[1]), 3)
+            pg.draw.circle(pg.display.get_surface(), (0, 0, 255), (PANEL_WIDTH + right_paint[0], right_paint[1]), 3)
 
         last_paint_left_dist = sqrt((left_paint[0] - self.last_paint_left[0])**2 + (left_paint[1] - self.last_paint_left[1])**2)
         last_paint_right_dist = sqrt((right_paint[0] - self.last_paint_right[0])**2 + (right_paint[1] - self.last_paint_right[1])**2)

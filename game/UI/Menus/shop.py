@@ -140,7 +140,7 @@ class Shop:
 
         self.in_paddock_menu = False
 
-        self.paddock_buy_menu = PaddockBuyMenu(self.parent_surface, self.events, self.rect)
+        #self.paddock_buy_menu = PaddockBuyMenu(self.parent_surface, self.events, self.rect)
 
         self.not_enough_money_lbl = self.product_title_font.render("Not enough money!", True, (255, 0, 0))
         self.not_enough_xp_lbl = self.product_title_font.render("Not enough XP!", True, (255, 0, 0))
@@ -369,7 +369,8 @@ class Shop:
         if len(self.path) == 3:
             update = self.check_buyscr()
         elif self.in_paddock_menu:
-            self.paddock_buy_menu.update()
+            ...
+            #self.paddock_buy_menu.update()
         else:
             for button in self.buttons:
                 button.update(self.events.mouse_just_pressed, self.events.set_override)

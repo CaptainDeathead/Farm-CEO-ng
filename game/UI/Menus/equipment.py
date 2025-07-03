@@ -131,7 +131,7 @@ class Equipment:
 
         if self.selected_tool.tool_type == "Seeders" and not done_additional_popup:
             logging.debug("Selected tool is a seeder. Opening crop selection popup...")
-            self.set_popup(SelectCropPopup(self.events, self.sellpoint_manager, self.close_popup, self.remove_destination_picker, self.selected_tool.set_fill, self.assign_task))
+            self.set_popup(SelectCropPopup(self.events, self.sellpoint_manager, self.close_popup, self.remove_destination_picker, self.selected_tool.set_fill, self.selected_tool.storage, self.assign_task))
             return
 
         elif self.selected_tool.tool_type == "Trailers" and not done_additional_popup and trailer_requires_fill:

@@ -158,6 +158,7 @@ DEBUG_PATH_GENERATION: bool = False
 DEBUG_PATH_MASK_COLLISION: bool = False
 DEBUG_PATHS: bool = False
 DEBUG_ROADS: bool = False
+DEBUG_PAINT: bool = False
 DEBUG_MOUSE_EVENTS: bool = False
 
 # ---------- ABOUT ----------

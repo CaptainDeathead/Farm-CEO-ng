@@ -39,8 +39,8 @@ class Paddock:
         self.last_collision_count = 0
 
         self.lime_years = attrs.get("lime_years", 3) # Years until lime runs out
-        self.super_spreaded = attrs.get("super_spreaded", False)
-        self.urea_spreaded = attrs.get("urea_spreaded", False)
+        self.super_spreaded = attrs.get("super_spreaded", True)
+        self.urea_spreaded = attrs.get("urea_spreaded", True)
         self.weeds = attrs.get("weeds", randint(0, 2))
 
         self.crop_index = attrs.get("crop_type", randint(0, len(CROP_TYPES)-1)) # Default to wheat
@@ -152,13 +152,20 @@ class Paddock:
         if STATE_NAMES[self.state] == "Harvested":
             # End of year
             self.lime_years -= 1
+            self.super_spreaded = True
+            self.urea_spreaded = True
+            self.weeds = min(self.weeds + 1, 2)
+
+        elif STATE_NAMES[self.state] == "Growing 1":
             self.super_spreaded = False
             self.urea_spreaded = False
-            self.weeds = min(self.weeds + 1, 2)
 
     def set_crop_type(self, crop_index: int) -> None:
         logging.info(f"Setting paddock crop to {CROP_TYPES[crop_index]} for paddock {self.num}...")
         self.crop_index = crop_index
+
+    def reset_lime_years(self) -> None:
+        self.lime_years = 3
 
     def reset_paint(self) -> None:
         # Note: this only changes the variable is_painting! to reset the paint on the surface you need to fill this paddock after calling this func

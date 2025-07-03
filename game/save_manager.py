@@ -73,7 +73,18 @@ class SaveManager:
                 "workingBackwards": False
             }
         }
-        self.tools_dict = {}
+        self.tools_dict = {
+            0: {
+                "toolType": "Seeders",
+                "brand": "John Sheerer",
+                "model": "Combine 14ft",
+                "fill": 0,
+                "fillType": 0,
+                "vehicleId": 0,
+                "price": 20000,
+                "toolId": 0
+            }
+        }
 
         self.load_game()
         if self.save == {}: self.init_savefile()
@@ -106,7 +117,7 @@ class SaveManager:
         new_save["paddocks"] = self._load_paddocks_from_conf()
 
         self.save = new_save
-        self.save_game(update_equipment_dicts = False)
+        self.save_game(update_equipment_dicts = False, update_paddocks=False)
         self.load_game()
 
     def load_game(self) -> None:
@@ -125,7 +136,7 @@ class SaveManager:
 
         self.load_equipment_from_dicts()
 
-    def save_game(self, update_equipment_dicts: bool = True) -> None:
+    def save_game(self, update_equipment_dicts: bool = True, update_paddocks: bool = True) -> None:
         logging.info("Saving game...")
 
         if update_equipment_dicts:
@@ -140,7 +151,8 @@ class SaveManager:
         self.set_attr("tools", self.tools_dict)
         self.set_attr("sellpoints", self.sellpoints)
 
-        self.update_paddocks()
+        if update_paddocks:
+            self.update_paddocks()
 
         logging.debug(f"Writing savegame file: \"{self.SAVE_PATH}\"...")
         ResourceManager.write_json(self.save, self.SAVE_PATH, explicit_path=True)
