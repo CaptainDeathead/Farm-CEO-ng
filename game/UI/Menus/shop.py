@@ -4,6 +4,7 @@ import logging
 from resource_manager import ResourceManager
 from save_manager import SaveManager
 from paddock_manager import PaddockManager
+from destination import Destination
 from events import Events
 
 from time import time
@@ -11,105 +12,176 @@ from time import time
 from UI.pygame_gui import Button, DropDown
 from utils import utils
 from data import *
-from typing import List
+from typing import List, Dict
+
 
 class PaddockBuyMenu:
-    DROPDOWN_WIDTH = 100
-    SEGMENT_HEIGHT = 50
-
-    def __init__(self, parent_surface: pg.Surface, events: Events, rect: pg.Rect) -> None:
+    def __init__(self, parent_surface: pg.Surface, events: Events, rect: pg.Rect, map_funcs: dict[str, object], backtrack_path: object) -> None:
         self.parent_surface = parent_surface
         self.events = events
+
         self.rect = rect
+        self.rect.y += 20
+
+        self.map_darken = map_funcs["map_darken"]
+        self.map_lighten = map_funcs["map_lighten"]
+        self.set_location_click_callback = map_funcs["set_location_click_callback"]
+        self.destroy_location_click_callback = map_funcs["destroy_location_click_callback"]
+        self.fill_all_paddocks = map_funcs["fill_all_paddocks"]
+        self.get_paddocks = map_funcs["get_paddocks"]
+
+        self.backtrack_path = backtrack_path
 
         self.rendered_surface = pg.Surface((self.rect.w, self.rect.h), pg.SRCALPHA)
 
-        self.dropdown = DropDown(self.rendered_surface, PANEL_WIDTH / 2 - self.DROPDOWN_WIDTH / 2, 50, self.DROPDOWN_WIDTH,
-                                 self.SEGMENT_HEIGHT, self.rect, self.get_buttons_for_dropdown(), UI_MAIN_COLOR, self.rebuild)
-        
-        self.product_title_font = pg.font.SysFont(None, 80)
+        self.title_font = pg.font.SysFont(None, 60)
+        self.body_font = pg.font.SysFont(None, 40)
 
-        self.not_enough_money_lbl = self.product_title_font.render("Not enough money!", True, (255, 0, 0))
+        self.showing_destination_picker = False
 
-        self.buy_button = Button(self.rendered_surface, PANEL_WIDTH / 2 - 150, self.rect.h - 280, 300, 100, self.rect, UI_MAIN_COLOR,
-                                  UI_MAIN_COLOR, UI_TEXT_COLOR, "Buy", 60, (20, 20, 20, 20), 0, 0, True, lambda: self.buy_selected())
-        
+        self.destination_exit_btn = None
+        self.destination_submit_btn = None
+
+        self.selected_destination = None
+        self.location_callback_has_happened = False
+
+        self.active = False
         self.last_money = SaveManager().money
 
-        self.rebuild()
+    def reset_map(self) -> None:
+        logging.info("Unhiding all paddocks and removing map transparency...")
 
-    def get_buttons_for_dropdown(self) -> List[Button]:
-        all_paddocks = PaddockManager().paddocks
-        unowned_paddocks = []
+        self.fill_all_paddocks(draw_paint=True)
+        self.map_lighten()
 
-        for paddock in all_paddocks:
-            if paddock.owned_by == "player": continue
-            unowned_paddocks.append(paddock)
+    def remove_destination_picker(self) -> None:
+        self.showing_destination_picker = False
 
-        buttons = [
-            Button(self.rendered_surface, 0, (int(paddock.num) - 1) * self.SEGMENT_HEIGHT, self.DROPDOWN_WIDTH, self.SEGMENT_HEIGHT, self.rect,
-                   UI_MAIN_COLOR, UI_MAIN_COLOR, UI_TEXT_COLOR, paddock.num, 50, (5, 5, 5, 5), 0, 0, True) for paddock in unowned_paddocks
-        ]
+        self.draw()
+        self.reset_map()
+        self.destroy_location_click_callback()
 
-        return buttons
+    def location_click_callback(self, destination: Destination) -> None:
+        if destination.is_paddock:
+            paddock_index = int(destination.destination.num) - 1
+            if paddock_index in self.get_excluded_paddocks():
+                # The paddock is already owned
+                return            
 
-    def buy_selected(self) -> None:
-        selected_paddock = int(self.dropdown.get_selected_text())-1
-        paddock_area = PaddockManager().paddocks[selected_paddock].hectares
-
-        price = paddock_area * 12000
-
-        PaddockManager().paddocks[selected_paddock].owned_by = "player"
-        PaddockManager().paddocks[selected_paddock].rebuild_num()
-        SaveManager().set_money(SaveManager().money - price)
-
-        self.dropdown = DropDown(self.rendered_surface, PANEL_WIDTH / 2 - self.DROPDOWN_WIDTH / 2, 50, self.DROPDOWN_WIDTH,
-                                 self.SEGMENT_HEIGHT, self.rect, self.get_buttons_for_dropdown(), UI_MAIN_COLOR, self.rebuild)
-        
-        self.buy_button.hide()
-        self.update()
-
-    def draw_can_buy(self) -> None:
-        selected_paddock = int(self.dropdown.get_selected_text())-1
-        paddock_area = PaddockManager().paddocks[selected_paddock].hectares
-
-        # Paddock price = Area * 12000
-        price = paddock_area * 12000
-
-        price_lbl = self.product_title_font.render(f"Price: ${price:,}", True, (0, 0, 0))
-        self.rendered_surface.blit(price_lbl, (PANEL_WIDTH / 2 - price_lbl.get_width() / 2, self.rect.h - 350))
-
-        if price > SaveManager().money:
-            self.buy_button.hide()
-            self.rendered_surface.blit(self.not_enough_money_lbl, (PANEL_WIDTH / 2 - self.not_enough_money_lbl.get_width() / 2, self.buy_button.rect.y + 20))
+        elif self.selected_destination.is_sellpoint:
             return
-        
-        self.buy_button.show()
-        self.buy_button.draw()
 
-    def rebuild(self) -> None:
-        logging.info("Rebuilding paddock buy menu...")
-        self.rendered_surface.fill(UI_BACKGROUND_COLOR, (0, 0, PANEL_WIDTH, self.rendered_surface.get_height() - 170)) # - 170 for back button below
-
-        self.draw_can_buy()
-
-    def update(self) -> None:
-        self.dropdown.update(self.events.mouse_just_pressed, self.events.set_override)
-        self.buy_button.update(self.events.mouse_just_pressed, self.events.set_override)
-
-        if self.last_money != SaveManager().money:
-            self.last_money = SaveManager().money
-
-            self.rebuild()
-        
+        self.selected_destination = destination
+        self.rebuild_destination_picker(destination)
         self.draw()
 
+    def get_excluded_paddocks(self) -> List[int]:
+        excluded_paddocks = []
+
+        for p, paddock in enumerate(self.get_paddocks()):
+            if paddock.owned_by == "player" or paddock.price > SaveManager().money:
+                excluded_paddocks.append(p)
+
+        return excluded_paddocks
+
+    def show_destination_picker(self) -> None:
+        logging.info("Entering destination selection mode. Darkening map and hiding un-necessary paddocks...")
+
+        self.showing_destination_picker = True
+        self.location_callback_has_happened = False
+
+        self.set_location_click_callback(self.location_click_callback)
+        self.rebuild_destination_picker(Destination(None))
+        
+        excluded_paddocks = self.get_excluded_paddocks()
+        self.fill_all_paddocks(excluded_paddocks)
+
+        self.map_darken()
+        self.draw()
+
+    def cancel_buy_paddock(self) -> None:
+        self.showing_destination_picker = False
+
+        self.draw()
+        self.reset_map()
+        self.destroy_location_click_callback()
+
+        self.backtrack_path()
+
+    def buy_paddock(self) -> None:
+        if self.selected_destination is None: return
+
+        paddock = self.selected_destination.destination
+        if SaveManager().money < paddock.price:
+            return
+
+        paddock.owned_by = "player"
+        paddock.rebuild_num()
+        SaveManager().take_money(paddock.price)
+
+        self.cancel_buy_paddock()
+
+    def rebuild_destination_picker(self, selected_destination: Destination) -> None:
+        self.rendered_surface.fill(UI_BACKGROUND_COLOR)
+
+        wrap_length = int(PANEL_WIDTH * 0.8)
+
+        title_font = pg.font.SysFont(None, 70)
+        selected_font = pg.font.SysFont(None, 55)
+        body_font = pg.font.SysFont(None, 50)
+        note_font = pg.font.SysFont(None, 40)
+
+        title_font.align = pg.FONT_CENTER
+        body_font.align = pg.FONT_LEFT
+
+        title_lbl = title_font.render(f"Select paddock to buy:", True, UI_TEXT_COLOR, wraplength=wrap_length)
+
+        selected_lbl = selected_font.render(f"Selected: {selected_destination.name}", True, UI_TEXT_COLOR, wraplength=wrap_length)
+
+        body_font.align = pg.FONT_CENTER
+        info_lbl = note_font.render(f"\nNote: Tap on the destination you want on the map to select it.", True, UI_TEXT_COLOR, wraplength=wrap_length)
+
+        lbls_height = title_lbl.get_height() + 40 + selected_lbl.get_height() + info_lbl.get_height()
+        lbls_surface = pg.Surface((PANEL_WIDTH, lbls_height), pg.SRCALPHA)
+
+        curr_y = 0
+
+        lbls_surface.blit(title_lbl, (PANEL_WIDTH / 2 - title_lbl.get_width() / 2, curr_y))
+        curr_y += title_lbl.get_height() + 40
+
+        lbls_surface.blit(selected_lbl, (PANEL_WIDTH / 2 - selected_lbl.get_width() / 2, curr_y))
+        curr_y += selected_lbl.get_height()
+
+        lbls_surface.blit(info_lbl, (PANEL_WIDTH / 2 - info_lbl.get_width() / 2, curr_y))
+        curr_y += 50
+
+        self.rendered_surface.blit(lbls_surface, (PANEL_WIDTH / 2 - lbls_surface.get_width() / 2, 50))
+
+        btn_width = 75
+        btn_y = PANEL_WIDTH / 2 + lbls_surface.get_height() / 2 + 50
+
+        exit_img = ResourceManager.load_image("Icons/cross.png")
+        submit_img = ResourceManager.load_image("Icons/tick.png")
+
+        self.destination_exit_btn = Button(self.rendered_surface, PANEL_WIDTH / 2 - btn_width / 2 - btn_width / 1.5, btn_y, btn_width, btn_width, self.rect, (0, 0, 0), (0, 0, 0), (0, 0, 0),
+                               "", 10, (0, 0, 0, 0), 0, 0, True, self.cancel_buy_paddock, exit_img)
+        
+        self.destination_submit_btn = Button(self.rendered_surface, PANEL_WIDTH / 2 - btn_width / 2 + btn_width / 1.5, btn_y, btn_width, btn_width, self.rect, (0, 0, 0), (0, 0, 0), (0, 0, 0),
+                                 "", 10, (0, 0, 0, 0), 0, 0, True, self.buy_paddock, submit_img)
+
+        self.destination_exit_btn.draw()
+        self.destination_submit_btn.draw()
+
     def draw(self) -> None:
-        self.parent_surface.blit(self.rendered_surface, self.rect)
-        self.dropdown.draw()
+        self.parent_surface.blit(self.rendered_surface, (0, NAVBAR_HEIGHT))
+
+    def update(self) -> None:
+        self.destination_exit_btn.update(self.events.mouse_just_pressed, lambda x: None)
+        self.destination_submit_btn.update(self.events.mouse_just_pressed, lambda x: None)
+        self.draw()
 
 class Shop:
-    def __init__(self, parent_surface: pg.Surface, events: Events, rect: pg.Rect) -> None:
+    def __init__(self, parent_surface: pg.Surface, events: Events, rect: pg.Rect, map_funcs: Dict[str, object]) -> None:
         self.parent_surface = parent_surface
         self.events = events
         self.rect = rect
@@ -140,7 +212,7 @@ class Shop:
 
         self.in_paddock_menu = False
 
-        #self.paddock_buy_menu = PaddockBuyMenu(self.parent_surface, self.events, self.rect)
+        self.paddock_buy_menu = PaddockBuyMenu(self.parent_surface, self.events, self.rect, map_funcs, self.backtrack_path)
 
         self.not_enough_money_lbl = self.product_title_font.render("Not enough money!", True, (255, 0, 0))
         self.not_enough_xp_lbl = self.product_title_font.render("Not enough XP!", True, (255, 0, 0))
@@ -243,6 +315,7 @@ class Shop:
 
     def open_paddocks_buy_menu(self) -> None:
         self.in_paddock_menu = True
+        self.paddock_buy_menu.show_destination_picker()
         
         self.buy_button.hide()
         self.back_button.show()
@@ -369,8 +442,7 @@ class Shop:
         if len(self.path) == 3:
             update = self.check_buyscr()
         elif self.in_paddock_menu:
-            ...
-            #self.paddock_buy_menu.update()
+            self.paddock_buy_menu.update()
         else:
             for button in self.buttons:
                 button.update(self.events.mouse_just_pressed, self.events.set_override)

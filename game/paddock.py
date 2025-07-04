@@ -45,6 +45,10 @@ class Paddock:
 
         self.crop_index = attrs.get("crop_type", randint(0, len(CROP_TYPES)-1)) # Default to wheat
 
+    @property
+    def price(self) -> int:
+        return self.mask.count() * 2
+
     def init_collision(self) -> None:
         self.surface, self.rect = self.create_surface()
         self.localised_boundary = self.localise_boundary()

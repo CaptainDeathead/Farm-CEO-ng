@@ -34,7 +34,7 @@ class Panel:
 
         page_height = pg.Rect(0, self.NAVBAR_HEIGHT, PANEL_WIDTH, self.SCREEN_HEIGHT - self.NAVBAR_HEIGHT)
 
-        self.shop = Shop(self.rendered_surface, self.events, page_height)
+        self.shop = Shop(self.rendered_surface, self.events, page_height, map_funcs)
         self.equipment = Equipment(self.rendered_surface, self.events, self.set_popup, page_height, shed, sellpoint_manager, map_funcs)
         self.grain = Grain(self.rendered_surface, self.events, page_height, sellpoint_manager)
 
@@ -89,6 +89,12 @@ class Panel:
             case 3: self.draw_grain()
 
     def force_draw_page(self) -> None:
+        if self.shop.in_paddock_menu:
+            self.shop.paddock_buy_menu.cancel_buy_paddock()
+
+        if self.equipment.showing_destination_picker:
+            self.equipment.cancel_task_assign()
+
         match self.nav_bar.get_selected():
             case 0: self.draw_shop(force=True)
             case 1: self.draw_equipment(force=True)

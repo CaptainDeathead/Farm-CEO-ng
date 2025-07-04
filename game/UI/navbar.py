@@ -21,9 +21,9 @@ class NavBar:
         
         self.buttons: List[Button] = [Button(self.rendered_surface, 13, 6, 120, 100, self.rect, UI_MAIN_COLOR, UI_ACTIVE_COLOR, UI_TEXT_COLOR, "Shop", 30, (0, 0, 0, 0), 0, 0, True),
                                       Button(self.rendered_surface, 128, 6, 120, 100, self.rect, UI_MAIN_COLOR, UI_ACTIVE_COLOR, UI_TEXT_COLOR, "Equipment", 30, (0, 0, 0, 0), 0, 0, True),
-                                      Button(self.rendered_surface, 248, 6, 120, 100, self.rect, UI_MAIN_COLOR, UI_ACTIVE_COLOR, UI_TEXT_COLOR, "Map", 30, (0, 0, 0, 0), 0, 0, True),
+                                      Button(self.rendered_surface, 248, 6, 120, 100, self.rect, UI_MAIN_COLOR, UI_ACTIVE_COLOR, UI_TEXT_COLOR, "Contracts", 30, (0, 0, 0, 0), 0, 0, True),
                                       Button(self.rendered_surface, 368, 6, 120, 100, self.rect, UI_MAIN_COLOR, UI_ACTIVE_COLOR, UI_TEXT_COLOR, "Grain", 30, (0, 0, 0, 0), 0, 0, True),
-                                      Button(self.rendered_surface, 488, 6, 120, 100, self.rect, UI_MAIN_COLOR, UI_ACTIVE_COLOR, UI_TEXT_COLOR, "Finance", 30, (0, 0, 0, 0), 0, 0, True)]
+                                      Button(self.rendered_surface, 488, 6, 120, 100, self.rect, UI_MAIN_COLOR, UI_ACTIVE_COLOR, UI_TEXT_COLOR, "Guide", 30, (0, 0, 0, 0), 0, 0, True)]
         
         self.selected_button = 0
         self.just_rebuilt = False
@@ -59,11 +59,11 @@ class NavBar:
 
     def check_events(self) -> None:
         if self.events.mouse_just_pressed:
-            # mouse doesnt collide with navbar
+            # mouse doesn't collide with navbar
             if not self.rect.collidepoint(self.events.mouse_pos): return
             
             for button in self.buttons:
-                # mouse doesnt collide with button
+                # mouse doesn't collide with button
                 if not button.rect.collidepoint(self.events.mouse_pos): continue
                
                 if button.selected: break # button already focused 
