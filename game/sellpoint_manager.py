@@ -44,6 +44,12 @@ class SellpointManager:
 
         return new_prices
 
+    def generate_all_sellpoint_prices(self) -> None:
+        logging.info("Regenerating all sellpoint prices...")
+
+        for sellpoint in self.sellpoints:
+            sellpoint.prices = self.generate_prices()
+
     def load_sellpoints(self, sellpoints: Dict[str, Dict]) -> None:
         logging.debug("Loading sellpoints...")
 

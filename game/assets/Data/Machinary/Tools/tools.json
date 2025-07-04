@@ -95,7 +95,7 @@
                     "default": "empty"
                 },
                 "price": 37500,
-                "xp": 3
+                "xp": 0
             },
             "Multispread 810T": {
                 "size": 45,
@@ -131,7 +131,7 @@
                     "default": "folded"
                 },
                 "price": 30000,
-                "xp": 4
+                "xp": 0
             },
             "Master": {
                 "size": 60,

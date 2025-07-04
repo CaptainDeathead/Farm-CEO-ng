@@ -172,6 +172,7 @@ class Equipment:
             self.selected_vehicle.heading_to_sell = True
 
         self.shed.clean_silo(SaveManager().add_money)
+        self.cancel_task_assign()
 
     def assign_header_task(self, **args) -> None:
         if self.selected_destination is None: return
@@ -335,7 +336,7 @@ class Equipment:
         for tool in self.shed.tools:
             if preserve_commands:
                 button = Button(self.scrollable_surface, x, y, self.BUTTON_WIDTH, button_height, self.rect,
-                        UI_TOOL_BUTTON_COLOR, UI_ACTIVE_COLOR, UI_TEXT_COLOR, "", 20, (20, 20, 20, 20), 0, 0, command=old_button_commands[i + len(self.shed.vehicles)], authority=True)
+                        UI_TOOL_BUTTON_COLOR, UI_ACTIVE_COLOR, UI_TEXT_COLOR, "", 20, (20, 20, 20, 20), 0, 0, command=old_button_commands[i + len(self.shed.vehicles) - 1], authority=True)
             else:
                 button = Button(self.scrollable_surface, x, y, self.BUTTON_WIDTH, button_height, self.rect,
                         UI_TOOL_BUTTON_COLOR, UI_ACTIVE_COLOR, UI_TEXT_COLOR, "", 20, (20, 20, 20, 20), 0, 0, command=lambda: None, authority=True)

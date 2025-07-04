@@ -150,7 +150,7 @@ SUPPORTED_PLATFORMS: Tuple[str] = ("android_x86_64", "android_v7a", "arm64-v8a",
 PLATFORM: str = "arm64-v8a"
 BUILD_TYPE: str = "Devlopment"
 CONSOLE_BUILD: bool = not BUILD
-UNLOCK_ALL_PADDOCKS: bool = True
+UNLOCK_ALL_PADDOCKS: bool = False
 
 # ---------- DEBUG ----------
 DEBUG_BOUNDARY_LOADING: bool = False
