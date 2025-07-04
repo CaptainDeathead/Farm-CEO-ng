@@ -20,8 +20,7 @@ class PaddockBuyMenu:
         self.parent_surface = parent_surface
         self.events = events
 
-        self.rect = rect
-        self.rect.y += 20
+        self.rect = pg.Rect(rect.x, rect.y + 20, rect.w, rect.h - 20)
 
         self.map_darken = map_funcs["map_darken"]
         self.map_lighten = map_funcs["map_lighten"]
