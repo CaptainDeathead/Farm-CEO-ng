@@ -1,5 +1,6 @@
 docker/
 **/.buildozer/
+Farm-CEO-Release/
 
 # Byte-compiled / optimized / DLL files
 **/__pycache__/
