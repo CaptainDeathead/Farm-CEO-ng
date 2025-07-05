@@ -143,6 +143,8 @@ EXCLUDE_SELLPOINT_TOOLS = {
     "Cultivators": False
 }
 
+SPEEDSCALE = 3
+
 # ---------- CONFIG ----------
 BUILD: bool = True
 TARGET_FPS: int = 1200
@@ -151,6 +153,8 @@ PLATFORM: str = "Linux"
 TARGETING_ANDROID: bool = False
 BUILD_TYPE: str = "Release"
 CONSOLE_BUILD: bool = not BUILD
+
+# ---------- CHEATS ----------
 UNLOCK_ALL_PADDOCKS: bool = False
 ENABLE_KEYBOARD_CHEATS: bool = False
 
