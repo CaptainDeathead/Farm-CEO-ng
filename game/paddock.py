@@ -47,7 +47,8 @@ class Paddock:
 
     @property
     def price(self) -> int:
-        return self.mask.count() * 2
+        return self.hectares * 1200 * 2
+        #return self.mask.count() * 2
 
     def init_collision(self) -> None:
         self.surface, self.rect = self.create_surface()
@@ -131,7 +132,8 @@ class Paddock:
     def calculate_yield(self) -> float:
         """Returns a yield bonus percent"""
 
-        return (2.0 + int(self.lime_years > 0) + int(self.super_spreaded) + int(self.urea_spreaded)) / (self.weeds + 1) # Division by 0
+        crop_yield = CROP_YIELDS[self.crop_index]
+        return ((2.0 + int(self.lime_years > 0) + int(self.super_spreaded) + int(self.urea_spreaded)) / (self.weeds + 1)) * crop_yield # Division by 0
 
     def is_lime_spreadable(self) -> bool:
         return self.state in LIME_STAGES and self.lime_years > 0
@@ -148,19 +150,19 @@ class Paddock:
     def load_state(self) -> None:
         self.fill(STATE_COLORS[self.state])
 
-    def set_state(self, state: int) -> None:
+    def set_state(self, state: int, resetting: bool = False) -> None:
         self.state = state
         self.load_state()
         self.state_changed = True
 
-        if STATE_NAMES[self.state] == "Harvested":
+        if STATE_NAMES[self.state] == "Harvested" and resetting:
             # End of year
             self.lime_years -= 1
             self.super_spreaded = True
             self.urea_spreaded = True
             self.weeds = min(self.weeds + 1, 2)
 
-        elif STATE_NAMES[self.state] == "Growing 1":
+        elif STATE_NAMES[self.state] == "Growing 1" and resetting:
             self.super_spreaded = False
             self.urea_spreaded = False
 

@@ -99,6 +99,13 @@ BASE_CROP_PRICES = {
     3: 600
 }
 
+CROP_YIELDS = { # 300 / price
+    0: 1,
+    1: 0.75,
+    2: 0.375,
+    3: 0.5
+}
+
 TIMESCALE = 24 # 144 mins every min = 2.4 min every second
 MINS_IN_DAY = TIMESCALE * 60
 
@@ -149,8 +156,8 @@ SPEEDSCALE = 3
 BUILD: bool = True
 TARGET_FPS: int = 1200
 SUPPORTED_PLATFORMS: Tuple[str] = ("android_x86_64", "android_v7a", "arm64-v8a", "Linux", "Windows", "Web")
-PLATFORM: str = "Linux"
-TARGETING_ANDROID: bool = False
+PLATFORM: str = "arm64-v8a"
+TARGETING_ANDROID: bool = True
 BUILD_TYPE: str = "Release"
 CONSOLE_BUILD: bool = not BUILD
 
