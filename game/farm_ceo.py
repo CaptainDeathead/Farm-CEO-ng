@@ -222,9 +222,9 @@ class FarmCEO:
 
         for paddock in self.paddock_manager.get_paddocks():
             if paddock.state in GROWTH_STAGES:
-                paddock.set_state(paddock.state + 1)
+                paddock.set_state(paddock.state + 1, True)
             elif paddock.owned_by == "npc":
-                paddock.set_state((paddock.state + 1) % 6)
+                paddock.set_state((paddock.state + 1) % 6, True)
 
         self.sellpoint_manager.generate_all_sellpoint_prices()
 

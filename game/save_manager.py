@@ -7,7 +7,7 @@ from paddock import Paddock
 from machinary import Tractor, Header, Tool
 from data import *
 
-if BUILD:
+if BUILD and TARGETING_ANDROID:
     from android.storage import app_storage_path
 else:
     def app_storage_path() -> str:

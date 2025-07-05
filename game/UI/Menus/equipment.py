@@ -333,6 +333,7 @@ class Equipment:
             y += y_inc
 
         # Tools
+        y_inc = button_height + button_spacing
         for tool in self.shed.tools:
             if preserve_commands:
                 button = Button(self.scrollable_surface, x, y, self.BUTTON_WIDTH, button_height, self.rect,

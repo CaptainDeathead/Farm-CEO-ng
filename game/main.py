@@ -10,7 +10,7 @@ from crash_handler import CrashHandler
 
 from data import *
 
-if BUILD: from jnius import autoclass
+if BUILD and TARGETING_ANDROID: from jnius import autoclass
 if CONSOLE_BUILD: from console import PygameConsole
 
 from performance_monitor import PerformanceMonitor
@@ -54,7 +54,7 @@ class Window:
     FPS: int = TARGET_FPS
 
     def __init__(self) -> None:
-        if BUILD:
+        if BUILD and TARGETING_ANDROID:
             self.setup_android()
             sleep(1)
 
@@ -109,7 +109,7 @@ class Window:
 
             keys = pg.key.get_pressed()
 
-            if keys[pg.K_SPACE]:
+            if keys[pg.K_SPACE] and ENABLE_KEYBOARD_CHEATS:
                 self.frame_time *= 10
 
             self.farm_ceo.background_render()
