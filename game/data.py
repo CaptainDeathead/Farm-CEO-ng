@@ -165,7 +165,7 @@ CONSOLE_BUILD: bool = not BUILD
 
 # ---------- CHEATS ----------
 UNLOCK_ALL_PADDOCKS: bool = True
-ENABLE_KEYBOARD_CHEATS: bool = False
+ENABLE_KEYBOARD_CHEATS: bool = True
 
 # ---------- DEBUG ----------
 DEBUG_BOUNDARY_LOADING: bool = False

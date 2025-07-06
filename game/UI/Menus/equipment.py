@@ -179,6 +179,7 @@ class Equipment:
 
         logging.info(f"Assigning header: {self.selected_vehicle.full_name} a task at: {self.selected_destination.get_name()}...")
 
+        self.selected_vehicle.re_init()
         self.shed.task_header(self.selected_vehicle, self.selected_destination)
         self.remove_destination_picker()
 
