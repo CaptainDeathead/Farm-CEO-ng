@@ -228,6 +228,8 @@ class FarmCEO:
                 paddock.set_state(paddock.state + 1, True)
             elif paddock.owned_by == "npc":
                 paddock.set_state((paddock.state + 1) % 6, True)
+            else:
+                paddock.set_state(paddock.state, True)
 
         self.sellpoint_manager.generate_all_sellpoint_prices()
 

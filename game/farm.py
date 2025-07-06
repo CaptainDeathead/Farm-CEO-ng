@@ -126,26 +126,29 @@ class Shed(LayableRenderObj):
             if vehicle.job != None:
                 vehicle.job = self.task_manager.load_job_from_dict(vehicle.job)
 
+    def check_trailer_fill(self, tool: Tool, add_money: object, force: bool = False) -> None:
+        if not force and tool.active: return
+
+        if tool.fill > 0:
+            str_fill_type = FILL_TYPES[tool.fill_type]
+
+            if str_fill_type in CROP_TYPES:
+                self.sellpoint_manager.store_crop(str_fill_type, tool.fill)
+                tool.fill = 0
+            elif str_fill_type in FERTILISERS:
+                add_money(FERTILISER_PRICES[str_fill_type] * tool.fill)
+                tool.fill = 0
+            elif str_fill_type in CHEMICALS:
+                add_money(CHEMICAL_PRICES[str_fill_type] * tool.fill)
+                tool.fill = 0
+            else:
+                logging.warning(f"Unknown fill type: {str_fill_type} in tool: {tool.full_name}!")
+
     def check_trailer_fills(self, add_money: object) -> None:
         logging.info("Checking trailer fills...")
 
         for tool in self.tools:
-            if tool.tool_type not in "Trailers" or tool.active: continue
-
-            if tool.fill > 0:
-                str_fill_type = FILL_TYPES[tool.fill_type]
-
-                if str_fill_type in CROP_TYPES:
-                    self.sellpoint_manager.store_crop(str_fill_type, tool.fill)
-                    tool.fill = 0
-                elif str_fill_type in FERTILISERS:
-                    add_money(FERTILISER_PRICES[str_fill_type] * tool.fill)
-                    tool.fill = 0
-                elif str_fill_type in CHEMICALS:
-                    add_money(CHEMICAL_PRICES[str_fill_type] * tool.fill)
-                    tool.fill = 0
-                else:
-                    logging.warning(f"Unknown fill type: {str_fill_type} in tool: {tool.full_name}!")
+            self.check_trailer_fill(tool, add_money)
 
     def clean_silo(self, add_money: object) -> None:
         logging.info("Cleaning silo...")
@@ -160,6 +163,9 @@ class Shed(LayableRenderObj):
             else:
                 logging.warning(f"Unknown fill type: {fill_type} in silo!")
 
+    def pack_away_vehicle(self, vehicle: Tractor) -> None:
+        self.check_trailer_fill(vehicle.tool, SaveManager().add_money, force=True)
+
     def add_vehicle(self, save_attrs: Dict[str, any]) -> None:
         if save_attrs["header"]: vehicle_type = "Harvesters"
         else: vehicle_type = "Tractors"
@@ -168,7 +174,7 @@ class Shed(LayableRenderObj):
         attrs.update(save_attrs)
 
         if attrs["header"]: vehicle = Header(self.game_surface, self.rect, attrs, self.scale, self.task_header, self.equipment_draw, self.add_xp)
-        else: vehicle = Tractor(self.game_surface, self.rect, attrs, self.scale, self.task_tractor, self.equipment_draw, self.get_silo, self.add_xp)
+        else: vehicle = Tractor(self.game_surface, self.rect, attrs, self.scale, self.task_tractor, self.equipment_draw, self.get_silo, self.add_xp, self.pack_away_vehicle)
 
         self.vehicles.append(vehicle)
 
@@ -182,6 +188,7 @@ class Shed(LayableRenderObj):
             vehicle = self.vehicles[tool.start_vehicle_id]
             vehicle.tool = tool
             tool.assign_vehicle(vehicle)
+            print(tool.full_name)
 
         self.tools.append(tool)
 

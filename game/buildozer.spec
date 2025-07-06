@@ -8,7 +8,7 @@ title = Farm CEO
 package.name = farmceo
 
 # (str) Package domain (needed for android/ios packaging)
-package.domain = org.test
+package.domain = org.plazma
 
 # (str) Source code where the main.py live
 source.dir = .
@@ -32,6 +32,11 @@ source.include_patterns = assets/*,images/*.png
 
 # (str) Application versioning (method 1)
 version = 0.1
+
+android.release_keystore = farmceo-release.keystore
+android.release_keystore_password = f/Z6F9Z|V,hY(.v
+android.release_keyalias = farmceo
+android.release_keyalias_password = f/Z6F9Z|V,hY(.v
 
 # (str) Application versioning (method 2)
 # version.regex = __version__ = ['"](.*)['"]

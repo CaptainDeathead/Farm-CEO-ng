@@ -23,7 +23,7 @@ class Tractor(Vehicle):
     LOAD_INTERVAL: float = 0.5
     LOAD_RATE: float = 1
 
-    def __init__(self, game_surface: pg.Surface, shed_rect: pg.Rect, attrs: Dict[str, any], scale: float, task_tractor: object, equipment_draw: object, get_silo: object, add_xp: object) -> None:
+    def __init__(self, game_surface: pg.Surface, shed_rect: pg.Rect, attrs: Dict[str, any], scale: float, task_tractor: object, equipment_draw: object, get_silo: object, add_xp: object, pack_away_vehicle: object) -> None:
         self.surface = game_surface
         self.shed_rect = shed_rect
         self.scale = scale
@@ -54,6 +54,7 @@ class Tractor(Vehicle):
         self.path: List[Sequence[float]] = attrs.get("path", [])
         self.get_silo = get_silo
         self.add_xp = add_xp
+        self.pack_away_vehicle = pack_away_vehicle
 
         self.active = attrs.get("active", False)
         self.stage = attrs.get("stage", 2)
@@ -267,8 +268,9 @@ class Tractor(Vehicle):
                 self.active = False
                 self.tool.active = False
                 self.paddock = -1
-
                 self.set_string_task("No task assigned")
+
+                self.pack_away_vehicle(self)
 
                 logging.debug(f"Vehicle: {self.vehicle_id} has completed their task.")
                 return
@@ -292,9 +294,9 @@ class Tractor(Vehicle):
                         if FILL_TYPES[self.tool.fill_type] in FERTILISERS or FILL_TYPES[self.tool.fill_type] in CHEMICALS:
                             if FILL_TYPES[self.tool.fill_type] == "lime":
                                 self.destination.destination.reset_lime_years()
-                            elif FILL_TYPES[self.tool.fill_type] == "super":
+                            elif "super" in FILL_TYPES[self.tool.fill_type]:
                                 self.destination.destination.super_spreaded = True
-                            elif FILL_TYPES[self.tool.fill_type] == "urea":
+                            elif "urea" in FILL_TYPES[self.tool.fill_type]:
                                 self.destination.destination.urea_spreaded = True
                             elif FILL_TYPES[self.tool.fill_type] == "herbicide":
                                 self.destination.destination.weeds = 0
@@ -303,6 +305,10 @@ class Tractor(Vehicle):
 
                         if self.tool.tool_type == "Seeders":
                             self.destination.destination.set_crop_type(self.tool.fill_type)
+                            self.destination.destination.lime_years -= 1
+                            self.destination.destination.super_spreaded = False
+                            self.destination.destination.urea_spreaded = False
+                            self.destination.destination.weeds = 2
 
                         self.destination.destination.set_state(self.tool.get_output_state(), False)
                         self.add_xp(1)
@@ -491,7 +497,7 @@ class Header(Vehicle):
 
         self.desired_rotation: float = 0.0
 
-        self.working_width = self.image.get_width()
+        #self.working_width = self.image.get_width()
 
         self.waiting_for_unloading_vehicle_assign = False
         self.waiting_for_unloading_vehicle = False

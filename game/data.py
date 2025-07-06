@@ -152,7 +152,7 @@ EXCLUDE_SELLPOINT_TOOLS = {
     "Cultivators": False
 }
 
-SPEEDSCALE = 1
+SPEEDSCALE = 3
 
 # ---------- CONFIG ----------
 BUILD: bool = False
@@ -164,8 +164,8 @@ BUILD_TYPE: str = "Release"
 CONSOLE_BUILD: bool = not BUILD
 
 # ---------- CHEATS ----------
-UNLOCK_ALL_PADDOCKS: bool = True
-ENABLE_KEYBOARD_CHEATS: bool = True
+UNLOCK_ALL_PADDOCKS: bool = not BUILD
+ENABLE_KEYBOARD_CHEATS: bool = not BUILD 
 
 # ---------- DEBUG ----------
 DEBUG_BOUNDARY_LOADING: bool = False
