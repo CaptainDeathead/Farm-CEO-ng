@@ -1,4 +1,6 @@
 import pygame as pg
+import platform
+import os
 
 from typing import Tuple
 
@@ -153,16 +155,16 @@ EXCLUDE_SELLPOINT_TOOLS = {
 SPEEDSCALE = 3
 
 # ---------- CONFIG ----------
-BUILD: bool = True
+BUILD: bool = False
 TARGET_FPS: int = 1200
 SUPPORTED_PLATFORMS: Tuple[str] = ("android_x86_64", "android_v7a", "arm64-v8a", "Linux", "Windows", "Web")
-PLATFORM: str = "arm64-v8a"
-TARGETING_ANDROID: bool = True
+PLATFORM: str = platform.platform()
+TARGETING_ANDROID: bool = "ANDROID_ROOT" in os.environ
 BUILD_TYPE: str = "Release"
 CONSOLE_BUILD: bool = not BUILD
 
 # ---------- CHEATS ----------
-UNLOCK_ALL_PADDOCKS: bool = False
+UNLOCK_ALL_PADDOCKS: bool = True
 ENABLE_KEYBOARD_CHEATS: bool = False
 
 # ---------- DEBUG ----------

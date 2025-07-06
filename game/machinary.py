@@ -304,7 +304,7 @@ class Tractor(Vehicle):
                         if self.tool.tool_type == "Seeders":
                             self.destination.destination.set_crop_type(self.tool.fill_type)
 
-                        self.destination.destination.set_state(self.tool.get_output_state())
+                        self.destination.destination.set_state(self.tool.get_output_state(), False)
                         self.add_xp(1)
 
                 if self.stage == JOB_TYPES["travelling_from"]:
@@ -615,7 +615,7 @@ class Header(Vehicle):
                 if self.stage - 1 == JOB_TYPES["working"]:
                     # was just working, sort out paddock now
                     self.destination.destination.reset_paint()
-                    self.destination.destination.set_state(self.get_output_state())
+                    self.destination.destination.set_state(self.get_output_state(), False)
                     self.add_xp(1)
 
                     if self.fill > 0:

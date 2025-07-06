@@ -188,17 +188,16 @@ class Equipment:
             self.location_callback_has_happened = True
             return
 
-        self.selected_destination = destination
-
-        if self.selected_destination.is_paddock:
-            paddock_index = int(self.selected_destination.destination.num) - 1
+        if destination.is_paddock:
+            paddock_index = int(destination.destination.num) - 1
             if paddock_index in self.get_excluded_paddocks(self.selected_tool.tool_type):
                 # The paddock is not the state the tool requires
                 return
 
-        elif self.selected_destination.is_sellpoint and self.selected_tool.tool_type in EXCLUDE_SELLPOINT_TOOLS:
+        elif self.destination.is_sellpoint and self.selected_tool.tool_type in EXCLUDE_SELLPOINT_TOOLS:
             return
 
+        self.selected_destination = destination
         self.rebuild_destination_picker(self.selected_tool, destination)
         self.draw()
 

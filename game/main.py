@@ -66,11 +66,11 @@ class Window:
 
         self.farm_ceo: FarmCEO = FarmCEO(self.screen, self.clock, self.events)
 
-        if CONSOLE_BUILD: self.console: PygameConsole = PygameConsole(self, self.screen)
-        else: self.console: SpoofedConsole = SpoofedConsole()
+        if CONSOLE_BUILD:
+            self.console: PygameConsole = PygameConsole(self, self.screen)
 
-        sys.stdout = self.console
-        logging.getLogger().addHandler(PygameConsoleHandler(self.console))
+            sys.stdout = self.console
+            logging.getLogger().addHandler(PygameConsoleHandler(self.console))
 
         self.delta_time = 0.0
         self.frame_time = 0.0
@@ -122,7 +122,8 @@ class Window:
             self.performance_monitor.update(self.delta_time)
             self.performance_monitor.draw()
 
-            self.console.update(events)
+            if CONSOLE_BUILD:
+                self.console.update(events)
 
             fps_rendered = self.fps_font.render(f"{int(self.clock.get_fps())}", True, (255, 255, 255), (0, 0, 255))
             self.screen.blit(fps_rendered, (20, 20))

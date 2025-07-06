@@ -1,6 +1,10 @@
 docker/
 **/.buildozer/
-Farm-CEO-Release/
+Farm-CEO-Release-Linux64/
+Farm-CEO-Release-Win64/
+
+Farm-CEO-Release-Linux64.zip
+Farm-CEO-Release-Win64.zip
 
 # Byte-compiled / optimized / DLL files
 **/__pycache__/
