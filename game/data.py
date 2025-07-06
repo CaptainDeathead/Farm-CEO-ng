@@ -152,7 +152,7 @@ EXCLUDE_SELLPOINT_TOOLS = {
     "Cultivators": False
 }
 
-SPEEDSCALE = 3
+SPEEDSCALE = 1
 
 # ---------- CONFIG ----------
 BUILD: bool = False

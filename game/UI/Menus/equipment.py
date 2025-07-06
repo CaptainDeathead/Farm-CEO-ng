@@ -59,6 +59,7 @@ class Equipment:
         self.scrolling_last_frame = False
         self.in_scroll = False
 
+        self.showing_popup = False
         self.showing_destination_picker = False
 
         self.destination_exit_btn = None
@@ -78,8 +79,9 @@ class Equipment:
 
     def close_popup(self) -> None:
         self.set_popup(None)
+        self.showing_popup = False
 
-        self.rebuild(preserve_commands=False)
+        self.rebuild()
         self.draw()
 
     def reset_map(self) -> None:
@@ -243,6 +245,7 @@ class Equipment:
         else:
             self.selected_tool = self.shed.tools[tool_index]
             
+        self.showing_popup = False
         self.showing_destination_picker = True
         self.location_callback_has_happened = False
 
@@ -270,14 +273,10 @@ class Equipment:
             return
 
         self.set_popup(popup)
+        self.showing_popup = True
 
-    def rebuild(self, preserve_commands: bool = True) -> None:
+    def rebuild(self) -> None:
         logging.debug("Rebuilding equipment menu...")
-
-        old_button_commands = [button.command for button in self.equipment_buttons]
-
-        if len(old_button_commands) != len(self.shed.vehicles) + len(self.shed.tools):
-            preserve_commands = False
 
         self.rendered_surface.fill(UI_BACKGROUND_COLOR)
         self.equipment_buttons = []
@@ -304,12 +303,8 @@ class Equipment:
                 bh = button_height
                 y_inc = bh + button_spacing
 
-            if preserve_commands:
-                button = Button(self.scrollable_surface, x, y, self.BUTTON_WIDTH, bh, self.rect, UI_MAIN_COLOR, pg.Color(255, 100, 0), UI_TEXT_COLOR, "",
-                                20, (20, 20, 20, 20), 0, 0, command=old_button_commands[i], authority=True)
-            else:
-                button = Button(self.scrollable_surface, x, y, self.BUTTON_WIDTH, bh, self.rect, UI_MAIN_COLOR, pg.Color(255, 100, 0), UI_TEXT_COLOR, "",
-                                20, (20, 20, 20, 20), 0, 0, command=lambda vehicle=vehicle: self.trigger_vehicle_popup(vehicle.vehicle_id), authority=True)
+            button = Button(self.scrollable_surface, x, y, self.BUTTON_WIDTH, bh, self.rect, UI_MAIN_COLOR, pg.Color(255, 100, 0), UI_TEXT_COLOR, "",
+                            20, (20, 20, 20, 20), 0, 0, command=lambda vehicle=vehicle: self.trigger_vehicle_popup(vehicle.vehicle_id), authority=True)
             
             button.draw()
             self.equipment_buttons.append(button)
@@ -335,12 +330,8 @@ class Equipment:
         # Tools
         y_inc = button_height + button_spacing
         for tool in self.shed.tools:
-            if preserve_commands:
-                button = Button(self.scrollable_surface, x, y, self.BUTTON_WIDTH, button_height, self.rect,
-                        UI_TOOL_BUTTON_COLOR, UI_ACTIVE_COLOR, UI_TEXT_COLOR, "", 20, (20, 20, 20, 20), 0, 0, command=old_button_commands[i + len(self.shed.vehicles) - 1], authority=True)
-            else:
-                button = Button(self.scrollable_surface, x, y, self.BUTTON_WIDTH, button_height, self.rect,
-                        UI_TOOL_BUTTON_COLOR, UI_ACTIVE_COLOR, UI_TEXT_COLOR, "", 20, (20, 20, 20, 20), 0, 0, command=lambda: None, authority=True)
+            button = Button(self.scrollable_surface, x, y, self.BUTTON_WIDTH, button_height, self.rect,
+                    UI_TOOL_BUTTON_COLOR, UI_ACTIVE_COLOR, UI_TEXT_COLOR, "", 20, (20, 20, 20, 20), 0, 0, command=lambda: None, authority=True)
             
             button.draw()
             self.equipment_buttons.append(button)
@@ -453,7 +444,7 @@ class Equipment:
             self.in_scroll = False
 
         if len(self.shed.vehicles) + len(self.shed.tools) != len(self.equipment_buttons):
-            self.rebuild(preserve_commands=False)
+            self.rebuild()
             return True
 
         if pg.mouse.get_pressed()[0] and self.rect.collidepoint(pg.mouse.get_pos()):
@@ -479,7 +470,8 @@ class Equipment:
 
     def draw(self, rebuild: bool = False) -> None:
         if not self.showing_destination_picker:
-            if rebuild: self.rebuild(preserve_commands=True)
+            if rebuild and not self.showing_popup:
+                self.rebuild()
 
             self.rendered_surface.fill(UI_BACKGROUND_COLOR)
             self.rendered_surface.blit(self.scrollable_surface, (0, self.scroll_y))
