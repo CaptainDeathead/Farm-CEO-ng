@@ -90,6 +90,7 @@ class HUD:
         self.rebuild_xp()
 
         self.last_money = self.save_manager.money
+        self.last_xp = self.save_manager.xp
 
     def rebuild_money(self) -> None:
         self.money_text = ResourceManager().font_manager.get_sysfont(None, 70).render(f"{self.save_manager.money:,.2f}", True, (255, 255, 255))
@@ -108,6 +109,8 @@ class HUD:
     def draw(self) -> None:
         if self.save_manager.money != self.last_money:
             self.rebuild_money()
+        if self.save_manager.xp != self.last_xp:
+            self.rebuild_xp()
 
         self.game_surface.blit(self.money_surface, (self.WIDTH - self.money_surface.width - 30, 10))
         self.game_surface.blit(self.xp_surface, (self.WIDTH - self.money_surface.width - 30 - self.xp_surface.width - 30, 10))

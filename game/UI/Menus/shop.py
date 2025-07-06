@@ -137,10 +137,15 @@ class PaddockBuyMenu:
 
         selected_lbl = selected_font.render(f"Selected: {selected_destination.name}", True, UI_TEXT_COLOR, wraplength=wrap_length)
 
+        if selected_destination.destination is None:
+            price_lbl = selected_font.render(f"Price: --", True, UI_TEXT_COLOR, wraplength=wrap_length)
+        else:
+            price_lbl = selected_font.render(f"Price: ${selected_destination.destination.price:,}", True, UI_TEXT_COLOR, wraplength=wrap_length)
+
         body_font.align = pg.FONT_CENTER
         info_lbl = note_font.render(f"\nNote: Tap on the destination you want on the map to select it.", True, UI_TEXT_COLOR, wraplength=wrap_length)
 
-        lbls_height = title_lbl.get_height() + 40 + selected_lbl.get_height() + info_lbl.get_height()
+        lbls_height = title_lbl.get_height() + 40 + selected_lbl.get_height() + price_lbl.get_height() + info_lbl.get_height()
         lbls_surface = pg.Surface((PANEL_WIDTH, lbls_height), pg.SRCALPHA)
 
         curr_y = 0
@@ -150,6 +155,9 @@ class PaddockBuyMenu:
 
         lbls_surface.blit(selected_lbl, (PANEL_WIDTH / 2 - selected_lbl.get_width() / 2, curr_y))
         curr_y += selected_lbl.get_height()
+
+        lbls_surface.blit(price_lbl, (PANEL_WIDTH / 2 - price_lbl.get_width() / 2, curr_y))
+        curr_y += price_lbl.get_height()
 
         lbls_surface.blit(info_lbl, (PANEL_WIDTH / 2 - info_lbl.get_width() / 2, curr_y))
         curr_y += 50
