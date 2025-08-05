@@ -119,14 +119,16 @@ class Window:
             self.farm_ceo.foreground_render()
             self.farm_ceo.ui_render()
 
-            self.performance_monitor.update(self.delta_time)
-            self.performance_monitor.draw()
+            if not BUILD: 
+                self.performance_monitor.update(self.delta_time)
+                self.performance_monitor.draw()
 
             if CONSOLE_BUILD:
                 self.console.update(events)
 
-            fps_rendered = self.fps_font.render(f"{int(self.clock.get_fps())}", True, (255, 255, 255), (0, 0, 255))
-            self.screen.blit(fps_rendered, (20, 20))
+            if not BUILD:
+                fps_rendered = self.fps_font.render(f"{int(self.clock.get_fps())}", True, (255, 255, 255), (0, 0, 255))
+                self.screen.blit(fps_rendered, (20, 20))
 
             pg.display.flip()
             self.delta_time = self.clock.tick(self.FPS)

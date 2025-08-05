@@ -19,11 +19,11 @@ class NavBar:
         
         self.rendered_surface = pg.Surface((self.rect.w, self.rect.h), pg.SRCALPHA)
         
-        self.buttons: List[Button] = [Button(self.rendered_surface, 13, 6, 120, 100, self.rect, UI_MAIN_COLOR, UI_ACTIVE_COLOR, UI_TEXT_COLOR, "Shop", 30, (0, 0, 0, 0), 0, 0, True),
-                                      Button(self.rendered_surface, 128, 6, 120, 100, self.rect, UI_MAIN_COLOR, UI_ACTIVE_COLOR, UI_TEXT_COLOR, "Equipment", 30, (0, 0, 0, 0), 0, 0, True),
-                                      Button(self.rendered_surface, 248, 6, 120, 100, self.rect, UI_MAIN_COLOR, UI_ACTIVE_COLOR, UI_TEXT_COLOR, "Contracts", 30, (0, 0, 0, 0), 0, 0, True),
-                                      Button(self.rendered_surface, 368, 6, 120, 100, self.rect, UI_MAIN_COLOR, UI_ACTIVE_COLOR, UI_TEXT_COLOR, "Grain", 30, (0, 0, 0, 0), 0, 0, True),
-                                      Button(self.rendered_surface, 488, 6, 120, 100, self.rect, UI_MAIN_COLOR, UI_ACTIVE_COLOR, UI_TEXT_COLOR, "Guide", 30, (0, 0, 0, 0), 0, 0, True)]
+        self.buttons: List[Button] = [Button(self.rendered_surface, 13, 6, 120, 100, self.rect, UI_MAIN_COLOR, UI_ACTIVE_COLOR, UI_TEXT_COLOR, "Shop", 22, (0, 0, 0, 0), 0, 0, True),
+                                      Button(self.rendered_surface, 128, 6, 120, 100, self.rect, UI_MAIN_COLOR, UI_ACTIVE_COLOR, UI_TEXT_COLOR, "Equipment", 22, (0, 0, 0, 0), 0, 0, True),
+                                      Button(self.rendered_surface, 248, 6, 120, 100, self.rect, UI_MAIN_COLOR, UI_ACTIVE_COLOR, UI_TEXT_COLOR, "Contracts", 22, (0, 0, 0, 0), 0, 0, True),
+                                      Button(self.rendered_surface, 368, 6, 120, 100, self.rect, UI_MAIN_COLOR, UI_ACTIVE_COLOR, UI_TEXT_COLOR, "Grain", 22, (0, 0, 0, 0), 0, 0, True),
+                                      Button(self.rendered_surface, 488, 6, 120, 100, self.rect, UI_MAIN_COLOR, UI_ACTIVE_COLOR, UI_TEXT_COLOR, "Guide", 22, (0, 0, 0, 0), 0, 0, True)]
         
         self.selected_button = 0
         self.just_rebuilt = False
