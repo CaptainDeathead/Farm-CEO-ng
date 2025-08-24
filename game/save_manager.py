@@ -80,7 +80,7 @@ class SaveManager:
                 "model": "Combine 14ft",
                 "fill": 0,
                 "fillType": 0,
-                "vehicleId": 0,
+                "vehicleId": -1,
                 "price": 20000,
                 "toolId": 0
             }
