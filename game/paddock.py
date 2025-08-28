@@ -45,6 +45,10 @@ class Paddock:
 
         self.crop_index = attrs.get("crop_type", randint(0, len(CROP_TYPES)-1)) # Default to wheat
 
+        self.contract_requirements = {}
+        self.contract_fulfilled = False # I dont think this needs to be saved because the Contracts UI class should pick it up in the same tick (before game quits) so there should be no desync
+        self.contract_failed = False
+
     @property
     def price(self) -> int:
         return self.hectares * 1200 * 2
@@ -133,19 +137,51 @@ class Paddock:
         """Returns a yield bonus percent"""
 
         crop_yield = CROP_YIELDS[self.crop_index]
-        return ((2.0 + int(self.lime_years > 0) + int(self.super_spreaded) + int(self.urea_spreaded)) / (self.weeds + 1)) * crop_yield # Division by 0
+        return ((4.0 + int(self.lime_years > 0) + int(self.super_spreaded) + int(self.urea_spreaded)) / (self.weeds + 1)) * crop_yield # Division by 0
 
     def is_lime_spreadable(self) -> bool:
         return self.state in LIME_STAGES and self.lime_years > 0
 
     def is_super_spreadable(self) -> bool:
-        return self.stage in FERTILISER_STAGES and not self.super_spreaded
+        return self.state in FERTILISER_STAGES and not self.super_spreaded
 
     def is_urea_spreadable(self) -> bool:
-        return self.stage in FERTILISER_STAGES and not self.urea_spreaded
+        return self.state in FERTILISER_STAGES and not self.urea_spreaded
     
     def is_herbicide_sprayable(self) -> bool:
-        return self.stage in FERTILISER_STAGES and self.weeds > 0
+        return self.state in FERTILISER_STAGES and self.weeds > 0
+
+    def set_contract(self, contract_requirements: Dict[str, any]) -> None:
+        logging.debug(f"Contract received on paddock {self.num}.")
+
+        self.contract_requirements = contract_requirements
+        self.contract_fulfilled = False
+        self.contract_failed = False
+
+    def reset_contract(self) -> None:
+        self.contract_requirements = {}
+        self.contract_fulfilled = False
+        self.contract_failed = False
+
+    def check_contract_fulfill(self) -> None:
+        required_state = self.contract_requirements.get("state")
+        required_lime = self.contract_requirements.get("lime")
+        required_super = self.contract_requirements.get("super")
+        required_urea = self.contract_requirements.get("urea")
+        required_weeds = self.contract_requirements.get("weeds")
+        required_crop = self.contract_requirements.get("crop")
+
+        self.contract_failed = True
+
+        if required_state is not None and required_state != self.state: return
+        if required_lime is not None and required_lime != self.lime_years: return
+        if required_super is not None and required_super != self.super_spreaded: return
+        if required_urea is not None and required_urea != self.urea_spreaded: return
+        if required_weeds is not None and required_weeds != self.weeds: return
+        if required_crop is not None and required_crop != self.crop_index: return
+
+        self.contract_fulfilled = True
+        self.contract_failed = False
 
     def load_state(self) -> None:
         self.fill(STATE_COLORS[self.state])
@@ -165,6 +201,8 @@ class Paddock:
         elif STATE_NAMES[self.state] == "Growing 1" and resetting:
             self.super_spreaded = False
             self.urea_spreaded = False
+
+        self.check_contract_fulfill()
 
     def set_crop_type(self, crop_index: int) -> None:
         logging.info(f"Setting paddock crop to {CROP_TYPES[crop_index]} for paddock {self.num}...")
