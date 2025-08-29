@@ -31,6 +31,15 @@ class Contract:
         # Returns True if the contract isn't valid (nothing to do)
         return self.required_machine is None and self.required_fill_type is None and self.reward is None and self.fail_cost is None
 
+    def to_dict(self) -> Dict[str, any]:
+        ret_dict = {
+            # contract_id doesnt need to be here because it would be the key in the parent dict in the save file
+            "paddock_num": self.paddock_num,
+            "active": self.active
+        }
+
+        return ret_dict
+
     def activate_reward(self) -> None:
         SaveManager().add_money(self.reward)
     
@@ -118,7 +127,29 @@ class Contracts:
         self.redraw_required = False
         self.in_popup = False
 
-        self.generate_contracts()
+        if SaveManager().contracts == {}:
+            logging.info(f"Contracts save is empty! Generating new contracts... (Warning: Could cause desync if paddocks have states corresponding to contracts still)")
+            self.generate_contracts()
+        else:
+            self.from_dict(SaveManager().contracts)
+
+    def to_dict(self) -> Dict[str, int]:
+        ret_dict = {}
+
+        for contract in self.contracts:
+            ret_dict[contract.contract_id] = contract.to_dict()
+
+        return ret_dict
+
+    def from_dict(self, dest_dict: Dict[str, int]) -> None:
+        logging.debug(f"Loading contracts from save dict...")
+
+        for contract_id, contract_info in dest_dict.items():
+            contract = Contract(contract_id, contract_info["paddock_num"])
+            contract.active = contract_info["active"]
+            self.contracts.append(contract)
+
+        self.rebuild()
 
     def accept_contract(self, contract: Contract) -> None:
         if contract.active:
@@ -129,6 +160,8 @@ class Contracts:
 
         contract.active = True
         contract.paddock.set_contract(contract.get_contract_requirements())
+
+        SaveManager().set_contracts(self.to_dict())
 
         self.in_popup = False
         self.rebuild()
@@ -206,22 +239,29 @@ class Contracts:
             if not contract.invalid:
                 self.contracts.append(contract)
 
+        SaveManager().set_contracts(self.to_dict())
         self.rebuild()
 
     def check_paddocks_fulfillment(self, fail_if_not_done: bool = False) -> None:
         for contract in self.contracts:
             if contract.paddock.contract_fulfilled:
                 logging.info(f"Contract on paddock {contract.paddock.num} fulfilled!")
+
                 contract.activate_reward()
                 contract.paddock.reset_contract()
                 self.contracts.remove(contract)
+
+                SaveManager().set_contracts(self.to_dict())
                 self.rebuild()
 
             elif contract.paddock.contract_failed or fail_if_not_done:
                 logging.info(f"Contract on paddock {contract.paddock.num} failed!")
+
                 contract.activate_fail()
                 contract.paddock.reset_contract()
                 self.contracts.remove(contract)
+
+                SaveManager().set_contracts(self.to_dict())
                 self.rebuild()
 
     def update(self) -> bool:

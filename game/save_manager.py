@@ -37,6 +37,7 @@ class SaveManager:
         self.debt = 0.0 # No dept to start with
         self.time = 0.0
         self.sellpoints = {}
+        self.contracts = {}
         
         self.vehicles = vehicles
         self.tools = tools
@@ -133,6 +134,7 @@ class SaveManager:
         self.vehicles_dict = self.save["vehicles"]
         self.tools_dict = self.save["tools"]
         self.sellpoints = self.save.get("sellpoints", {}) 
+        self.contracts = self.save.get("contracts", {})
 
         self.load_equipment_from_dicts()
 
@@ -150,6 +152,7 @@ class SaveManager:
         self.set_attr("vehicles", self.vehicles_dict)
         self.set_attr("tools", self.tools_dict)
         self.set_attr("sellpoints", self.sellpoints)
+        self.set_attr("contracts", self.contracts)
 
         if update_paddocks:
             self.update_paddocks()
@@ -346,3 +349,8 @@ class SaveManager:
 
         logging.debug("Sellpoints save updated. Saving game...")
         self.save_game()
+
+    def set_contracts(self, contracts: Dict[str, any]) -> None:
+        logging.debug("Updating contracts save...")
+        self.contracts = {}
+        self.contracts.update(contracts)

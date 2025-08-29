@@ -45,9 +45,9 @@ class Paddock:
 
         self.crop_index = attrs.get("crop_type", randint(0, len(CROP_TYPES)-1)) # Default to wheat
 
-        self.contract_requirements = {}
-        self.contract_fulfilled = False # I dont think this needs to be saved because the Contracts UI class should pick it up in the same tick (before game quits) so there should be no desync
-        self.contract_failed = False
+        self.contract_requirements = attrs.get("contract_requirements", {})
+        self.contract_fulfilled = attrs.get("contract_fulfilled", False) # I dont think this needs to be saved because the Contracts UI class should pick it up in the same tick (before game quits) so there should be no desync
+        self.contract_failed = attrs.get("contract_failed", False)
 
     @property
     def price(self) -> int:
@@ -76,7 +76,10 @@ class Paddock:
             "super_spreaded": self.super_spreaded,
             "urea_spreaded": self.urea_spreaded,
             "weeds": self.weeds,
-            "crop_type": self.crop_index
+            "crop_type": self.crop_index,
+            "contract_requirements": self.contract_requirements,
+            "contract_fulfilled": self.contract_fulfilled,
+            "contract_failed": self.contract_failed
         }
 
     def save_paint_surface(self, save_path: str) -> None:
