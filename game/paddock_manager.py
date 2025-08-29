@@ -61,7 +61,7 @@ class PaddockManager:
             self.indicators[processed_fill_type] = surface
 
     def locate_paddock_boundary(self, paddock: Paddock) -> None:
-        logging.debug(f"Locating paddock boundary... Paddock: {paddock.num}")
+        logging.debug(f"Locating paddock boundary... Paddock: {paddock.num} Center: {paddock.center}")
 
         def rgb_darker_than(rgb: Tuple[int, int, int], brightness: int) -> bool:
             if rgb[0] < brightness and rgb[1] < brightness and rgb[2] < brightness: return True
@@ -69,17 +69,20 @@ class PaddockManager:
         
         darkness = 110
         
-        def get_adj_edge(pos: Tuple[int, int]) -> Tuple[int, int]:
+        def get_adj_edge(pos: Tuple[int, int], exclusions: List[Tuple[int, int]]) -> Tuple[int, int]:
             for x in range(-1, 2):
                 for y in range(-1, 2):
                     if x == 0 and y == 0: continue
 
                     nx, ny = pos[0] + x, pos[1] + y
+                    
+                    if (nx, ny) in exclusions: continue
+
                     if not rgb_darker_than(self.map_image.get_at((nx, ny)), darkness): return (nx, ny)
             
-            return (-1, -1)
+            return (0, 0)
         
-        if DEBUG_BOUNDARY_LOADING: pg.display.update(pg.display.get_surface().blit(self.map_image, (0, 0)))
+        if DEBUG_BOUNDARY_LOADING: pg.display.update(pg.display.get_surface().blit(self.map_image, (-11000, -2700)))
 
         boundary = []
 
@@ -101,11 +104,19 @@ class PaddockManager:
         curr_x = start_x
         curr_y = start_y
 
-        surface = pg.display.get_surface()
+        exclusions = []
+        backtrack_index = -1
+
+        surface = self.map_image.copy()
+        screen = pg.display.get_surface()
+
+        update_index = 0
 
         while 1:
             if DEBUG_BOUNDARY_LOADING: surface.set_at((curr_x, curr_y), (255, 255, 255))
             found_new_px = False
+
+            update_index += 1
 
             # get adjacent paddock squares (black)
             for x in range(-1, 2):
@@ -125,17 +136,29 @@ class PaddockManager:
                     if (nx, ny) in boundary: continue
 
                     if rgb_darker_than(self.map_image.get_at((nx, ny)), darkness):
-                        edge = get_adj_edge((nx, ny))
+                        edge = get_adj_edge((nx, ny), exclusions)
 
-                        if edge != (-1, -1):
+                        if edge != (0, 0):
                             found_new_px = True
                             boundary.append((nx, ny))
                             curr_x, curr_y = nx, ny
+                            backtrack_index = -1
                         else:
                             if DEBUG_BOUNDARY_LOADING: surface.set_at((nx, ny), (255, 0, 0))
 
+            if not found_new_px:
+                exclusions.append((curr_x, curr_y))
+                curr_x, curr_y = boundary[backtrack_index]
+                backtrack_index -= 1
+
             if DEBUG_BOUNDARY_LOADING:
+                if BOUNDARY_LOAD_UPDATE_SLOW and not update_index - 200 == 0: continue
+
+                update_index = 0
+
+                screen.fill((0, 0, 0))
                 surface.set_at((nx, ny), (255, 0, 0))
+                screen.blit(surface, (-curr_x + screen.width / 2, -curr_y + screen.height / 2))
                 pg.display.flip()
 
     def set_paddock_state(self, paddock_number: int, state: int) -> None:

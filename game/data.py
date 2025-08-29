@@ -155,7 +155,7 @@ EXCLUDE_SELLPOINT_TOOLS = {
 SPEEDSCALE = 3
 
 # ---------- CONFIG ----------
-BUILD: bool = True
+BUILD: bool = False
 TARGET_FPS: int = 1200
 SUPPORTED_PLATFORMS: Tuple[str] = ("android_x86_64", "android_v7a", "arm64-v8a", "Linux", "Windows", "Web")
 PLATFORM: str = platform.platform()
@@ -175,6 +175,8 @@ DEBUG_PATHS: bool = False
 DEBUG_ROADS: bool = False
 DEBUG_PAINT: bool = False
 DEBUG_MOUSE_EVENTS: bool = False
+
+BOUNDARY_LOAD_UPDATE_SLOW: bool = False
 
 # ---------- ABOUT ----------
 GAME_NAME: str = "Farm CEO"
