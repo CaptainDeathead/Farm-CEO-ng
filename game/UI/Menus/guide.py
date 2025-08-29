@@ -84,7 +84,7 @@ class Guide:
                         utils.blit_centered(target_surf, super_img, (25, curr_y + 5), super_img.get_rect().center, 0.0)
                     elif "<UREA>" in text:
                         utils.blit_centered(target_surf, urea_img, (25, curr_y + 5), urea_img.get_rect().center, 0.0)
-                    elif "<HERBICIDE>" in text:
+                    elif "<WEEDS>" in text:
                         utils.blit_centered(target_surf, herbicide_img, (25, curr_y + 5), herbicide_img.get_rect().center, 0.0)
 
                     text_lbl = text_font.render(literal_text, True, UI_TEXT_COLOR, wraplength=PANEL_WIDTH - 20)

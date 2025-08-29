@@ -211,7 +211,7 @@ class Equipment:
         excluded_paddocks = []
 
         for p, paddock in enumerate(self.get_paddocks()):
-            if not paddock.owned_by == "player" and not UNLOCK_ALL_PADDOCKS:
+            if not paddock.owned_by == "player" and paddock.contract_requirements == {} and not UNLOCK_ALL_PADDOCKS:
                 excluded_paddocks.append(p)
                 continue
 

@@ -12,6 +12,7 @@ from UI.navbar import NavBar
 
 from UI.Menus.shop import Shop
 from UI.Menus.equipment import Equipment
+from UI.Menus.contracts import Contracts
 from UI.Menus.grain import Grain
 from UI.Menus.guide import Guide
 
@@ -37,6 +38,7 @@ class Panel:
 
         self.shop = Shop(self.rendered_surface, self.events, page_height, map_funcs)
         self.equipment = Equipment(self.rendered_surface, self.events, self.set_popup, page_height, shed, sellpoint_manager, map_funcs)
+        self.contracts = Contracts(self.rendered_surface, self.events, page_height, self.set_popup)
         self.grain = Grain(self.rendered_surface, self.events, page_height, sellpoint_manager)
         self.guide = Guide(self.rendered_surface, self.events, page_height, 1)
 
@@ -56,8 +58,11 @@ class Panel:
     def reset_actives(self) -> None:
         self.shop.active = False
         self.equipment.active = False
+        self.contracts.active = False
         self.grain.active = False
         self.guide.active = False
+
+        self.contracts.redraw_required = True
 
     def draw_shop(self, force: bool = False) -> None:
         self.reset_actives()
@@ -72,6 +77,13 @@ class Panel:
 
         redraw_equipment = self.equipment.update()
         if redraw_equipment or force: self.equipment.draw()
+
+    def draw_contracts(self, force: bool = False) -> None:
+        self.reset_actives()
+        self.contracts.active = True
+
+        redraw_contracts = self.contracts.update()
+        if redraw_contracts or force: self.contracts.draw()
 
     def draw_grain(self, force: bool = False) -> None:
         self.reset_actives()
@@ -90,12 +102,15 @@ class Panel:
     def draw(self) -> None:
         self.screen.blit(self.rendered_surface, (0, 0))
 
+        self.contracts.check_paddocks_fulfillment() # This one wants to know if paddock state changes happen each tick
+
         redraw_nav_bar = self.nav_bar.update()
         if redraw_nav_bar: self.nav_bar.draw()
 
         match self.nav_bar.get_selected():
             case 0: self.draw_shop()
             case 1: self.draw_equipment()
+            case 2: self.draw_contracts()
             case 3: self.draw_grain()
             case 4: self.draw_guide()
 

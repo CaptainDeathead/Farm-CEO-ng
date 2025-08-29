@@ -32,7 +32,7 @@ STATE_NAMES = {
 }
 
 STATE_COLORS = {
-    0: (200, 0, 200), # 0: Harvested.   1: Cultivated.   2: Growing 1.   3: Growing 2.   4: Growing 3.   5: Ready To Harvest.   6: Blank.
+    0: (55, 25, 0), # 0: Harvested.   1: Cultivated.   2: Growing 1.   3: Growing 2.   4: Growing 3.   5: Ready To Harvest.   6: Blank.
     1: (150, 150, 150),
     2: (0, 255, 0),
     3: (0, 200, 0),
@@ -155,7 +155,7 @@ EXCLUDE_SELLPOINT_TOOLS = {
 SPEEDSCALE = 3
 
 # ---------- CONFIG ----------
-BUILD: bool = False
+BUILD: bool = True
 TARGET_FPS: int = 1200
 SUPPORTED_PLATFORMS: Tuple[str] = ("android_x86_64", "android_v7a", "arm64-v8a", "Linux", "Windows", "Web")
 PLATFORM: str = platform.platform()
