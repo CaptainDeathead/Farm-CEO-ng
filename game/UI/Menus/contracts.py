@@ -232,7 +232,7 @@ class Contracts:
         self.contracts = []
 
         for paddock in self.paddock_manager.paddocks:
-            if randint(0, 1) != 0 or paddock.owned_by == "player": continue
+            if randint(0, 1) != 0 or paddock.owned_by == "player" or paddock.state == 5: continue # TODO: Currently disabled harvest contracts because they are not fully working
 
             contract = Contract(len(self.contracts)+1, int(paddock.num))
 
