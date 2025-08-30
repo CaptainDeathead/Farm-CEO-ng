@@ -126,6 +126,15 @@ class Tractor(Vehicle):
     @property
     def working(self) -> bool: return self.stage == JOB_TYPES["working"]
 
+    @property
+    def hp_struggle(self) -> float:
+        """Returns a value between 0-1 which is how much the vehicle should be struggling with the tool its using if its hp is less than the tool requires."""
+        if self.tool is None:
+            logging.warning(f"hp_struggled called but tool is None so returning 1...")
+            return 1.0
+
+        return min(1, self.hp / self.tool.hp)
+
     def set_equipment_draw(self, equipment_draw: object) -> None:
         self.equipment_draw = equipment_draw
 
@@ -244,10 +253,10 @@ class Tractor(Vehicle):
                         
                         if self.deliver_on_load_complete:
                             self.stage = JOB_TYPES["transporting_from"]
-                            self.set_string_task(f"Transporting {round(self.tool.fill, 1)}T of {self.tool.get_fill_type_str} to a silo...")
+                            self.set_string_task(f"Transporting {self.tool.get_fill_type_str} to a silo...")
                         else:
                             self.stage = JOB_TYPES["travelling_from"]
-                            self.set_string_task("Travelling to shed...")
+                            self.set_string_task("Traveling to shed...")
                 else:
                     # Needs to unload
                     self.set_waiting(True)
@@ -315,13 +324,13 @@ class Tractor(Vehicle):
 
                 if self.stage == JOB_TYPES["travelling_from"]:
                     # Go to shed
-                    self.set_string_task("Travelling to shed...")
+                    self.set_string_task("Traveling to shed...")
 
                     self.task_tractor(self, self.tool, Destination(None), self.stage)
                 else:
                     # TODO: Call update_machine_info with the correct information
                     if self.stage == JOB_TYPES["travelling_to"]:
-                        self.set_string_task(f"Travelling to {self.destination.get_name()}...")
+                        self.set_string_task(f"Traveling to {self.destination.get_name()}...")
 
                     self.task_tractor(self, self.tool, self.destination, self.stage)
 
@@ -366,15 +375,25 @@ class Tractor(Vehicle):
             self.velocity = [0, 0]
             return 0
 
+        hp_multiplier = 1.0
+
+        if self.tool is not None:
+            if self.tool.working:
+                if self.tool.tool_type == "Trailers": # TODO: Fix this because its too janky (relationship not great)
+                    #hp_multiplier = (self.hp_struggle + self.tool.fill / self.tool.storage) / 2
+                    ...
+                else:
+                    hp_multiplier = self.hp_struggle
+
         turn_amount = utils.angle_difference(self.rotation, self.desired_rotation)
 
-        self.rotation += max(-MAX_TURN_SPEED, min(MAX_TURN_SPEED, turn_amount)) * dt * 10 * SPEEDSCALE
+        self.rotation += max(-MAX_TURN_SPEED, min(MAX_TURN_SPEED, turn_amount)) * dt * 10 * SPEEDSCALE * hp_multiplier
         self.rotation %= 360
 
         direction = [cos(radians(-self.rotation-90)), sin(radians(-self.rotation-90))]
 
-        self.velocity[0] = direction[0] * self.curr_speed * SPEEDSCALE
-        self.velocity[1] = direction[1] * self.curr_speed * SPEEDSCALE
+        self.velocity[0] = direction[0] * self.curr_speed * SPEEDSCALE * hp_multiplier
+        self.velocity[1] = direction[1] * self.curr_speed * SPEEDSCALE * hp_multiplier
 
         return sqrt(self.velocity[0]**2 + self.velocity[1]**2)
 
@@ -634,13 +653,13 @@ class Header(Vehicle):
 
             if self.stage == JOB_TYPES["travelling_from"]:
                 # Go to shed
-                self.set_string_task("Travelling to shed...")
+                self.set_string_task("Traveling to shed...")
 
                 self.task_header(self, Destination(None), self.stage)
             else:
                 # TODO: Call update_machine_info with the correct information
                 if self.stage == JOB_TYPES["travelling_to"]:
-                    self.set_string_task(f"Travelling to {self.destination.get_name()}...")
+                    self.set_string_task(f"Traveling to {self.destination.get_name()}...")
 
                 self.task_header(self, self.destination, self.stage)
 
@@ -665,7 +684,7 @@ class Header(Vehicle):
         if stage == -1:
             # Default to travelling -> working -> etc...
             stage = 2
-            self.set_string_task(f"Travelling to {self.destination.get_name()}...")
+            self.set_string_task(f"Traveling to {self.destination.get_name()}...")
 
         logging.info(f"Setting new path for vehicle: {self.vehicle_id}...")
         self.set_job(job)

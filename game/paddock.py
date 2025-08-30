@@ -140,7 +140,7 @@ class Paddock:
         """Returns a yield bonus percent"""
 
         crop_yield = CROP_YIELDS[self.crop_index]
-        return ((4.0 + int(self.lime_years > 0) + int(self.super_spreaded) + int(self.urea_spreaded)) / (self.weeds + 1)) * crop_yield # Division by 0
+        return ((2.0 + int(self.lime_years > 0) + int(self.super_spreaded) + int(self.urea_spreaded)) / (self.weeds + 1)) * crop_yield * 3 # Division by 0
 
     def is_lime_spreadable(self) -> bool:
         return self.state in LIME_STAGES and self.lime_years > 0
