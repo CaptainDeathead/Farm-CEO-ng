@@ -140,7 +140,7 @@ class Paddock:
         """Returns a yield bonus percent"""
 
         crop_yield = CROP_YIELDS[self.crop_index]
-        return ((2.0 + int(self.lime_years > 0) + int(self.super_spreaded) + int(self.urea_spreaded)) / (self.weeds + 1)) * crop_yield * 3 # Division by 0
+        return ((2.0 + int(self.lime_years > 0) + int(self.super_spreaded) + int(self.urea_spreaded)) / (self.weeds + 1)) * crop_yield * 2 # Division by 0
 
     def is_lime_spreadable(self) -> bool:
         return self.state in LIME_STAGES and self.lime_years > 0
@@ -189,7 +189,7 @@ class Paddock:
     def load_state(self) -> None:
         self.fill(STATE_COLORS[self.state])
 
-    def set_state(self, state: int, resetting: bool = False) -> None:
+    def set_state(self, state: int, resetting: bool = False, skip_contract_check: bool = False) -> None:
         self.state = state
         self.load_state()
         self.state_changed = True
@@ -205,7 +205,8 @@ class Paddock:
             self.super_spreaded = False
             self.urea_spreaded = False
 
-        self.check_contract_fulfill()
+        if not skip_contract_check:
+            self.check_contract_fulfill()
 
     def set_crop_type(self, crop_index: int) -> None:
         logging.info(f"Setting paddock crop to {CROP_TYPES[crop_index]} for paddock {self.num}...")
@@ -236,7 +237,7 @@ class Paddock:
         self.draw_to_map(draw_normal_surface=False, draw_paint_surface=True)
         self.is_painting = True
 
-        return new_count
+        return new_count * self.scale
 
     def paint_rect(self, rect: pg.Rect, color: pg.Color) -> None:
         rect_surface = pg.Surface((rect.w, rect.h))

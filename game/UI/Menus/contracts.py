@@ -229,10 +229,12 @@ class Contracts:
         self.redraw_required = True
 
     def generate_contracts(self) -> None:
+        logging.info("Regenerating contracts...")
+
         self.contracts = []
 
         for paddock in self.paddock_manager.paddocks:
-            if randint(0, 4) == 0 or paddock.owned_by == "player" or paddock.state == 5: continue # TODO: Currently disabled harvest contracts because they are not fully working
+            if randint(0, 4) == 0 or paddock.owned_by == "player": continue
 
             contract = Contract(len(self.contracts)+1, int(paddock.num))
 
@@ -243,26 +245,42 @@ class Contracts:
         self.rebuild()
 
     def check_paddocks_fulfillment(self, fail_if_not_done: bool = False) -> None:
+        new_contracts = []
+        changed = False
+
         for contract in self.contracts:
             if contract.paddock.contract_fulfilled:
                 logging.info(f"Contract on paddock {contract.paddock.num} fulfilled!")
 
-                contract.activate_reward()
-                contract.paddock.reset_contract()
-                self.contracts.remove(contract)
+                if contract.active:
+                    logging.info(f"Rewarding player for completing contract.")
+                    contract.activate_reward()
+                else:
+                    logging.info(f"Contract not active. Not rewarding player.")
 
-                SaveManager().set_contracts(self.to_dict())
-                self.rebuild()
+                contract.paddock.reset_contract()
+                changed = True
 
             elif contract.paddock.contract_failed or fail_if_not_done:
                 logging.info(f"Contract on paddock {contract.paddock.num} failed!")
 
-                contract.activate_fail()
-                contract.paddock.reset_contract()
-                self.contracts.remove(contract)
+                if contract.active:
+                    logging.info(f"Costing player for failing contract.")
+                    contract.activate_fail()
+                else:
+                    logging.info(f"Contract not active. Not failing player.")
 
-                SaveManager().set_contracts(self.to_dict())
-                self.rebuild()
+                contract.paddock.reset_contract()
+                changed = True
+
+            else:
+                new_contracts.append(contract)
+
+        self.contracts = new_contracts
+
+        if changed:
+            SaveManager().set_contracts(self.to_dict())
+            self.rebuild()
 
     def update(self) -> bool:
         # This is pretty much an exact copy of the equipment update code so for more detail on how it works visit equipment.py update function
@@ -274,7 +292,7 @@ class Contracts:
             button.global_rect = pg.Rect(og_button_rect.x, og_button_rect.y + self.scroll_y, og_button_rect.width, og_button_rect.height)
 
             if not self.in_scroll and self.events.mouse_pos[1] > NAVBAR_HEIGHT:
-                button_press = self.events.authority_mouse_just_pressed and button.global_rect.collidepoint(self.events.authority_mouse_start_press_location)
+                button_press = self.events.authority_mouse_just_released and button.global_rect.collidepoint(self.events.authority_mouse_start_press_location)
                 button.update(button_press, lambda x: None)
 
         if self.in_scroll and self.events.authority_mouse_just_released:

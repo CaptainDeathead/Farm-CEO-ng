@@ -114,6 +114,8 @@ class Tractor(Vehicle):
         self.loading = False
         self.deliver_on_load_complete = False
 
+        self.job = None
+
     @property
     def full_name(self) -> str:
         return f"{self.brand} {self.model}"
@@ -628,6 +630,7 @@ class Header(Vehicle):
 
                 self.set_string_task("No task assigned")
 
+                self.re_init()
                 logging.debug(f"Vehicle: {self.vehicle_id} has completed their task.")
                 return
 
@@ -647,7 +650,10 @@ class Header(Vehicle):
 
                     if self.fill > 0:
                         self.finished = True
-                        self.request_unload()
+                        
+                        if self.fill > 0:
+                            self.request_unload()
+
                         self.stage -= 1
                         return
 
@@ -739,13 +745,14 @@ class Header(Vehicle):
             fill_amount, crop_index = self.paint()
             fill_amount *=  self.destination.destination.calculate_yield()
 
-            if crop_index != self.fill_type:
-                if self.fill > 0:
-                    logging.warning(f"Mixed crops in header! Old: {CROP_TYPES[self.fill_type]}  New: {CROP_TYPES[crop_index]}. Replacing old with new (but keeping fill).")
-                
-                self.fill_type = crop_index
+            if self.destination.destination.contract_requirements == {}: # Fill disabled on contracts
+                if crop_index != self.fill_type:
+                    if self.fill > 0:
+                        logging.warning(f"Mixed crops in header! Old: {CROP_TYPES[self.fill_type]}  New: {CROP_TYPES[crop_index]}. Replacing old with new (but keeping fill).")
+                    
+                    self.fill_type = crop_index
 
-            self.increment_fill(fill_amount)
+                self.increment_fill(fill_amount)
 
             self.last_paint_left = left_paint
             self.last_paint_right = right_paint
@@ -760,7 +767,7 @@ class Header(Vehicle):
         last_fill_amount = self.fill
         self.fill += fill_amount / EQUIPMENT_RATES["Headers"]
 
-        if round(last_fill_amount, 1) < round(self.fill, 1):
+        if round(last_fill_amount, 0) < round(self.fill, 0):
             # Equipment menu will need a rebuild as the rounding ticks over
             self.equipment_draw(rebuild=True)
 
