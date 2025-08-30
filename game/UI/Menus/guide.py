@@ -62,7 +62,7 @@ class Guide:
         title_font.align = pg.FONT_CENTER
         text_font.align = pg.FONT_LEFT
 
-        curr_y = 20
+        curr_y = 0
         target_surf = self.page_1
         for texttype in guide:
             if "page" in texttype:
@@ -103,7 +103,7 @@ class Guide:
             self.rendered_surface.blit(self.page_2, (0, 0))
 
         self.page_toggle_button.draw()
-        self.parent_surface.blit(self.rendered_surface, (0, NAVBAR_HEIGHT))
+        self.parent_surface.blit(self.rendered_surface, self.rect)
 
     def update(self) -> bool:
         pressed = self.page_toggle_button.update(self.events.mouse_just_pressed, self.events.set_override)

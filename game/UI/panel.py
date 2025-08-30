@@ -34,7 +34,7 @@ class Panel:
 
         self.nav_bar: NavBar = NavBar(self.rendered_surface, self.events, pg.Rect(0, 0, PANEL_WIDTH, self.NAVBAR_HEIGHT), self.force_draw_page)
 
-        page_height = pg.Rect(0, self.NAVBAR_HEIGHT, PANEL_WIDTH, self.SCREEN_HEIGHT - self.NAVBAR_HEIGHT)
+        page_height = pg.Rect(0, self.NAVBAR_HEIGHT - 20, PANEL_WIDTH, self.SCREEN_HEIGHT - self.NAVBAR_HEIGHT - 20)
 
         self.shop = Shop(self.rendered_surface, self.events, page_height, map_funcs)
         self.equipment = Equipment(self.rendered_surface, self.events, self.set_popup, page_height, shed, sellpoint_manager, map_funcs)

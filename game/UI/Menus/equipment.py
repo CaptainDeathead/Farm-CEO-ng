@@ -285,7 +285,7 @@ class Equipment:
         center = PANEL_WIDTH / 2
 
         button_height = 130
-        header_button_height = button_height + 30
+        big_button_height = button_height + 30
         button_spacing = 20
 
         y_inc = button_height + button_spacing
@@ -297,7 +297,7 @@ class Equipment:
         # Vehicles
         for i, vehicle in enumerate(self.shed.vehicles):
             if isinstance(vehicle, Header):
-                bh = header_button_height
+                bh = big_button_height
                 y_inc = bh + button_spacing
             else:
                 bh = button_height
@@ -315,22 +315,22 @@ class Equipment:
             
             self.scrollable_surface.blit(self.body_font.render(f"Task: {vehicle.string_task}", True, UI_TEXT_COLOR), (60, y + 50))
 
-            fuel_lbl = self.body_font.render(f"Fuel: {vehicle.fuel}L", True, UI_TEXT_COLOR)
-            self.scrollable_surface.blit(fuel_lbl, (60, y + 80))
+            type_lbl = self.body_font.render(f"Machine type: {"Headers" if isinstance(vehicle, Header) else "Tractors"}", True, UI_TEXT_COLOR)
+            self.scrollable_surface.blit(type_lbl, (60, y + 80))
 
             if isinstance(vehicle, Header):
                 fill_lbl = self.body_font.render(f"Fill ({vehicle.get_fill_type_str.capitalize()}): {round(vehicle.fill, 1)}T", True, UI_TEXT_COLOR)
                 self.scrollable_surface.blit(fill_lbl, (60, y + 110))
 
             pdk_lbl = self.body_font.render(f"Paddock: {vehicle.paddock_text}", True, UI_TEXT_COLOR)
-            self.scrollable_surface.blit(pdk_lbl, (PANEL_WIDTH - 60 - pdk_lbl.get_width(), y + 80))
+            self.scrollable_surface.blit(pdk_lbl, (PANEL_WIDTH - 60 - pdk_lbl.get_width(), y + 110 if isinstance(vehicle, Header) else 80))
 
             y += y_inc
 
         # Tools
-        y_inc = button_height + button_spacing
+        y_inc = big_button_height + button_spacing
         for tool in self.shed.tools:
-            button = Button(self.scrollable_surface, x, y, self.BUTTON_WIDTH, button_height, self.rect,
+            button = Button(self.scrollable_surface, x, y, self.BUTTON_WIDTH, big_button_height, self.rect,
                     UI_TOOL_BUTTON_COLOR, UI_ACTIVE_COLOR, UI_TEXT_COLOR, "", 20, (20, 20, 20, 20), 0, 0, command=lambda: None, authority=True)
             
             button.draw()
@@ -341,10 +341,14 @@ class Equipment:
             self.scrollable_surface.blit(name_lbl, (center - name_lbl.get_width()/2, y + 10))
             
             self.scrollable_surface.blit(self.body_font.render(f"Task: {tool.string_task}", True, UI_TEXT_COLOR), (60, y + 50))
-            self.scrollable_surface.blit(self.body_font.render(f"Fill ({tool.get_fill_type_str.capitalize()}): {round(tool.fill, 1)}T", True, UI_TEXT_COLOR), (60, y + 80))
+            
+            type_lbl = self.body_font.render(f"Machine type: {tool.tool_type}", True, UI_TEXT_COLOR)
+            self.scrollable_surface.blit(type_lbl, (60, y + 80))
+
+            self.scrollable_surface.blit(self.body_font.render(f"Fill ({tool.get_fill_type_str.capitalize()}): {round(tool.fill, 1)}T", True, UI_TEXT_COLOR), (60, y + 110))
 
             pdk_lbl = self.body_font.render(f"Paddock: {tool.paddock_text}", True, UI_TEXT_COLOR)
-            self.scrollable_surface.blit(pdk_lbl, (PANEL_WIDTH - 60 - pdk_lbl.get_width(), y + 80))
+            self.scrollable_surface.blit(pdk_lbl, (PANEL_WIDTH - 60 - pdk_lbl.get_width(), y + 110))
 
             y += y_inc
 
