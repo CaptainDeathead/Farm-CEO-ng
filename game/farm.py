@@ -165,6 +165,8 @@ class Shed(LayableRenderObj):
 
     def pack_away_vehicle(self, vehicle: Tractor) -> None:
         self.check_trailer_fill(vehicle.tool, SaveManager().add_money, force=True)
+        vehicle.tool.re_init()
+        vehicle.re_init()
 
     def add_vehicle(self, save_attrs: Dict[str, any]) -> None:
         if save_attrs["header"]: vehicle_type = "Harvesters"

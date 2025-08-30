@@ -23,6 +23,8 @@ class Events:
         self.override_locked: bool = False
         self.override_requires_authority: bool = False # Allows specific, private access for top-level elements such as popups to the override state, while freezing it for non-authorities
 
+        self.game_paused: bool = False
+
     def set_override(self, override: bool) -> None:
         self.mouse_press_override = override
 
@@ -95,6 +97,10 @@ class Events:
                     self.authority_mouse_just_released = True
 
                 if DEBUG_MOUSE_EVENTS: self.log_mouse_events()
+                
+            elif event.type == pg.KEYDOWN and ENABLE_KEYBOARD_CHEATS:
+                if event.key == pg.K_F2:
+                    self.game_paused = not self.game_paused
 
         if self.mouse_press_override:
             if not self.override_requires_authority:

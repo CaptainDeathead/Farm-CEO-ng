@@ -209,13 +209,15 @@ class Tractor(Vehicle):
             self.loading_vehicle.tool.reload_vt_sim()
             self.loading_vehicle.path = self.job.trace_collision_boundary(tuple(self.position), self.destination.destination.gate, self.job.lap_1)
 
-    def follow_path(self) -> None:
-        if self.waiting_for_loading_vehicle_assign: return
+    def follow_path(self) -> bool:
+        """Returns True if the vehicle has finished it's task"""
+
+        if self.waiting_for_loading_vehicle_assign: return False
 
         if self.waiting_for_loading_vehicle:
             if self.loading_vehicle.waiting:
                 self.on_loading_vehicle_arrive()
-            return
+            return False
 
         if self.loading:
             self.load_tool()
@@ -250,7 +252,7 @@ class Tractor(Vehicle):
                     # Needs to unload
                     self.set_waiting(True)
                 
-                return
+                return False
 
             elif self.tool.tool_type == "Trailers" and (self.heading_to_silo or self.heading_to_sell):
                 # Needs to unload trailer
@@ -260,7 +262,7 @@ class Tractor(Vehicle):
                 
                 self.set_waiting(True)
                 self.unload_tool()
-                return
+                return False
 
             self.stage += 1
 
@@ -270,10 +272,8 @@ class Tractor(Vehicle):
                 self.paddock = -1
                 self.set_string_task("No task assigned")
 
-                self.pack_away_vehicle(self)
-
                 logging.debug(f"Vehicle: {self.vehicle_id} has completed their task.")
-                return
+                return True
             else:
                 logging.debug(f"Vehicle: {self.vehicle_id} moving on to next path stage ({self.stage})...")
 
@@ -336,8 +336,7 @@ class Tractor(Vehicle):
         dist = sqrt((px - self.rect.centerx) ** 2 + (py - self.rect.centery) ** 2)
         if dist < self.PATH_POP_RADIUS * multiplier:
             self.path.pop(0)
-            self.follow_path()
-            return
+            return self.follow_path()
 
         self.desired_rotation = (degrees(atan2(-(py - self.rect.centery), px - self.rect.centerx)) + 360) % 360 - 90
         
@@ -382,7 +381,10 @@ class Tractor(Vehicle):
     def update(self, dt: float) -> None:
         if not self.active: return
 
-        self.follow_path()
+        finished_job = self.follow_path()
+        if finished_job:
+            self.pack_away_vehicle(self)
+            return
 
         if len(self.path) > 0 and DEBUG_PATHS:
             for point in self.path:

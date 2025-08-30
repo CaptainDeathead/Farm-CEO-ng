@@ -107,14 +107,18 @@ class Window:
             events = pg.event.get()
             self.events.process_events(events)
 
-            keys = pg.key.get_pressed()
+            if ENABLE_KEYBOARD_CHEATS:
+                keys = pg.key.get_pressed()
 
-            if keys[pg.K_SPACE] and ENABLE_KEYBOARD_CHEATS:
-                self.frame_time *= 10
+                if keys[pg.K_SPACE]:
+                    self.frame_time *= 10
 
             self.farm_ceo.background_render()
 
-            self.farm_ceo.simulate(self.frame_time)
+            if self.events.game_paused:
+                self.farm_ceo.simulate(0.0)
+            else:
+                self.farm_ceo.simulate(self.frame_time)
 
             self.farm_ceo.foreground_render()
             self.farm_ceo.ui_render()
