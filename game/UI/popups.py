@@ -33,7 +33,7 @@ class TractorNewTaskPopup(PopupType):
         self.sell_points = sell_points
         
         self.equipment_buttons = equipment_buttons
-        self.selected_tool_index = 0
+        self.selected_tool_index = None
 
         self.draw_equipment_menu = draw_equipment_menu
         self.close_popup = close_popup
@@ -114,7 +114,7 @@ class TractorNewTaskPopup(PopupType):
 
         # Button is disabled
         widget.tool_button = Button(widget.surface, tool_dropdown_x, widget.tool_lbl_pos[1], widget.tool_dropdown_width, widget.dropdown_height, widget.rect,
-                                    UI_MAIN_COLOR, UI_MAIN_COLOR, UI_TEXT_COLOR, self.tools[0].full_name, 50, (20, 20, 20, 20), 0, 0, True,
+                                    UI_MAIN_COLOR, UI_MAIN_COLOR, UI_TEXT_COLOR, "Select from equipment menu.", 50, (20, 20, 20, 20), 0, 0, True,
                                     None)
         
         widget.tool_button.draw()
@@ -126,6 +126,15 @@ class TractorNewTaskPopup(PopupType):
         self.close_popup()
 
     def submit(self) -> None:
+        if self.selected_tool_index is None:
+            self.widget.tool_button.set_color((255, 0, 0))
+
+            self.widget.tool_button.rebuild()
+            self.widget.tool_button.draw()
+            self.widget.draw()
+            self.draw()
+            return
+
         self.close_popup()
         self.show_destination_picker(self.selected_tool_index)
 
