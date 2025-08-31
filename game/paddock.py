@@ -209,7 +209,7 @@ class Paddock:
             self.super_spreaded = False
             self.urea_spreaded = False
 
-        if self.state in GROWTH_STAGES[:-1]:
+        if self.state in GROWTH_STAGES[1:-1]:
             self.weeds = min(2, self.weeds + randint(0, 1))
 
         if not skip_contract_check:
