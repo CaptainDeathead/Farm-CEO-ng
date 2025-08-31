@@ -157,7 +157,7 @@ EXCLUDE_SELLPOINT_TOOLS = {
 SPEEDSCALE = 3
 
 # ---------- CONFIG ----------
-BUILD: bool = False
+BUILD: bool = True
 TARGET_FPS: int = 1200
 SUPPORTED_PLATFORMS: Tuple[str] = ("android_x86_64", "android_v7a", "arm64-v8a", "Linux", "Windows", "Web")
 PLATFORM: str = platform.platform()
