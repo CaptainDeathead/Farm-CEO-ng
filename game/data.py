@@ -27,8 +27,9 @@ STATE_NAMES = {
     2: "Growing 1",
     3: "Growing 2",
     4: "Growing 3",
-    5: "Ready to harvest",
-    6: "Blank"
+    5: "Growing 4",
+    6: "Ready to harvest",
+    7: "Blank"
 }
 
 STATE_COLORS = {
@@ -36,20 +37,21 @@ STATE_COLORS = {
     1: (150, 150, 150),
     2: (0, 255, 0),
     3: (0, 200, 0),
-    4: (0, 100, 0),
-    5: (200, 200, 0),
-    6: (0, 0, 0)
+    4: (0, 150, 0),
+    5: (0, 100, 0),
+    6: (200, 200, 0),
+    7: (0, 0, 0)
 }
 
-GROWTH_STAGES = [2, 3, 4]
+GROWTH_STAGES = [2, 3, 4, 5]
 
 TOOL_STATES = {
     "Cultivators": (1,),
     "Seeders": (2,),
     "Spreaders": (0, 1, 2, 3, 4),
-    "Sprayers": (0, 2, 3, 4),
-    "Trailers": (0, 1, 2, 3, 4, 5, 6),
-    "Headers": (6,)
+    "Sprayers": (0, 3, 4),
+    "Trailers": (0, 1, 2, 3, 4, 5, 6, 7),
+    "Headers": (7,)
 }
 
 FIELD_TOOLS = ["Cultivators", "Seeders", "Spreaders", "Sprayers"]
@@ -73,7 +75,7 @@ CROP_IDS = {
 }
 
 LIME_STAGES = (0, 1, 2)
-FERTILISER_STAGES = (2, 3, 4)
+FERTILISER_STAGES = (3, 4)
 FERTILISERS = ("lime", "super", "urea")
 FERTILISER_PRICES = {
     "lime": 30,
@@ -81,7 +83,7 @@ FERTILISER_PRICES = {
     "urea": 700
 }
 
-CHEMICAL_STAGES = (3, 4)
+CHEMICAL_STAGES = (0, 1, 2, 3, 4)
 CHEMICALS = ("liquid-super", "liquid-urea", "herbicide")
 CHEMICAL_PRICES = {
     "liquid-super": 400,

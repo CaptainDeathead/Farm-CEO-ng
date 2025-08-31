@@ -60,17 +60,25 @@ class Contract:
             
             return "Seeders", randint(0, len(CROP_TYPES)-1), self.paddock.hectares * 30, 500
 
-        elif self.paddock.state in (2, 3):
-            if not self.paddock.super_spreaded: # TODO: This will probably always get used over the last 2 on stage 2 because it will be the first in line of the 3.
-                return "Spreaders", FILL_TYPES.index("super"), self.paddock.hectares * 10, 500
-            if not self.paddock.urea_spreaded: # TODO: This will probably always get take over weeds on the 3rd stage if the super contract was done on the 2nd stage.
-                return "Spreaders", FILL_TYPES.index("urea"), self.paddock.hectares * 10, 500
+        elif self.paddock.state in CHEMICAL_PRICES:
             if self.paddock.weeds:
                 return "Sprayers", FILL_TYPES.index("herbicide"), self.paddock.hectares * 20, 1000
 
+        elif self.paddock.state in FERTILISER_STAGES:
+            if not self.paddock.super_spreaded and not self.paddock.urea_spreaded:
+                if randint(0, 1):
+                    return "Spreaders", FILL_TYPES.index("super"), self.paddock.hectares * 10, 500
+                else:
+                    return "Spreaders", FILL_TYPES.index("urea"), self.paddock.hectares * 10, 500
+
+            elif not self.paddock.super_spreaded:
+                return "Spreaders", FILL_TYPES.index("super"), self.paddock.hectares * 10, 500
+            elif not self.paddock.urea_spreaded:
+                return "Spreaders", FILL_TYPES.index("urea"), self.paddock.hectares * 10, 500
+
             return None, None, None, None
 
-        elif self.paddock.state == 5:
+        elif STATE_NAMES[self.paddock.state] == "Ready to harvest":
             return "Headers", self.paddock.crop_index, self.paddock.hectares * 30, 500
 
         else:

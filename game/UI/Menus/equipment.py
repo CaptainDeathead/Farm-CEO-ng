@@ -138,17 +138,32 @@ class Equipment:
 
         elif self.selected_tool.tool_type == "Trailers" and not done_additional_popup and trailer_requires_fill:
             logging.debug("Selected tool is a trailer. Opening crop selection popup...")
-            self.set_popup(SelectCropPopup(self.events, self.sellpoint_manager, self.close_popup, self.remove_destination_picker, self.selected_tool.set_fill, self.selected_tool.storage, self.assign_task))
+
+            popup = SelectCropPopup(self.events, self.sellpoint_manager, self.close_popup, self.remove_destination_picker, self.selected_tool.set_fill, self.selected_tool.storage, self.assign_task)
+
+            tool_to_fill = self.selected_vehicle_loading_vehicles.get(int(self.selected_destination.destination.num)-1)
+
+            if tool_to_fill is not None:
+                logging.info(f"Found tool to fill. Skipping showing popup and spoofing crop select to tool crop type ({FILL_TYPES[tool_to_fill.tool.fill_type]})...")
+                print(popup.crop_selection_dropdown.buttons[tool_to_fill.tool.fill_type])
+                popup.crop_selection_dropdown.select_button(popup.crop_selection_dropdown.buttons[tool_to_fill.tool.fill_type].text)
+                print(popup.crop_selection_dropdown.selected_button.text)
+                popup.submit()
+            else:
+                self.set_popup(SelectCropPopup(self.events, self.sellpoint_manager, self.close_popup, self.remove_destination_picker, self.selected_tool.set_fill, self.selected_tool.storage, self.assign_task))
+
             return
         
         elif self.selected_tool.tool_type in ("Spreaders", "Sprayers") and not done_additional_popup:
             if self.selected_tool.tool_type == "Spreaders":
                 crop_filter = "Fertilisers"
+                allow_ferts = self.selected_destination.destination.state in FERTILISER_STAGES
             else:
                 crop_filter = "Chemicals"
+                allow_ferts = self.selected_destination.destination.state in FERTILISER_STAGES
 
             logging.debug(f"Selected tool is a {self.selected_tool.tool_type}. Opening fertiliser selection popup...")
-            self.set_popup(SelectCropPopup(self.events, self.sellpoint_manager, self.close_popup, self.remove_destination_picker, self.selected_tool.set_fill, self.selected_tool.storage, self.assign_task, crop_filter=crop_filter))
+            self.set_popup(SelectCropPopup(self.events, self.sellpoint_manager, self.close_popup, self.remove_destination_picker, self.selected_tool.set_fill, self.selected_tool.storage, self.assign_task, allow_ferts, crop_filter=crop_filter))
             return
 
         logging.info(f"Assigning vehicle: {self.selected_vehicle.full_name}, with tool: {self.selected_tool.full_name} a task at: {self.selected_destination.get_name()}...")
@@ -204,6 +219,12 @@ class Equipment:
         self.rebuild_destination_picker(self.selected_tool, destination)
         self.draw()
 
+    def is_paddock_in_use(self, paddock_num: int) -> bool:
+        for vehicle in self.shed.vehicles:
+            if vehicle.paddock == paddock_num: return True
+        
+        return False
+
     def get_excluded_paddocks(self, tool_type: str) -> List[int]:
         tool_states = TOOL_STATES[tool_type]
         desired_paddock_states = [tool_state - 1 for tool_state in tool_states]
@@ -211,7 +232,9 @@ class Equipment:
         excluded_paddocks = []
 
         for p, paddock in enumerate(self.get_paddocks()):
-            if not paddock.owned_by == "player" and paddock.contract_requirements == {} and not UNLOCK_ALL_PADDOCKS:
+            paddock_in_use = self.is_paddock_in_use(p+1)
+
+            if (not paddock.owned_by == "player" and paddock.contract_requirements == {} and not UNLOCK_ALL_PADDOCKS) or paddock_in_use:
                 excluded_paddocks.append(p)
                 continue
 
@@ -315,7 +338,7 @@ class Equipment:
             
             self.scrollable_surface.blit(self.body_font.render(f"Task: {vehicle.string_task}", True, UI_TEXT_COLOR), (60, y + 50))
 
-            type_lbl = self.body_font.render(f"Machine type: {"Headers" if isinstance(vehicle, Header) else "Tractors"}", True, UI_TEXT_COLOR)
+            type_lbl = self.body_font.render(f"Machine type: {'Headers' if isinstance(vehicle, Header) else 'Tractors'}", True, UI_TEXT_COLOR)
             self.scrollable_surface.blit(type_lbl, (60, y + 80))
 
             if isinstance(vehicle, Header):
@@ -323,7 +346,7 @@ class Equipment:
                 self.scrollable_surface.blit(fill_lbl, (60, y + 110))
 
             pdk_lbl = self.body_font.render(f"Paddock: {vehicle.paddock_text}", True, UI_TEXT_COLOR)
-            self.scrollable_surface.blit(pdk_lbl, (PANEL_WIDTH - 60 - pdk_lbl.get_width(), y + 110 if isinstance(vehicle, Header) else 80))
+            self.scrollable_surface.blit(pdk_lbl, (PANEL_WIDTH - 60 - pdk_lbl.get_width(), y + 110 if isinstance(vehicle, Header) else y + 80))
 
             y += y_inc
 
