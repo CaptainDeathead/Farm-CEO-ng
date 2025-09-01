@@ -49,9 +49,18 @@ TOOL_STATES = {
     "Cultivators": (1,),
     "Seeders": (2,),
     "Spreaders": (0, 1, 2, 3, 4),
-    "Sprayers": (0, 3, 4),
+    "Sprayers": (0, 1, 2, 3, 4),
     "Trailers": (0, 1, 2, 3, 4, 5, 6, 7),
     "Headers": (7,)
+}
+
+TOOL_OFFSETS = { # Does the tool's output state reflect the state it requires -1?
+    "Cultivators": True,
+    "Seeders": True,
+    "Spreaders": False,
+    "Sprayers": False,
+    "Trailers": True,
+    "Headers": True
 }
 
 FIELD_TOOLS = ["Cultivators", "Seeders", "Spreaders", "Sprayers"]
@@ -167,7 +176,7 @@ CONSOLE_BUILD: bool = not BUILD
 
 # ---------- CHEATS ----------
 UNLOCK_ALL_PADDOCKS: bool = not BUILD
-ENABLE_KEYBOARD_CHEATS: bool = not BUILD 
+ENABLE_KEYBOARD_CHEATS: bool = not BUILD
 
 # ---------- DEBUG ----------
 DEBUG_BOUNDARY_LOADING: bool = False

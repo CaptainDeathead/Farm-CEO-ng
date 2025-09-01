@@ -141,13 +141,13 @@ class Equipment:
 
             popup = SelectCropPopup(self.events, self.sellpoint_manager, self.close_popup, self.remove_destination_picker, self.selected_tool.set_fill, self.selected_tool.storage, self.assign_task)
 
-            tool_to_fill = self.selected_vehicle_loading_vehicles.get(int(self.selected_destination.destination.num)-1)
+            tool_to_fill = None
+            if self.selected_destination.is_paddock:
+                tool_to_fill = self.selected_vehicle_loading_vehicles.get(int(self.selected_destination.destination.num)-1)
 
             if tool_to_fill is not None:
                 logging.info(f"Found tool to fill. Skipping showing popup and spoofing crop select to tool crop type ({FILL_TYPES[tool_to_fill.tool.fill_type]})...")
-                print(popup.crop_selection_dropdown.buttons[tool_to_fill.tool.fill_type])
                 popup.crop_selection_dropdown.select_button(popup.crop_selection_dropdown.buttons[tool_to_fill.tool.fill_type].text)
-                print(popup.crop_selection_dropdown.selected_button.text)
                 popup.submit()
             else:
                 self.set_popup(SelectCropPopup(self.events, self.sellpoint_manager, self.close_popup, self.remove_destination_picker, self.selected_tool.set_fill, self.selected_tool.storage, self.assign_task))
@@ -220,19 +220,23 @@ class Equipment:
         self.draw()
 
     def is_paddock_in_use(self, paddock_num: int) -> bool:
+        if self.selected_tool is None:
+            if self.selected_vehicle.tool.tool_type == "Trailers": return False # Trailers can go to paddocks with vehicles in them
+
         for vehicle in self.shed.vehicles:
-            if vehicle.paddock == paddock_num: return True
+            if vehicle.paddock-1 == paddock_num: return True
         
         return False
 
     def get_excluded_paddocks(self, tool_type: str) -> List[int]:
+        offset = int(TOOL_OFFSETS[tool_type])
         tool_states = TOOL_STATES[tool_type]
-        desired_paddock_states = [tool_state - 1 for tool_state in tool_states]
+        desired_paddock_states = [tool_state - offset for tool_state in tool_states]
 
         excluded_paddocks = []
 
         for p, paddock in enumerate(self.get_paddocks()):
-            paddock_in_use = self.is_paddock_in_use(p+1)
+            paddock_in_use = self.is_paddock_in_use(p-1)
 
             if (not paddock.owned_by == "player" and paddock.contract_requirements == {} and not UNLOCK_ALL_PADDOCKS) or paddock_in_use:
                 excluded_paddocks.append(p)
