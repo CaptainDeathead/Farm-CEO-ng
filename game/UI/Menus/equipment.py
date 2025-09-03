@@ -220,8 +220,8 @@ class Equipment:
         self.draw()
 
     def is_paddock_in_use(self, paddock_num: int) -> bool:
-        if self.selected_tool is None:
-            if self.selected_vehicle.tool.tool_type == "Trailers": return False # Trailers can go to paddocks with vehicles in them
+        if self.selected_tool is not None:
+            if self.selected_tool.tool_type == "Trailers": return False # Trailers can go to paddocks with vehicles in them
 
         for vehicle in self.shed.vehicles:
             if vehicle.paddock-1 == paddock_num: return True

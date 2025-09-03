@@ -51,7 +51,7 @@ requirements = python3,pygame-ce,android,cython,shapely,typing_extensions
 # requirements.source.kivy = ../../kivy
 
 # (str) Presplash of the application
-#presplash.filename = %(source.dir)s/data/presplash.png
+presplash.filename = %(source.dir)s/assets/Splash/splash.png
 
 # (str) Icon of the application
 icon.filename = %(source.dir)s/assets/Data/game_icon.png

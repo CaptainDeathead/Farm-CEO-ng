@@ -189,7 +189,7 @@ class PaddockManager:
         dist = 45 * self.scale
         return (PANEL_WIDTH + paddock_center[0] + cos(radians(indicator_angle)) * dist - self.indicator_size / 2, paddock_center[1] + sin(radians(indicator_angle)) * dist - self.indicator_size / 2)
 
-    def draw_paddock_numbers(self) -> None:
+    def draw_paddock_numbers(self, draw_price: bool = False) -> None:
         for paddock in self.paddocks:
             self.screen.blit(paddock.number_surface, (PANEL_WIDTH + paddock.center[0] - paddock.number_surface.width / 2, paddock.center[1] - paddock.number_surface.height / 2))
 
@@ -212,6 +212,9 @@ class PaddockManager:
             if paddock.weeds > 0:
                 self.screen.blit(self.indicators["weeds"], self.get_indicator_position(paddock.center, indicator_angle))
                 indicator_angle -= 45
+
+            if draw_price:
+                self.screen.blit(paddock.price_lbl_surface, (PANEL_WIDTH + paddock.center[0] - paddock.price_lbl_surface.width / 2, paddock.center[1] - paddock.price_lbl_surface.height / 2 + 30 * self.scale))
 
     def check_paddock_clicks(self) -> Paddock | None:
         pos = pg.mouse.get_pos()
