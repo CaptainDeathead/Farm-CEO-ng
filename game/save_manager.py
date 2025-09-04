@@ -288,6 +288,9 @@ class SaveManager:
                 "path": vehicle.path,
             }
 
+            if vehicle.job is not None:
+                self.vehicles_dict[vehicle.vehicle_id]["job"] = vehicle.job.to_dict()
+
             if hasattr(vehicle, 'tool') and vehicle.tool is not None:
                 if vehicle.tool.tool_type in "Trailers":
                     self.vehicles_dict[vehicle.vehicle_id]["jobId"] = -1
@@ -297,8 +300,8 @@ class SaveManager:
                     self.vehicles_dict[vehicle.vehicle_id]["stringTask"] = "No task assigned"
                     self.vehicles_dict[vehicle.vehicle_id]["pos"] = self.shed_pos
 
-            elif vehicle.job is not None:
-                    self.vehicles_dict[vehicle.vehicle_id]["job"] = vehicle.job.to_dict()
+                    if self.vehicles_dict[vehicle.vehicle_id].get("job") is not None:
+                        del self.vehicles_dict[vehicle.vehicle_id]["job"]
 
         return self.vehicles_dict
 

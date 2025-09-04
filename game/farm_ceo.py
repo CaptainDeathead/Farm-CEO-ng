@@ -253,7 +253,7 @@ class FarmCEO:
 
     def background_render(self) -> None:
         self.map.render()
-        self.paddock_manager.draw_paddock_numbers()
+        self.paddock_manager.draw_paddock_numbers(draw_price=self.panel.shop.active and self.panel.shop.in_paddock_menu)
 
         self.game_surface.fill((0, 0, 0, 0))
 

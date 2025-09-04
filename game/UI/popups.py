@@ -158,7 +158,7 @@ class SelectCropPopup(PopupType):
     HEIGHT = 500
 
     def __init__(self, events: Events, sellpoint_manager: SellpointManager, close_popup: object, remove_destination_picker: object, set_tool_fill: object,
-                 tool_capacity: float, assign_task: callable, crop_filter: List[str] = []) -> None:
+                 tool_capacity: float, assign_task: callable, allow_ferts: bool = True, crop_filter: List[str] = []) -> None:
         self.parent_surface = pg.display.get_surface()
         self.surface = pg.Surface((self.WIDTH, self.HEIGHT), pg.SRCALPHA)
 
@@ -170,6 +170,8 @@ class SelectCropPopup(PopupType):
         self.set_tool_fill = set_tool_fill
         self.tool_capacity = tool_capacity
         self.assign_task = assign_task
+
+        self.allow_ferts = allow_ferts # Lime an herbicide can sometimes be separate to fertilisers
 
         self.done_additional_fert_popup = False
 
@@ -195,14 +197,20 @@ class SelectCropPopup(PopupType):
         self.chemical_mode = crop_filter == "Chemicals"
 
         if self.fertiliser_mode:
+            if self.allow_ferts: fertilisers = FERTILISERS
+            else: fertilisers = ("lime",)
+
             self.crop_selection_buttons = [
                 Button(self.widget.surface, dropdown_pos[0], dropdown_pos[1], btn_width, btn_height, pg.Rect(0, 0, self.WIDTH, self.HEIGHT), UI_MAIN_COLOR, UI_ACTIVE_COLOR, UI_TEXT_COLOR,
-                       f"{fert_type.capitalize()}", 40, (20, 20, 20, 20), 0, 0, True, authority=True) for fert_type in FERTILISERS
+                       f"{fert_type.capitalize()}", 40, (20, 20, 20, 20), 0, 0, True, authority=True) for fert_type in fertilisers 
             ]
         elif self.chemical_mode:
+            if self.allow_ferts: chemicals = CHEMICALS
+            else: chemicals = ("herbicide",)
+
             self.crop_selection_buttons = [
                 Button(self.widget.surface, dropdown_pos[0], dropdown_pos[1], btn_width, btn_height, pg.Rect(0, 0, self.WIDTH, self.HEIGHT), UI_MAIN_COLOR, UI_ACTIVE_COLOR, UI_TEXT_COLOR,
-                       f"{fert_type.capitalize()}", 40, (20, 20, 20, 20), 0, 0, True, authority=True) for fert_type in CHEMICALS
+                       f"{chem_type.capitalize()}", 40, (20, 20, 20, 20), 0, 0, True, authority=True) for chem_type in chemicals
             ]
         else:
             self.crop_selection_buttons = [

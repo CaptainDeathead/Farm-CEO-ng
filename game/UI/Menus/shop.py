@@ -4,6 +4,7 @@ import logging
 from resource_manager import ResourceManager
 from save_manager import SaveManager
 from paddock_manager import PaddockManager
+from sellpoint_manager import SellPoint
 from destination import Destination
 from events import Events
 
@@ -67,12 +68,13 @@ class PaddockBuyMenu:
                 # The paddock is already owned
                 return            
 
-        elif self.selected_destination.is_sellpoint:
-            return
-
-        self.selected_destination = destination
         self.rebuild_destination_picker(destination)
         self.draw()
+
+        if destination is not None and destination.is_paddock:
+            self.selected_destination = destination
+        else:
+            self.selected_destination = None
 
     def get_excluded_paddocks(self) -> List[int]:
         excluded_paddocks = []
@@ -121,6 +123,8 @@ class PaddockBuyMenu:
         self.cancel_buy_paddock()
 
     def rebuild_destination_picker(self, selected_destination: Destination) -> None:
+        if selected_destination is None: return
+
         self.rendered_surface.fill(UI_BACKGROUND_COLOR)
 
         wrap_length = int(PANEL_WIDTH * 0.8)
@@ -137,7 +141,7 @@ class PaddockBuyMenu:
 
         selected_lbl = selected_font.render(f"Selected: {selected_destination.name}", True, UI_TEXT_COLOR, wraplength=wrap_length)
 
-        if selected_destination.destination is None:
+        if selected_destination.destination is None or isinstance(selected_destination.destination, SellPoint):
             price_lbl = selected_font.render(f"Price: --", True, UI_TEXT_COLOR, wraplength=wrap_length)
         else:
             price_lbl = selected_font.render(f"Price: ${selected_destination.destination.price:,}", True, UI_TEXT_COLOR, wraplength=wrap_length)

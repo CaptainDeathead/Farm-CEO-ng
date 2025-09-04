@@ -317,8 +317,6 @@ class Tractor(Vehicle):
                         if self.tool.tool_type == "Seeders":
                             self.destination.destination.set_crop_type(self.tool.fill_type)
                             self.destination.destination.lime_years -= 1
-                            self.destination.destination.super_spreaded = False
-                            self.destination.destination.urea_spreaded = False
                             self.destination.destination.weeds = 2
 
                         self.destination.destination.set_state(self.tool.get_output_state(), False)

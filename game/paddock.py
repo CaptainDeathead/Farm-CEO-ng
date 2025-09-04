@@ -13,18 +13,12 @@ class Paddock:
         self.num = num
         self.scale = scale
         self.map_paddocks_surf = map_paddocks_surf
-        self.state: int = attrs.get("state", randint(0, 5))
+        self.state: int = attrs.get("state", randint(0, 6))
         self.owned_by: str = attrs["owned_by"]
         self.hectares: int = attrs["hectares"]
 
-        color = (255, 255, 255)
-        if self.owned_by == "player": color = (0, 0, 255)
-
-        self.number_surface = pg.font.SysFont(None, 80).render(str(self.num), True, color)
-        self.needs_lime_surface = pg.font.SysFont(None, 30).render("Needs lime", True, (255, 0, 0))
-        self.needs_super_surface = pg.font.SysFont(None, 30).render("Needs super", True, (255, 0, 0))
-        self.needs_urea_surface = pg.font.SysFont(None, 30).render("Needs urea", True, (255, 0, 0))
-        self.needs_herbicide_surface = pg.font.SysFont(None, 30).render("Needs herbicide", True, (255, 0, 0))
+        self.number_surface = pg.font.SysFont(None, int(60*self.scale)).render(str(self.num), True, (0, 0, 0))
+        self.price_lbl_surface = pg.font.SysFont(None, int(30*self.scale)).render(f"${self.price:,}", True, (255, 255, 255))
 
         cx, cy = attrs["center"]
         gx, gy = attrs["gate"]
@@ -49,10 +43,14 @@ class Paddock:
         self.contract_fulfilled = attrs.get("contract_fulfilled", False) # I dont think this needs to be saved because the Contracts UI class should pick it up in the same tick (before game quits) so there should be no desync
         self.contract_failed = attrs.get("contract_failed", False)
 
+        self.rebuild_num()
+
     @property
     def price(self) -> int:
+        #if hasattr(self, 'mask'):
+        #    return int(round(self.mask.count() * 3 / self.scale, -3))
+        
         return self.hectares * 1200 * 2
-        #return self.mask.count() * 2
 
     def init_collision(self) -> None:
         self.surface, self.rect = self.create_surface()
@@ -64,6 +62,8 @@ class Paddock:
 
         self.paint_surface = pg.Surface(self.rect.size, pg.SRCALPHA)
         self.paint_mask = pg.mask.from_surface(self.paint_surface)
+
+        self.price_lbl_surface = pg.font.SysFont(None, int(30*self.scale)).render(f"${self.price:,}", True, (255, 255, 255))
 
     def __dict__(self) -> Dict[str, any]:
         return {
@@ -96,8 +96,9 @@ class Paddock:
     
     def rebuild_num(self) -> None:
         color = (255, 255, 255)
-        if self.owned_by == "player": color = (0, 0, 255)
-        
+        if self.contract_requirements != {}: color = (255, 150, 0)
+        elif self.owned_by == "player": color = (0, 0, 255)
+
         self.number_surface = pg.font.SysFont(None, 80).render(str(self.num), True, color)
     
     def set_boundary(self, boundary: List[Tuple]) -> None:
@@ -152,7 +153,7 @@ class Paddock:
         return self.state in FERTILISER_STAGES and not self.urea_spreaded
     
     def is_herbicide_sprayable(self) -> bool:
-        return self.state in FERTILISER_STAGES and self.weeds > 0
+        return self.state in CHEMICAL_STAGES and self.weeds > 0
 
     def set_contract(self, contract_requirements: Dict[str, any]) -> None:
         logging.debug(f"Contract received on paddock {self.num}.")
@@ -161,10 +162,14 @@ class Paddock:
         self.contract_fulfilled = False
         self.contract_failed = False
 
+        self.rebuild_num()
+
     def reset_contract(self) -> None:
         self.contract_requirements = {}
         self.contract_fulfilled = False
         self.contract_failed = False
+
+        self.rebuild_num()
 
     def check_contract_fulfill(self) -> None:
         required_state = self.contract_requirements.get("state")
@@ -201,9 +206,12 @@ class Paddock:
             self.urea_spreaded = True
             self.weeds = min(self.weeds + 1, 2)
 
-        elif STATE_NAMES[self.state] == "Growing 1" and resetting:
+        elif STATE_NAMES[self.state] == "Growing 2" and resetting:
             self.super_spreaded = False
             self.urea_spreaded = False
+
+        if self.state in GROWTH_STAGES[1:-1] and resetting:
+            self.weeds = min(2, self.weeds + randint(0, 1))
 
         if not skip_contract_check:
             self.check_contract_fulfill()
