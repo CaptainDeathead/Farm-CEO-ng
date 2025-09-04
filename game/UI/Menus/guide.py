@@ -38,7 +38,7 @@ class Guide:
             "title1": "Fertilisers and Chemicals",
             "text1": [
                 "<LIME>      - Lime can be optionally spreaded every 3 years to boost a paddocks yield. Lime can be applied during the harvested and cultivated stages.",
-                "<SUPER>      - Super can be spreaded on paddocks in their first or second growth stages.",
+                "<SUPER>      - Super can be spreaded on paddocks in their second or third growth stages.",
                 "<UREA>      - Urea is very similar to Super, however it provides an additional yield bonus. Both Urea and Super require a spreader.",
                 "<WEEDS>      - Weeds can affect paddocks. Weeds have 2 different strengths. Heavier weeds come up in later growth stages. Weeds have a SEVERE yield impact. Sprayers are used to remove weeds"
             ],
