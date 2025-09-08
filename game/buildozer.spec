@@ -130,7 +130,7 @@ android.ndk_path = ~/.buildozer/android/platform/android-ndk-r27c-linux-x86_64
 #android.ndk_path = /tmp/android-ndk-r27c-linux-x86_64
 
 # (str) Android SDK directory (if empty, it will be automatically downloaded.)
-#android.sdk_path =
+#android.sdk_path = /mnt/HardDrive/Apps/Android
 
 # (str) ANT directory (if empty, it will be automatically downloaded.)
 #android.ant_path =

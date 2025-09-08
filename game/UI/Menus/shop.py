@@ -269,7 +269,8 @@ class Shop:
             self.in_paddock_menu = False
             self.path = []
         else:
-            self.path.pop()
+            if len(self.path) > 0:
+                self.path.pop()
 
         for item in self.path:
             self.current_items = self.current_items[item]
@@ -458,8 +459,9 @@ class Shop:
             for button in self.buttons:
                 button.update(self.events.mouse_just_pressed, self.events.set_override)
 
-        self.buy_button.update(self.events.mouse_just_pressed, self.events.set_override)
-        self.back_button.update(self.events.mouse_just_pressed, self.events.set_override)
+        if not self.in_paddock_menu:
+            self.buy_button.update(self.events.mouse_just_pressed, self.events.set_override)
+            self.back_button.update(self.events.mouse_just_pressed, self.events.set_override)
 
         if self.just_rebuilt:
             self.just_rebuilt = False

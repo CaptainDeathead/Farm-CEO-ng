@@ -139,9 +139,9 @@ class Window:
             self.frame_time = self.delta_time / 1000.0
             
             if self.frame_time > 0.5:
-                logging.warning(f"Frame time greater than half a second ({self.frame_time:.2f}s)! Faking frame time of 0.5s...")
-                self.frame_time = 1.0
-                self.delta_time = 1000.0
+                logging.warning(f"Frame time greater than half a second ({self.frame_time:.2f}s)! Faking frame time of {1/60}s...")
+                self.frame_time = 1/60
+                self.delta_time = (1/60)*1000
 
 def main() -> None:
     CrashHandler(lambda: Window().main())
