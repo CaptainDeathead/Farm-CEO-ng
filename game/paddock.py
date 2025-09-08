@@ -206,7 +206,7 @@ class Paddock:
             self.urea_spreaded = True
             self.weeds = min(self.weeds + 1, 2)
 
-        elif STATE_NAMES[self.state] == "Growing 2" and resetting:
+        elif STATE_NAMES[self.state] == "Growing 1" and resetting:
             self.super_spreaded = False
             self.urea_spreaded = False
 
