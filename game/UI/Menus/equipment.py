@@ -212,7 +212,7 @@ class Equipment:
                 # The paddock is not the state the tool requires
                 return
 
-        elif destination.is_sellpoint and self.selected_tool.tool_type in EXCLUDE_SELLPOINT_TOOLS:
+        elif (destination.is_sellpoint or destination.is_silo) and self.selected_tool.tool_type in EXCLUDE_SELLPOINT_TOOLS:
             return
 
         self.selected_destination = destination
