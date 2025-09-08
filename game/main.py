@@ -49,6 +49,9 @@ class Window:
     WIDTH: int = PYGAME_INFO.current_w
     HEIGHT: int = PYGAME_INFO.current_h
 
+    WIDTH = 1280
+    HEIGHT = 720
+
     TITLE: str = f"{GAME_NAME} ({BUILD_TYPE}) | Build: {BUILD} | Platform: {PLATFORM} | Version: v{GAME_VERSION}"
 
     FPS: int = TARGET_FPS
@@ -59,7 +62,11 @@ class Window:
             sleep(1)
 
         self.display = int(not BUILD)
-        #self.display = 0
+
+        if (self.WIDTH, self.HEIGHT) == (1280, 720):
+            self.WIDTH *= 1.5
+            self.HEIGHT *= 1.5
+
         self.screen: pg.Surface = pg.display.set_mode((self.WIDTH, self.HEIGHT), pg.DOUBLEBUF | pg.HWSURFACE | pg.FULLSCREEN, display=self.display)
         self.clock: pg.time.Clock = pg.time.Clock()
         self.events: Events = Events()
