@@ -1,8 +1,9 @@
 import pygame as pg
 import logging
 import sys
+import asyncio
 
-from traceback import format_exc
+from traceback import format_exc, extract_tb
 from data import *
 
 class CrashHandler:
@@ -16,12 +17,12 @@ class CrashHandler:
             print(format_exc())
 
             self.prebuild_crash_info(str(e))
-            self.process_crash()
+            asyncio.run(self.process_crash())
 
     def prebuild_crash_info(self, exception_summary: str) -> None:
         self.screen = pg.display.get_surface()
-        self.WIDTH = self.screen.width
-        self.HEIGHT = self.screen.height
+        self.WIDTH = self.screen.get_width()
+        self.HEIGHT = self.screen.get_height()
 
         self.rendered_surface = pg.Surface((self.WIDTH, self.HEIGHT), pg.SRCALPHA)
 
@@ -33,10 +34,17 @@ class CrashHandler:
 
         self.rendered_surface.blit(disclaimer_surf, (30, 100))
 
-        error_font = pg.font.SysFont(None, 30)
-        self.rendered_surface.blit(error_font.render(f"Error: {exception_summary}\n\n{format_exc()}", True, (255, 255, 0)), (30, disclaimer_surf.get_height() + 150))
+        exc_type, exc_value, exc_tb = sys.exc_info()
+        # Get the last frame (where the exception occurred)
+        tb_last = extract_tb(exc_tb)[-1]
+        filename = tb_last.filename
+        line_no = tb_last.lineno
+        func_name = tb_last.name
 
-    def process_crash(self) -> None:
+        error_font = pg.font.SysFont(None, 30)
+        self.rendered_surface.blit(error_font.render(f"Error at line {line_no} in {filename}: {exception_summary}\n\n{format_exc()}", True, (255, 255, 0)), (30, disclaimer_surf.get_height() + 150))
+
+    async def process_crash(self) -> None:
         clock = pg.time.Clock()
 
         while 1:
@@ -52,3 +60,5 @@ class CrashHandler:
 
             clock.tick(30)
             pg.display.flip()
+
+            await asyncio.sleep(0)

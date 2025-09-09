@@ -173,6 +173,7 @@ PLATFORM: str = platform.platform()
 TARGETING_ANDROID: bool = "ANDROID_ROOT" in os.environ
 BUILD_TYPE: str = "Release"
 CONSOLE_BUILD: bool = not BUILD
+IS_WEB_BUILD: bool = True
 
 # ---------- CHEATS ----------
 UNLOCK_ALL_PADDOCKS: bool = not BUILD

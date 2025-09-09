@@ -1,7 +1,12 @@
 import pygame as pg
+from resource_manager import ResourceManager
 
-from shapely.geometry import Polygon
 from data import *
+
+if not IS_WEB_BUILD:
+    from shapely.geometry import Polygon
+else:
+    WEB_BOUNDARIES = ResourceManager.load_json("web_boundaries.json")
 
 from math import atan2, degrees, cos, sin
 from typing import Tuple
@@ -50,8 +55,14 @@ class utils:
 
     @staticmethod
     def shrink_polygon(polygon: list[tuple[int, int]], shrink: int) -> list[tuple[int, int]]:
-        poly = Polygon(polygon)
-        coords = list(poly.buffer(-shrink).exterior.coords)
+        if IS_WEB_BUILD:
+            if shrink % 1 == 0:
+                shrink = int(shrink)
+
+            coords = WEB_BOUNDARIES[f"{polygon[0]},{shrink}"]
+        else:
+            poly = Polygon(polygon)
+            coords = list(poly.buffer(-shrink).exterior.coords)
 
         processed_coords = []
         for i in range(1, len(coords)):
