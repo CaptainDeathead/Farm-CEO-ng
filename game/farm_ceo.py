@@ -80,8 +80,8 @@ class HUD:
     def __init__(self, game_surface: pg.Surface) -> None:
         self.game_surface = game_surface
 
-        self.WIDTH = self.game_surface.width
-        self.HEIGHT = self.game_surface.height
+        self.WIDTH = self.game_surface.get_width()
+        self.HEIGHT = self.game_surface.get_height()
 
         self.money_icon = pg.transform.smoothscale(ResourceManager().load_image("Icons/currency.png"), (50, 50))
         self.rebuild_money()
@@ -94,17 +94,17 @@ class HUD:
 
     def rebuild_money(self) -> None:
         self.money_text = ResourceManager().font_manager.get_sysfont(None, 70).render(f"{self.save_manager.money:,.2f}", True, (255, 255, 255))
-        self.money_surface = pg.Surface((self.money_icon.width + self.money_text.width + 10, max(self.money_icon.height, self.money_text.height)), pg.SRCALPHA)
+        self.money_surface = pg.Surface((self.money_icon.get_width() + self.money_text.get_width() + 10, max(self.money_icon.get_height(), self.money_text.get_height())), pg.SRCALPHA)
 
         self.money_surface.blit(self.money_icon, (0, 0))
-        self.money_surface.blit(self.money_text, (self.money_icon.width + 5, 0))
+        self.money_surface.blit(self.money_text, (self.money_icon.get_width() + 5, 0))
 
     def rebuild_xp(self) -> None:
         self.xp_text = ResourceManager().font_manager.get_sysfont(None, 70).render(f"{floor(self.save_manager.xp):.0f}", True, (255, 255, 255))
-        self.xp_surface = pg.Surface((self.xp_icon.width + self.xp_text.width + 10, max(self.xp_icon.height, self.xp_text.height)), pg.SRCALPHA)
+        self.xp_surface = pg.Surface((self.xp_icon.get_width() + self.xp_text.get_width() + 10, max(self.xp_icon.get_height(), self.xp_text.get_height())), pg.SRCALPHA)
 
         self.xp_surface.blit(self.xp_icon, (0, 0))
-        self.xp_surface.blit(self.xp_text, (self.xp_icon.width + 5, 0))
+        self.xp_surface.blit(self.xp_text, (self.xp_icon.get_width() + 5, 0))
 
     def draw(self) -> None:
         if self.save_manager.money != self.last_money:
@@ -112,8 +112,8 @@ class HUD:
         if self.save_manager.xp != self.last_xp:
             self.rebuild_xp()
 
-        self.game_surface.blit(self.money_surface, (self.WIDTH - self.money_surface.width - 30, 10))
-        self.game_surface.blit(self.xp_surface, (self.WIDTH - self.money_surface.width - 30 - self.xp_surface.width - 30, 10))
+        self.game_surface.blit(self.money_surface, (self.WIDTH - self.money_surface.get_width() - 30, 10))
+        self.game_surface.blit(self.xp_surface, (self.WIDTH - self.money_surface.get_width() - 30 - self.xp_surface.get_width() - 30, 10))
 
 class FarmCEO:
     RESOURCE_MANAGER: ResourceManager = ResourceManager()
@@ -177,7 +177,7 @@ class FarmCEO:
         self.paddock_manager.fill_all_paddocks()
 
         self.popup = None
-        
+
         # TODO: THIS IS JUST AN EXAMPLE
         #self.background_render()
         #for i in range(9): self.shed.task_manager.test_make_job(self.paddock_manager.paddocks[i])
@@ -189,6 +189,23 @@ class FarmCEO:
         #        pg.time.wait(5)
 
         #input()
+
+        #self.generate_web_boundaries()
+
+    def generate_web_boundaries(self) -> None:
+        web_boundaries = {}
+        for paddock in self.paddock_manager.paddocks:
+            print(paddock.boundary[0])
+            for shrink in range(100):
+                print(shrink)
+                try:
+                    web_boundaries[f"{paddock.boundary[0]},{shrink}"] = utils.shrink_polygon(paddock.boundary, shrink)
+                    web_boundaries[f"{paddock.boundary[0]},{shrink + 0.5}"] = utils.shrink_polygon(paddock.boundary, shrink + 0.5)
+                except:
+                    print(f"failed: {shrink}")
+
+        ResourceManager.write_json(web_boundaries, "web_boundaries.json")
+        exit()
 
     def enable_cheats(self) -> None:
         logging.warning("Cheats enabled! Money and XP set to 1,000,000,000,000")

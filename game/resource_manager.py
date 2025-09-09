@@ -18,7 +18,7 @@ class FontManager:
     def init(self) -> None:
         self.loaded_fonts = {}
 
-    def get_sysfont(self, name: str, size: int) -> pg.Font:
+    def get_sysfont(self, name: str, size: int) -> pg.font.Font:
         if self.loaded_fonts.get(name) is None:
             self.loaded_fonts[name] = {}
 

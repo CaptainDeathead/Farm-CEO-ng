@@ -158,7 +158,7 @@ class PaddockManager:
 
                 screen.fill((0, 0, 0))
                 surface.set_at((nx, ny), (255, 0, 0))
-                screen.blit(surface, (-curr_x + screen.width / 2, -curr_y + screen.height / 2))
+                screen.blit(surface, (-curr_x + screen.get_width() / 2, -curr_y + screen.get_height() / 2))
                 pg.display.flip()
 
     def set_paddock_state(self, paddock_number: int, state: int) -> None:
@@ -191,7 +191,7 @@ class PaddockManager:
 
     def draw_paddock_numbers(self, draw_price: bool = False) -> None:
         for paddock in self.paddocks:
-            self.screen.blit(paddock.number_surface, (PANEL_WIDTH + paddock.center[0] - paddock.number_surface.width / 2, paddock.center[1] - paddock.number_surface.height / 2))
+            self.screen.blit(paddock.number_surface, (PANEL_WIDTH + paddock.center[0] - paddock.number_surface.get_width() / 2, paddock.center[1] - paddock.number_surface.get_height() / 2))
 
             indicator_angle = 270
             self.screen.blit(self.indicators[CROP_TYPES[paddock.crop_index]], self.get_indicator_position(paddock.center, indicator_angle))
@@ -214,7 +214,7 @@ class PaddockManager:
                 indicator_angle -= 45
 
             if draw_price:
-                self.screen.blit(paddock.price_lbl_surface, (PANEL_WIDTH + paddock.center[0] - paddock.price_lbl_surface.width / 2, paddock.center[1] - paddock.price_lbl_surface.height / 2 + 30 * self.scale))
+                self.screen.blit(paddock.price_lbl_surface, (PANEL_WIDTH + paddock.center[0] - paddock.price_lbl_surface.get_width() / 2, paddock.center[1] - paddock.price_lbl_surface.get_height() / 2 + 30 * self.scale))
 
     def check_paddock_clicks(self) -> Paddock | None:
         pos = pg.mouse.get_pos()

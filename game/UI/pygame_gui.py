@@ -272,8 +272,8 @@ class Table:
             for x in range(self.rows):
                 rendered_font = self.font.render(str(self.grid[y][x]), True, (255, 255, 255), wraplength=int(self.seg_width))
 
-                render_x = self.seg_width * x + self.seg_width / 2 - rendered_font.width / 2
-                render_y = self.seg_height * y + self.seg_height / 2 - rendered_font.height / 2
+                render_x = self.seg_width * x + self.seg_width / 2 - rendered_font.get_width() / 2
+                render_y = self.seg_height * y + self.seg_height / 2 - rendered_font.get_height() / 2
 
                 self.rendered_surface.blit(rendered_font, (render_x, render_y))
 

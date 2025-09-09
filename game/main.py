@@ -1,6 +1,7 @@
 import pygame as pg
 import sys
 import logging
+import asyncio
 
 from time import sleep
 from events import Events
@@ -49,8 +50,8 @@ class Window:
     WIDTH: int = PYGAME_INFO.current_w
     HEIGHT: int = PYGAME_INFO.current_h
 
-    WIDTH = 1280
-    HEIGHT = 720
+    WIDTH = 1920
+    HEIGHT = 1080
 
     TITLE: str = f"{GAME_NAME} ({BUILD_TYPE}) | Build: {BUILD} | Platform: {PLATFORM} | Version: v{GAME_VERSION}"
 
@@ -63,7 +64,7 @@ class Window:
 
         self.display = int(not BUILD)
 
-        if (self.WIDTH, self.HEIGHT) == (1280, 720):
+        if self.WIDTH <= 1400:
             self.WIDTH *= 1.5
             self.HEIGHT *= 1.5
 
@@ -105,7 +106,7 @@ class Window:
         # Run on the UI thread
         activity_instance.runOnUiThread(_set_ui_flags)
 
-    def main(self) -> None:
+    async def main(self) -> None:
         pg.display.set_caption(self.TITLE)
         pg.display.set_icon(self.farm_ceo.RESOURCE_MANAGER.load_image("game_icon.png", (100, 100)))
 
@@ -150,8 +151,10 @@ class Window:
                 self.frame_time = 1/60
                 self.delta_time = (1/60)*1000
 
+            await asyncio.sleep(0)
+
 def main() -> None:
-    CrashHandler(lambda: Window().main())
+    CrashHandler(lambda: asyncio.run(Window().main()))
 
 if __name__ == "__main__":
     main()

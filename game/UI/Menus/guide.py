@@ -71,8 +71,8 @@ class Guide:
 
             elif "title" in texttype:
                 title = title_font.render(guide[texttype], True, UI_TEXT_COLOR)
-                target_surf.blit(title, (self.rendered_surface.width / 2 - title.width / 2, curr_y))
-                curr_y += title.height + 10
+                target_surf.blit(title, (self.rendered_surface.get_width() / 2 - title.get_width() / 2, curr_y))
+                curr_y += title.get_height() + 10
 
             elif "text" in texttype:
                 for text in guide[texttype]:
@@ -89,7 +89,7 @@ class Guide:
 
                     text_lbl = text_font.render(literal_text, True, UI_TEXT_COLOR, wraplength=PANEL_WIDTH - 20)
                     target_surf.blit(text_lbl, (10, curr_y))
-                    curr_y += text_lbl.height + 10
+                    curr_y += text_lbl.get_height() + 10
 
     def switch_page(self) -> None:
         self.page = (self.page + 1) % 2
