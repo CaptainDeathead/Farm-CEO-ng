@@ -1,5 +1,7 @@
 # Farm-CEO-ng
 
+Gameplay video: https://youtu.be/Q_BHPs4chQM
+
 ## Description
 Farm CEO is a farm management game designed to be as realistic as possible, while giving you a full game packed of farming fun.
 
