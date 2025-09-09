@@ -81,5 +81,16 @@ You will then be prompted to select a crop type, select the desired crop type.
 
 The vehicle and trailer should then go to the sell point and sell the crops.
 
+## Begginner guide
+Step 1: Buy a paddock using the "Paddocks" button in the shop
+Step 2: Assign a tractor with a tool or a header to work in your new paddock. Check **Paddock states** *(above)* for info on which tool to use with the paddock.
+Step 3: Once your crops are planted press the shed to sleep the night and grow the crops.
+Step 4: Use a spreader and sprayer to spread and spray **super**, **urea**, and **herbicide** on your paddocks when the indicators show up *(See the in game guide for more info on what the indicators mean)*.
+Step 5: Harvest your paddock using a header.
+Step 6: Sell your crops when the price is above the corrosponding **base price** *(See **Grain menu** above for more info)* using a trailer.
+Step 7: Keep doing this until you can afford more machinary to do more at once and to buy more paddocks.
+Step 8: Aim to own the whole map.
+Optional: Accept contracts to earn money on the side.
+
 ## Goals
 Hoping to release Farm CEO on Steam December this year.
