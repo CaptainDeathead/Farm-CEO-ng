@@ -190,8 +190,7 @@ class FarmCEO:
 
         #input()
 
-        if not IS_WEB_BUILD:
-            self.generate_web_boundaries()
+        #self.generate_web_boundaries()
 
     def generate_web_boundaries(self) -> None:
         web_boundaries = {}
