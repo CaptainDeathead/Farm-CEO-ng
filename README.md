@@ -10,11 +10,17 @@ Farm CEO is a farm management game designed to be as realistic as possible, whil
 Every paddock has its own state. This is shown by the paddock's colour.
 Here is a breakdown of each state / colour:
 - Harvested (Brown): The paddock has been harvested and requires to be cultivated ready to be sown again for another year.
+
 - Tilled (Grey): The paddock has been cultivated and is ready to be seeded with a crop type of your choice.
+
 - Growth 1 (Light green): The paddock has just been seeded.
+
 - Growth 2 (Green): The paddock's crops have grown and require fertilisers.
+
 - Growth 3 (Darker green): The crop has grown to the maximum height vehicles can drive through and so it is the final stage that fertilisers and chemicals can be applied. It is highly advised you spray herbicide on your crops in this stage.
+
 - Growth 4 (Dark green): The crop is very tall now and needs to dry out. Nothing can be done in this state as the crops are too big for a vehicle to drive through.
+
 - Ready to harvest (Yellow): The paddock is ready to be harvested where you can collect the grain and sell it when the price is right. The cycle then repeats.
 
 ### Paddock indicators
