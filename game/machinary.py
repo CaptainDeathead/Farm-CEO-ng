@@ -387,13 +387,13 @@ class Tractor(Vehicle):
 
         turn_amount = utils.angle_difference(self.rotation, self.desired_rotation)
 
-        self.rotation += max(-MAX_TURN_SPEED, min(MAX_TURN_SPEED, turn_amount)) * dt * 10 * SPEEDSCALE * hp_multiplier
+        self.rotation += max(-MAX_TURN_SPEED, min(MAX_TURN_SPEED, turn_amount)) * dt * 10 * SPEEDSCALE * hp_multiplier * self.scale
         self.rotation %= 360
 
         direction = [cos(radians(-self.rotation-90)), sin(radians(-self.rotation-90))]
 
-        self.velocity[0] = direction[0] * self.curr_speed * SPEEDSCALE * hp_multiplier
-        self.velocity[1] = direction[1] * self.curr_speed * SPEEDSCALE * hp_multiplier
+        self.velocity[0] = direction[0] * self.curr_speed * SPEEDSCALE * hp_multiplier * self.scale
+        self.velocity[1] = direction[1] * self.curr_speed * SPEEDSCALE * hp_multiplier * self.scale
 
         return sqrt(self.velocity[0]**2 + self.velocity[1]**2)
 
@@ -704,13 +704,13 @@ class Header(Vehicle):
 
         turn_amount = utils.angle_difference(self.rotation, self.desired_rotation)
 
-        self.rotation += max(-MAX_TURN_SPEED, min(MAX_TURN_SPEED, turn_amount)) * dt * 10 * SPEEDSCALE
+        self.rotation += max(-MAX_TURN_SPEED, min(MAX_TURN_SPEED, turn_amount)) * dt * 10 * SPEEDSCALE * self.scale
         self.rotation %= 360
 
         direction = [cos(radians(-self.rotation-90)), sin(radians(-self.rotation-90))]
 
-        self.velocity[0] = direction[0] * self.curr_speed * SPEEDSCALE
-        self.velocity[1] = direction[1] * self.curr_speed * SPEEDSCALE
+        self.velocity[0] = direction[0] * self.curr_speed * SPEEDSCALE * self.scale
+        self.velocity[1] = direction[1] * self.curr_speed * SPEEDSCALE * self.scale
 
         return sqrt(self.velocity[0]**2 + self.velocity[1]**2)
 
